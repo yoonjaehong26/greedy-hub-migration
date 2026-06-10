@@ -1,6 +1,6 @@
 # 그리디 허브 (Greedy Hub) — PRD
 
-> **상태**: v0.9 초안 (티키타카 진행 중) · **작성 목적**: 메인테이너 설득 + 기획 확정
+> **상태**: v0.10 초안 (티키타카 진행 중) · **작성 목적**: 메인테이너 설득 + 기획 확정
 > **한 줄 요약**: 그리디의 *연혁·멤버·스터디·미션·게시판·지원·추억* 을 한곳에서 추적하는 동아리 공식 허브.
 
 ---
@@ -209,13 +209,13 @@ track:   FE | BE | COMMON
 
 ### 6.6 기술블로그 & 게시판 (Blog & Board)
 - **목적**: 공지/자유 글 + **기술블로그**(멤버·이전 기수가 쓰는 기술 글) 아카이브.
-- **페인포인트**: P4(대외 아카이브 없음) + 공지가 Discord에 묻힘. 스터디 끝난 **이전 기수가 기여할 통로**가 없음.
+- **페인포인트**: P4(대외 아카이브·기여 통로 없음) + 공지가 Discord에 묻힘.
+- **핵심 가치(보상 구조)**: 글을 쓰면 → ① 동아리 콘텐츠가 쌓여 **심층화·신뢰도↑**, ② **본인 프로필에 자동 반영돼 이력**이 된다. *이 win-win이 글 쓰는 동기.* 이전 기수(졸업 멤버)도 작성 가능 → 지속 기여.
 - **핵심 기능**
-  - 카테고리: **기술블로그** / 공지 / 자유.
-  - 글·댓글 CRUD(마크다운·코드블록), 태그·검색, 공지 고정.
-  - **공개 범위(확정)**: **기술블로그 = 공개(SEO)** → 외부 홍보·멤버 취업/포트폴리오 증빙. **공지·자유 = 회원 전용**(로그인). 작성자 프로필·기수 발자취와 연결.
-  - 이전 기수(졸업 멤버)도 작성 가능 → 지속 기여.
-  - **이미지 첨부**: 글 작성 중 드래그하면 **이미지 CDN에 자동 업로드**(8장) → 영구 URL 인라인 삽입.
+  - **공개 범위(확정)**: **기술블로그 = 공개(SEO)** → 외부 홍보·멤버 취업/포트폴리오 증빙. **공지·자유 = 회원 전용**(로그인).
+  - **작성**: 마크다운·코드블록, 작성 중 **이미지 자동 업로드**(8장), **임시저장(DRAFT)**.
+  - **분류**: 주제 **태그(회고·기술·취업·트러블슈팅 등)** 로 분류·필터. 목록은 **최신순**(별도 큐레이션 없음).
+  - 공지 고정, 댓글, 검색.
 - **사용자 스토리**: 멤버·이전 기수의 기술 글 작성 / 운영진의 공지·모더레이션 / 방문자의 공개 블로그 열람.
 - **권한**: 블로그 열람 전체 · 공지/자유 열람 `MEMBER` / 작성·댓글 `MEMBER`(이전 기수 포함) / 모더레이션 `board:moderate` / 본인 글만 수정.
 
@@ -367,6 +367,7 @@ track:   FE | BE | COMMON
 - **R4. 개인정보(지원서)** → 수집·보관 동의 필요.
 - **R5. 봇↔웹 계약** → 봇 명단을 웹에서 조회/결과 POST하도록 봇 수정 필요(봇 운영자와 합의). *완화*: 봇 변경 없이 "수동 기록"으로도 동작하게 설계, 통합은 단계적.
 - **R6. 백필 정확도**(10.1) → 과거 PR 제목 규칙 이탈·username 변경으로 매칭 누락. *완화*: 반자동 임포트 후 운영진 수동 보정, 멤버 본인 확인.
+- **R7. 블로그 활성화 실패**(6.6) → 글이 안 쌓이면 신뢰도 가치 미실현. *완화*: "쓰면 기여+이력" 보상 구조 연결, 작성 마찰 제거(이미지 자동업로드·임시저장).
 - **가정**: 회원 대부분 GitHub 계정 보유, Discord를 일상적으로 사용, 봇 운영자와 협업 가능.
 
 ---
@@ -382,7 +383,7 @@ track:   FE | BE | COMMON
 - ~~Q5. 게시판 공개 범위~~ → **확정**: 기술블로그 공개(SEO) / 공지·자유 회원 전용.
 - ~~Q10. 지원 수집 방식~~ → **확정**: 웹 자체 폼.
 - Q9. 봇 통합 범위/시점 — 봇을 바로 고칠지, 웹 수동기록으로 시작 후 단계적 통합할지. *(미해결, 봇 운영자와 협의)*
-- Q11. API 계약 워크플로우 — spec-first(openapi.yaml 먼저) vs code-first(springdoc 생성). *(미해결, FE/BE 합의)*
+- ~~Q11. API 계약 워크플로우~~ → **확정**: 경량 spec-first(엔드포인트·DTO 먼저 합의 → springdoc 구현 → 생성 스펙 일치 점검).
 
 ---
 
@@ -401,7 +402,8 @@ ReviewCheckpoint(id, missionId, text)             # (선택) 리뷰 가이드라
 Submission(id, missionId, userId, prUrl, status, reviewDueAt, extendedCount, rounds, mergedAt, submittedAt)
    # status = SUBMITTED | IN_REVIEW | MERGED   (approve가 아니라 기간 종료 머지 = 완료)
 ReviewAssignment(id, submissionId, reviewerId, assignedAt, source)  # source = BOT | MANUAL (봇 매칭 결과 영구 기록)
-Post(id, category, title, body, authorId, pinned, createdAt)   # category = BLOG(공개) | NOTICE(회원) | FREE(회원)
+Post(id, category, title, body, authorId, status, tags[], pinned, createdAt)
+   # category = BLOG(공개) | NOTICE(회원) | FREE(회원) / status = DRAFT|PUBLISHED / tags = 주제분류(회고·기술·취업…)
 Comment(id, postId, authorId, body, createdAt)
 Application(id, applicantInfo, stage, reviewerId, createdAt)
    # stage = SUBMITTED | DOC_PASS | INTERVIEW | ACCEPTED | REJECTED  (웹 자체 폼)
@@ -459,6 +461,7 @@ Media(id, albumId, url, type, uploaderId, caption)
 - **기수(Cohort)**: 입회한 모집 회차(예: 4기). 학기당 1기수, 연 2기수. 프로젝트가 다음 기수와 맞물려 **잠시 2기수 동시 활성**.
 
 ## 부록 E. 변경 이력 (Changelog)
+- **v0.10** — 기술블로그를 **린 보상 구조**로 확정(6.6): "쓰면 = 동아리 기여 + 개인 이력" 가치 중심. 작성 마찰 제거(이미지 자동업로드·임시저장) + **주제 태그 분류(회고·기술·취업…)** 만. *템플릿·글감제안·초안연습·canonical/export·featured 큐레이션은 토론 후 제외(오버엔지니어링 방지).* `Post`=status·tags(featured·canonicalUrl 삭제). R7(블로그 활성화) 추가. Q11(경량 spec-first) 확정.
 - **v0.9** — 백엔드 스택 확정. 기존 레포 관행 확인(mokkoji-be·sejong-life-be·doogoo-be) → **Spring Boot 3.x · JPA · springdoc-openapi(Swagger)** 로 8장 명시(別언어 제거). 계약 워크플로우 열린질문 Q11(spec-first vs code-first) 추가.
 - **v0.8** — Q4·Q5 확정. **공개 범위**: 기술블로그 공개(SEO)·공지/자유 회원전용(6.6, 사이트맵, 권한매트릭스, `Post.category`). **미디어 저장**: 오브젝트 스토리지/이미지 CDN + 작성 중 자동 업로드, 구글 포토/드라이브 부적합 명시(8장). 열린질문 Q9만 남음.
 - **v0.7** — 통독 정합성 보강. 성공지표에 리뷰가이드 작성률·이력서 누적률·블로그 글 수 추가(3장). 온보딩에 가입 시 기수·트랙·역할 세팅 + 이전기수/외부 리뷰어 경로 명시(6.1). 지원에 에타 공고→웹 폼 외부 유입 경로 추가(6.7). 권한매트릭스에 기수역할 스코프 주석(부록 B).
