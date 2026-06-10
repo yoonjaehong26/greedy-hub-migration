@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>그리디 허브 — 제안서</title>
+<style>
+  :root{--green:#017356;--dgreen:#013D2C;--ink:#0F172A;--mut:#64748B;--moss:#7FC6AE;--line:#E2E8F0;--mist:#F1F5F4}
+  *{box-sizing:border-box}
+  body{margin:0;background:#cbd5e1;font-family:'Malgun Gothic','Apple SD Gothic Neo','Segoe UI',sans-serif;color:var(--ink)}
+  .slide{width:1280px;height:720px;margin:28px auto;background:#fff;position:relative;overflow:hidden;
+         padding:88px;display:flex;flex-direction:column;justify-content:center;box-shadow:0 10px 30px rgba(15,23,42,.18)}
+  .dark{background:var(--dgreen);color:#fff}
+  .eyebrow{font-size:18px;font-weight:700;color:var(--green);letter-spacing:1px;margin:0 0 14px}
+  h1{margin:0;font-weight:800;line-height:1.12}
+  .t-hero{font-size:62px}
+  .t-big{font-size:58px}
+  .t-title{font-size:46px}
+  .sub{font-size:26px;color:var(--mut);margin-top:24px;line-height:1.4}
+  .dark .sub{color:var(--moss)}
+  .center{text-align:center;align-items:center}
+  .muted{color:var(--mut)} .moss{color:var(--moss)} .green{color:var(--green)} .white{color:#fff}
+  .logo{width:108px;height:108px;border-radius:50%}
+  .logo.ring{box-shadow:0 0 0 7px #fff}
+  .row{display:flex;gap:26px}
+  .card{flex:1;background:#fff;border:1px solid var(--line);border-left:6px solid var(--green);border-radius:14px;
+        padding:30px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
+  .card h3{margin:0 0 14px;font-size:26px}
+  .card .before{color:var(--mut);font-size:18px;line-height:1.4}
+  .card .after{color:var(--green);font-weight:800;font-size:22px;margin-top:16px;line-height:1.4}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+  .feat{background:#fff;border:1px solid var(--line);border-left:6px solid var(--green);border-radius:14px;padding:30px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
+  .feat h3{margin:0 0 12px;font-size:28px}
+  .feat p{margin:0;color:var(--mut);font-size:20px}
+  .layer{flex:1;background:var(--mist);border-radius:14px;padding:34px}
+  .layer .k{font-size:34px;font-weight:800}
+  .layer .v{color:var(--mut);font-size:20px;margin-top:8px}
+  .ba{flex:1;border-radius:14px;padding:34px}
+  .ba.now{background:var(--mist)} .ba.hub{background:var(--green);color:#fff}
+  .ba h4{margin:0 0 18px;font-size:22px}
+  .ba ul{margin:0;padding-left:22px;line-height:1.9;font-size:19px}
+  .shots{display:flex;gap:34px;justify-content:center;margin-top:18px}
+  .shotbox{width:520px}
+  .shotbox img{width:520px;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 22px rgba(15,23,42,.14)}
+  .shotbox .cap{margin-top:12px;text-align:center;color:var(--green);font-weight:700;font-size:18px}
+  .url{text-align:center;font-size:24px;margin-top:34px}
+  .ocard{flex:1;background:#06241B;border-radius:14px;padding:34px}
+  .ocard h3{margin:0 0 14px;color:var(--moss);font-size:26px}
+  .ocard p{margin:0;color:#fff;font-size:19px;line-height:1.5}
+  .foot{position:absolute;right:40px;bottom:28px;font-size:13px;color:var(--mut)}
+  .dark .foot{color:var(--moss)}
+  .titlebrand{display:flex;align-items:center;gap:18px;margin-bottom:46px}
+  .titlebrand span{font-size:24px;font-weight:700}
+  @media print{
+    body{background:#fff}
+    .slide{margin:0;box-shadow:none;break-after:page}
+    .slide:last-child{break-after:auto}
+    @page{size:1280px 720px;margin:0}
+  }
+</style>
+</head>
+<body>
+
+<!-- 1 표지 -->
+<section class="slide dark">
+  <div class="titlebrand"><img class="logo ring" src="assets/logo.png"><span class="white">그리디 허브</span></div>
+  <h1 class="t-hero white">우리가 만든 것들,<br>지금 어디에 남아 있나요?</h1>
+  <div class="sub">활동을 기록으로, 기록을 성장으로.</div>
+  <div class="foot">동아리 메인테이너 제안 · 2026</div>
+</section>
+
+<!-- 2 후킹 -->
+<section class="slide center">
+  <h1 class="t-big">지금도 잘 굴러갑니다.<br>이제, 한눈에 보이게 만들 차례.</h1>
+  <div class="sub">미션·리뷰·기록을 한곳에서, 체계적으로.</div>
+  <div class="foot">02</div>
+</section>
+
+<!-- 3 흩어짐 → 체계 -->
+<section id="s3" class="slide">
+  <p class="eyebrow">왜 지금</p>
+  <h1 class="t-title">흩어진 활동을, 체계로</h1>
+  <div class="row" style="margin-top:54px">
+    <div class="card"><h3>미션·리뷰</h3><div class="before">디스코드에 흩어진 진행을</div><div class="after">→ 한 화면 현황판으로</div></div>
+    <div class="card"><h3>스터디 자료</h3><div class="before">그때그때 공유되던 자료를</div><div class="after">→ 쌓이는 아카이브로</div></div>
+    <div class="card"><h3>리뷰 가이드</h3><div class="before">구두로 전하던 리뷰 기준을</div><div class="after">→ 미션에 남는 가이드로</div></div>
+  </div>
+  <div class="foot">03</div>
+</section>
+
+<!-- 4 자산 -->
+<section class="slide dark center">
+  <h1 class="t-big white">활동이 쌓이면,<br>각자의 자산이 됩니다.</h1>
+  <div class="sub">미션·리뷰·글이 모여 멤버의 포트폴리오·취업 증빙으로 남습니다.</div>
+  <div class="foot">04</div>
+</section>
+
+<!-- 5 리프레임 -->
+<section class="slide">
+  <p class="eyebrow">발상의 전환</p>
+  <h1 class="t-title">도구를 더하지 말고,<br>흩어진 걸 한 층으로 모읍니다.</h1>
+  <div class="row" style="margin-top:50px">
+    <div class="layer"><div class="k green">웹</div><div class="v">기록 · 진실의 원천</div></div>
+    <div class="layer"><div class="k">GitHub</div><div class="v">산출물</div></div>
+    <div class="layer"><div class="k muted">Discord</div><div class="v">알림 · 액션</div></div>
+  </div>
+  <div class="foot">05</div>
+</section>
+
+<!-- 6 핵심 4 -->
+<section class="slide">
+  <h1 class="t-title">그리디 허브, 핵심 네 가지</h1>
+  <div class="grid2" style="margin-top:44px">
+    <div class="feat"><h3>미션·리뷰 트래킹</h3><p>제출→리뷰 티키타카→완주율을 한눈에</p></div>
+    <div class="feat"><h3>자동 이력서</h3><p>미션·리뷰·글이 곧 개인 포트폴리오로</p></div>
+    <div class="feat"><h3>기술블로그 아카이브</h3><p>대외에 보여줄 공개 기록 (SEO)</p></div>
+    <div class="feat"><h3>역할·권한</h3><p>멤버·리뷰어·운영진을 한 체계로</p></div>
+  </div>
+  <div class="foot">06</div>
+</section>
+
+<!-- 7 봇 그대로 -->
+<section id="s7" class="slide">
+  <h1 class="t-title">이미 있는 봇은, 그대로.</h1>
+  <div class="sub" style="margin-top:14px">새로 만들지 않습니다. 휘발되던 리뷰어 매칭을 웹이 기록할 뿐.</div>
+  <div class="row" style="margin-top:44px">
+    <div class="ba now"><h4>지금</h4><ul><li>봇이 매칭 → 디스코드 공지로 끝</li><li>리뷰이·리뷰어 명단을 코드에 하드코딩</li><li>매칭 결과가 공지로 흘러가 쌓이지 않음</li></ul></div>
+    <div class="ba hub"><h4>그리디 허브</h4><ul><li>봇 매칭 결과를 웹이 자동 기록</li><li>명단은 웹의 기수 멤버에서 조회</li><li>기수 완주율·발자취로 축적</li></ul></div>
+  </div>
+  <div class="foot">07</div>
+</section>
+
+<!-- 8 데모 -->
+<section class="slide">
+  <h1 class="t-title">말보다, 직접 보세요</h1>
+  <div class="sub" style="margin-top:10px;font-size:22px">이미 동작하는 프로토타입입니다.</div>
+  <div class="shots">
+    <div class="shotbox"><img src="assets/shots/admin.png"><div class="cap">운영진 — 완주율·매트릭스를 한눈에</div></div>
+    <div class="shotbox"><img src="assets/shots/resume.png"><div class="cap">멤버 — 활동이 자동으로 이력서에</div></div>
+  </div>
+  <div class="url">라이브 데모 &nbsp;<b class="green">insane-p.github.io/greedy-hub</b></div>
+  <div class="foot">08</div>
+</section>
+
+<!-- 9 기대효과 -->
+<section class="slide dark">
+  <h1 class="t-title white">이렇게 바뀝니다</h1>
+  <div class="row" style="margin-top:50px">
+    <div class="ocard"><h3>완주율을 한눈에</h3><p>흩어진 제출·리뷰가 기수 대시보드 하나로.</p></div>
+    <div class="ocard"><h3>이력이 자동으로</h3><p>활동이 쌓여 멤버의 취업 증빙·포트폴리오로.</p></div>
+    <div class="ocard"><h3>보여줄 얼굴</h3><p>공개 기술블로그·프로젝트로 대외 신뢰도가 쌓임.</p></div>
+  </div>
+  <div class="foot">09</div>
+</section>
+
+<!-- 10 요청 -->
+<section class="slide dark center">
+  <img class="logo ring" src="assets/logo.png" style="width:120px;height:120px;margin-bottom:40px">
+  <h1 style="font-size:72px" class="white">어떠신가요?</h1>
+  <div class="sub" style="margin-top:28px">지금 바로 눌러보세요 — insane-p.github.io/greedy-hub</div>
+</section>
+
+</body>
+</html>
