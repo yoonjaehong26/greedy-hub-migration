@@ -1,6 +1,6 @@
 # 그리디 허브 (Greedy Hub) — PRD
 
-> **상태**: v0.7 초안 (티키타카 진행 중) · **작성 목적**: 메인테이너 설득 + 기획 확정
+> **상태**: v0.8 초안 (티키타카 진행 중) · **작성 목적**: 메인테이너 설득 + 기획 확정
 > **한 줄 요약**: 그리디의 *연혁·멤버·스터디·미션·게시판·지원·추억* 을 한곳에서 추적하는 동아리 공식 허브.
 
 ---
@@ -213,10 +213,11 @@ track:   FE | BE | COMMON
 - **핵심 기능**
   - 카테고리: **기술블로그** / 공지 / 자유.
   - 글·댓글 CRUD(마크다운·코드블록), 태그·검색, 공지 고정.
-  - **기술블로그는 공개(SEO)** → 외부에 그리디 활동을 보여주고, 멤버 **취업/포트폴리오 증빙**으로 활용. 작성자 프로필·기수 발자취와 연결.
+  - **공개 범위(확정)**: **기술블로그 = 공개(SEO)** → 외부 홍보·멤버 취업/포트폴리오 증빙. **공지·자유 = 회원 전용**(로그인). 작성자 프로필·기수 발자취와 연결.
   - 이전 기수(졸업 멤버)도 작성 가능 → 지속 기여.
+  - **이미지 첨부**: 글 작성 중 드래그하면 **이미지 CDN에 자동 업로드**(8장) → 영구 URL 인라인 삽입.
 - **사용자 스토리**: 멤버·이전 기수의 기술 글 작성 / 운영진의 공지·모더레이션 / 방문자의 공개 블로그 열람.
-- **권한**: 공개 글 열람 전체 / 작성·댓글 `MEMBER`(이전 기수 포함) / 모더레이션 `board:moderate` / 본인 글만 수정.
+- **권한**: 블로그 열람 전체 · 공지/자유 열람 `MEMBER` / 작성·댓글 `MEMBER`(이전 기수 포함) / 모더레이션 `board:moderate` / 본인 글만 수정.
 
 ### 6.7 지원 (Recruit)
 - **목적**: 비회원 지원→**단계 심사(서류→면접→합격)**→멤버 전환을 한 플로우로.
@@ -260,14 +261,15 @@ track:   FE | BE | COMMON
 ├─ /blog (기술블로그 — 공개·SEO)
 ├─ /gallery (공개 추억)
 ├─ /recruit (모집 안내·지원 폼)
-└─ /board (공개 공지)
+└─ /blog (기술블로그 열람 — 공개)
 
 회원 전용 (로그인)
 ├─ /missions (내 미션 현황 · 미션 목록 / 트랙)
 │   └─ /missions/[id] (요구사항·리뷰 가이드라인·제출·리뷰)
 ├─ /review (리뷰어 워크스페이스 — 내게 배정된 PR + 가이드라인)
 ├─ /study (트랙별 커리큘럼·자료)
-├─ /blog (작성·댓글)
+├─ /blog/new (블로그 작성·댓글)
+├─ /board (공지·자유 — 회원 전용)
 └─ /me (내 프로필)
 
 운영진 전용
@@ -291,7 +293,7 @@ track:   FE | BE | COMMON
   - 프론트는 스펙 기반 **목 서버**로 백엔드 없이 선행 → 병렬 개발.
 - **인증**: GitHub OAuth (백엔드가 토큰 교환·세션 발급).
 - **연동**: GitHub API(**`greedy-team` + `cho-log` 두 오거 모두**의 미션 PR/커밋 조회, 단계적) · **기존 `greedy-discord-bot`(아래 8.1)** · Discord 웹훅(알림).
-- **스토리지**: 미디어(추억/자료)는 오브젝트 스토리지(S3 호환) + DB엔 메타데이터.
+- **스토리지**: 미디어(추억·블로그 이미지·자료)는 **오브젝트 스토리지/이미지 CDN**(Cloudflare R2·Supabase Storage·Cloudinary 등) — 작성 중 **직접/자동 업로드**, 영구 URL, DB엔 메타데이터. *구글 포토(스코프 제한·URL 만료)·드라이브(임베드 핫링크 불안정)는 임베드 호스팅에 부적합 → 채택 안 함.* 구체 provider는 4차에 확정.
 - **배포**: 프론트 Vercel, 백엔드 운영진 택. CI에서 타입체크·빌드·OpenAPI 검증.
 
 ```
@@ -376,8 +378,8 @@ track:   FE | BE | COMMON
 - ~~Q3. 지원 심사 단계~~ → **확정**: 서류 → 면접 → 합격 단계 심사(`SUBMITTED→DOC_PASS→INTERVIEW→ACCEPTED|REJECTED`).
 - ~~Q7. 리뷰어 배정~~ → **확정**: 기존 디스코드 봇이 랜덤 매칭, 웹은 결과를 기록(통합, 8.1). 명단은 웹에서 조회.
 - ~~Q8. 리뷰 기간~~ → **확정**: 동아리 공통 기본값(ClubConfig) + 미션별 예외 + 리뷰어 연장.
-- Q4. 추억 저장소 미디어 용량/보관 정책(스토리지 비용). *(미해결)*
-- Q5. 게시판 공개 범위(공지만 공개 vs 일부 공개). *(미해결)*
+- ~~Q4. 추억/미디어 저장~~ → **확정(방향)**: 오브젝트 스토리지/이미지 CDN(R2·Supabase·Cloudinary) + 작성 중 자동 업로드. 구글 포토/드라이브는 부적합. 구체 provider·용량 정책은 4차.
+- ~~Q5. 게시판 공개 범위~~ → **확정**: 기술블로그 공개(SEO) / 공지·자유 회원 전용.
 - ~~Q10. 지원 수집 방식~~ → **확정**: 웹 자체 폼.
 - Q9. 봇 통합 범위/시점 — 봇을 바로 고칠지, 웹 수동기록으로 시작 후 단계적 통합할지. *(미해결, 봇 운영자와 협의)*
 
@@ -398,7 +400,7 @@ ReviewCheckpoint(id, missionId, text)             # (선택) 리뷰 가이드라
 Submission(id, missionId, userId, prUrl, status, reviewDueAt, extendedCount, rounds, mergedAt, submittedAt)
    # status = SUBMITTED | IN_REVIEW | MERGED   (approve가 아니라 기간 종료 머지 = 완료)
 ReviewAssignment(id, submissionId, reviewerId, assignedAt, source)  # source = BOT | MANUAL (봇 매칭 결과 영구 기록)
-Post(id, category, title, body, authorId, pinned, createdAt)   # category = BLOG | NOTICE | FREE  (BLOG=공개 기술블로그)
+Post(id, category, title, body, authorId, pinned, createdAt)   # category = BLOG(공개) | NOTICE(회원) | FREE(회원)
 Comment(id, postId, authorId, body, createdAt)
 Application(id, applicantInfo, stage, reviewerId, createdAt)
    # stage = SUBMITTED | DOC_PASS | INTERVIEW | ACCEPTED | REJECTED  (웹 자체 폼)
@@ -419,7 +421,8 @@ Media(id, albumId, url, type, uploaderId, caption)
 | 멤버 | 공개프로필 | 본인수정 | 관리 `member:manage` |
 | 스터디 | — | 읽기+업로드 | 커리큘럼 `study:manage` |
 | 미션 | — | 제출·조회 | 출제·리뷰가이드 `mission:create`(리드) · 리뷰어배정 `mission:assign` · 리뷰 `mission:review`(배정 리뷰어) |
-| 기술블로그/게시판 | 공개 블로그 | 작성+댓글(이전 기수 포함) | 모더레이션 `board:moderate` |
+| 기술블로그 | 공개 열람 | 작성+댓글(이전 기수 포함) | 모더레이션 `board:moderate` |
+| 공지/자유 | — | 열람+작성+댓글 | 공지·모더레이션 `board:moderate` |
 | 지원 | 제출 | 본인조회 | 심사 `recruit:review` |
 | 추억 | 공개갤러리 | 업로드 | 큐레이션 `gallery:curate` |
 | 프로젝트 | 공개열람 | 본인팀 등록 | 관리 `project:manage`(메인테이너) |
@@ -455,6 +458,7 @@ Media(id, albumId, url, type, uploaderId, caption)
 - **기수(Cohort)**: 입회한 모집 회차(예: 4기). 학기당 1기수, 연 2기수. 프로젝트가 다음 기수와 맞물려 **잠시 2기수 동시 활성**.
 
 ## 부록 E. 변경 이력 (Changelog)
+- **v0.8** — Q4·Q5 확정. **공개 범위**: 기술블로그 공개(SEO)·공지/자유 회원전용(6.6, 사이트맵, 권한매트릭스, `Post.category`). **미디어 저장**: 오브젝트 스토리지/이미지 CDN + 작성 중 자동 업로드, 구글 포토/드라이브 부적합 명시(8장). 열린질문 Q9만 남음.
 - **v0.7** — 통독 정합성 보강. 성공지표에 리뷰가이드 작성률·이력서 누적률·블로그 글 수 추가(3장). 온보딩에 가입 시 기수·트랙·역할 세팅 + 이전기수/외부 리뷰어 경로 명시(6.1). 지원에 에타 공고→웹 폼 외부 유입 경로 추가(6.7). 권한매트릭스에 기수역할 스코프 주석(부록 B).
 - **v0.6** — 이력서 공개 정책 확정(6.4): **기본 공개 + 성취(완료)만 노출 + 안전판**(가입 고지·전체 비공개 토글 `User.resumePublic`). 미완료·저조 기록은 비공개 대시보드에만.
 - **v0.5** — 멤버 프로필을 **자동 이력서/포트폴리오**로 승격(6.4): 완료 미션·기수 역할·블로그·프로젝트가 자동 누적, 기수 넘어가도 영구 보존, 공개 이력서 URL(취업 증빙). **초기 데이터 백필(10.1)** 신설 — 과거 PR 히스토리에서 반자동 임포트 후 자동 누적 전환. `ProfilePin` 추가, MVP에 멤버 이력서·백필 포함, R6(백필 정확도)·G8 갱신.
