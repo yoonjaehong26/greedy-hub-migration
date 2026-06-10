@@ -1,6 +1,6 @@
 # 그리디 허브 (Greedy Hub) — PRD
 
-> **상태**: v0.5 초안 (티키타카 진행 중) · **작성 목적**: 메인테이너 설득 + 기획 확정
+> **상태**: v0.6 초안 (티키타카 진행 중) · **작성 목적**: 메인테이너 설득 + 기획 확정
 > **한 줄 요약**: 그리디의 *연혁·멤버·스터디·미션·게시판·지원·추억* 을 한곳에서 추적하는 동아리 공식 허브.
 
 ---
@@ -187,9 +187,12 @@ track:   FE | BE | COMMON
     - 완료 미션 목록(미션명·트랙·기수·PR 링크·리뷰 완료 여부),
     - **기수별 역할 발자취**(예: "2기 멤버 → 4기 BE 리뷰어+리드"),
     - 작성한 기술블로그(6.6), 참여한 팀 프로젝트(6.9).
-  - **이력서 뷰**: 공개 URL로 공유 가능. (선택) 본인이 노출/하이라이트 항목 선택.
+  - **이력서 뷰**: 공개 URL로 공유 가능. (선택) 본인이 핀으로 강조.
   - 기수·트랙별 멤버 디렉토리.
-- **데이터**: 별도 큰 테이블 없이 `Submission(MERGED)`·`CohortMember.roles`·`Post(BLOG)`·`Project`를 **user 기준 집계 뷰**로 구성. (선택) 핀 항목 `ProfilePin`.
+- **공개 정책(확정)**: **기본 공개**(홍보·취업 증빙). 단,
+  - **성취만 노출**: 이력서엔 *완료 미션·역할·블로그·프로젝트*만. **미완료·진행중·저조 기록은 비공개**(본인/운영진 대시보드에만) → 부정적 박제 방지.
+  - **안전판**: 가입 시 "활동이 공개 이력서로 남는다" 고지 + 멤버가 **전체 비공개 토글**(`resumePublic`)로 언제든 끌 수 있음(졸업/탈퇴 포함).
+- **데이터**: 별도 큰 테이블 없이 `Submission(MERGED)`·`CohortMember.roles`·`Post(BLOG)`·`Project`를 **user 기준 집계 뷰**로 구성. `User.resumePublic`(기본 true) + (선택) 핀 항목 `ProfilePin`.
 - **초기 백필**: [10.1 데이터 이행](#101-데이터-이행-백필) 참고 — 홈페이지 이전 이력은 깃허브 PR에서 반자동 임포트 후 자동 누적으로 전환.
 - **사용자 스토리**: 멤버로서 내 활동이 **자동으로 이력서에 쌓이길** 원한다 / 본인 프로필 편집 / 운영진의 기수 지정·멤버 관리.
 - **권한**: 공개 프로필 열람 전체 / 본인 수정 / 관리 `member:manage`.
@@ -378,7 +381,7 @@ track:   FE | BE | COMMON
 
 ## 부록 A. 데이터 모델 (초안)
 ```
-User(id, githubId, username, avatar, role, joinCohortId, bio, createdAt)   # role = GUEST|MEMBER|STAFF
+User(id, githubId, username, avatar, role, joinCohortId, bio, resumePublic, createdAt)   # role = GUEST|MEMBER|STAFF / resumePublic 기본 true(전체 숨김 토글)
 UserPermission(userId, permissionKey)            # 운영진이 개별 부여한 권한
 Cohort(id, name, season, year, status)            # 기수 (name=4기, season=2026-1, status=ACTIVE|ARCHIVED) — 동시 ACTIVE 다수 허용(기수 병행)
 CohortMember(cohortId, userId, roles[], track)   # roles[] = {MEMBER,REVIEWER,LEAD,MAINTAINER} 다중 / track = FE|BE|COMMON
@@ -446,6 +449,7 @@ Media(id, albumId, url, type, uploaderId, caption)
 - **기수(Cohort)**: 입회한 모집 회차(예: 4기). 학기당 1기수, 연 2기수. 프로젝트가 다음 기수와 맞물려 **잠시 2기수 동시 활성**.
 
 ## 부록 E. 변경 이력 (Changelog)
+- **v0.6** — 이력서 공개 정책 확정(6.4): **기본 공개 + 성취(완료)만 노출 + 안전판**(가입 고지·전체 비공개 토글 `User.resumePublic`). 미완료·저조 기록은 비공개 대시보드에만.
 - **v0.5** — 멤버 프로필을 **자동 이력서/포트폴리오**로 승격(6.4): 완료 미션·기수 역할·블로그·프로젝트가 자동 누적, 기수 넘어가도 영구 보존, 공개 이력서 URL(취업 증빙). **초기 데이터 백필(10.1)** 신설 — 과거 PR 히스토리에서 반자동 임포트 후 자동 누적 전환. `ProfilePin` 추가, MVP에 멤버 이력서·백필 포함, R6(백필 정확도)·G8 갱신.
 - **v0.4** — 통독 정리 패스. 기능별 페인포인트 참조 번호를 재정의된 P1~P7에 맞게 정정(6.1 인증 P5, 6.3 연혁 P6, 6.4 멤버 P5/P6, 6.7 지원 P7). 부록 글자순서 정리(D=용어집, E=변경이력).
 - **v0.3** — 새 도메인·기능 반영. **리뷰 가이드라인**(리드 작성→리뷰어 워크스페이스, 미션에 축적)을 미션 핵심으로 승격(6.2, `reviewGuide`/`ReviewCheckpoint`). 게시판 → **기술블로그**로 확장(6.6, 공개·SEO·이전 기수 기여, `Post.category=BLOG`). **프로젝트/데모데이** 아카이브 도메인 신설(6.9, `Project`, 데모데이·데모데이별 요구사항은 추후 메모). 미션에 트랙·쉬는 주(SKIPPED)·`cho-log` 이원 오거 반영. 사이트맵·로드맵·목표(G7/G8)·권한매트릭스 갱신.
