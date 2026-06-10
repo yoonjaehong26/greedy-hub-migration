@@ -1,6 +1,6 @@
 # 그리디 허브 (Greedy Hub) — PRD
 
-> **상태**: v0.8 초안 (티키타카 진행 중) · **작성 목적**: 메인테이너 설득 + 기획 확정
+> **상태**: v0.9 초안 (티키타카 진행 중) · **작성 목적**: 메인테이너 설득 + 기획 확정
 > **한 줄 요약**: 그리디의 *연혁·멤버·스터디·미션·게시판·지원·추억* 을 한곳에서 추적하는 동아리 공식 허브.
 
 ---
@@ -287,17 +287,17 @@ track:   FE | BE | COMMON
 ## 8. 시스템 아키텍처
 
 - **프론트엔드**: Next.js (App Router) — 공개 페이지 SSR/SEO, 회원/운영진은 인증 기반 라우팅. TypeScript + Tailwind.
-- **백엔드**: 운영진이 별도 언어로 구현(Java/Python/Go 등).
-- **계약(Contract)**: **REST + OpenAPI 단일 스펙(`openapi.yaml`)**.
-  - 백엔드가 스펙을 단일 소스로 관리 → 프론트는 `openapi-typescript`로 **타입·클라이언트 자동생성**.
-  - 프론트는 스펙 기반 **목 서버**로 백엔드 없이 선행 → 병렬 개발.
+- **백엔드**: **Java + Spring Boot 3.x · JPA** — 그리디 기존 레포 공통 관행(`mokkoji-be`·`sejong-life-be`·`doogoo-be` 모두 Spring Boot 3.x + JPA + springdoc).
+- **계약(Contract)**: REST + **OpenAPI 3 (Swagger)**, **`springdoc-openapi`** 로 생성(기존 레포 공통) → `/v3/api-docs` JSON + Swagger UI.
+  - 프론트는 생성된 OpenAPI를 `openapi-typescript`로 **타입·클라이언트 자동생성**, 스펙 기반 **목 서버**로 선행 개발.
+  - **계약 워크플로우(spec-first vs code-first)**: [열린질문 Q11] 참고 — 권장은 *경량 spec-first*(엔드포인트·DTO를 먼저 합의 → BE가 springdoc로 구현, 생성 스펙이 합의안과 일치하는지 점검).
 - **인증**: GitHub OAuth (백엔드가 토큰 교환·세션 발급).
 - **연동**: GitHub API(**`greedy-team` + `cho-log` 두 오거 모두**의 미션 PR/커밋 조회, 단계적) · **기존 `greedy-discord-bot`(아래 8.1)** · Discord 웹훅(알림).
 - **스토리지**: 미디어(추억·블로그 이미지·자료)는 **오브젝트 스토리지/이미지 CDN**(Cloudflare R2·Supabase Storage·Cloudinary 등) — 작성 중 **직접/자동 업로드**, 영구 URL, DB엔 메타데이터. *구글 포토(스코프 제한·URL 만료)·드라이브(임베드 핫링크 불안정)는 임베드 호스팅에 부적합 → 채택 안 함.* 구체 provider는 4차에 확정.
 - **배포**: 프론트 Vercel, 백엔드 운영진 택. CI에서 타입체크·빌드·OpenAPI 검증.
 
 ```
-[Next.js]  ⇄  openapi.yaml (단일 계약)  ⇄  [백엔드(別언어)]
+[Next.js]  ⇄  OpenAPI(Swagger, springdoc)  ⇄  [Spring Boot 3.x · JPA]
     │              │                            │
     │        타입 자동생성        GitHub API / greedy-discord-bot / Discord Webhook
     └─ 목 서버로 선행개발                        └─ DB · Object Storage
@@ -382,6 +382,7 @@ track:   FE | BE | COMMON
 - ~~Q5. 게시판 공개 범위~~ → **확정**: 기술블로그 공개(SEO) / 공지·자유 회원 전용.
 - ~~Q10. 지원 수집 방식~~ → **확정**: 웹 자체 폼.
 - Q9. 봇 통합 범위/시점 — 봇을 바로 고칠지, 웹 수동기록으로 시작 후 단계적 통합할지. *(미해결, 봇 운영자와 협의)*
+- Q11. API 계약 워크플로우 — spec-first(openapi.yaml 먼저) vs code-first(springdoc 생성). *(미해결, FE/BE 합의)*
 
 ---
 
@@ -458,6 +459,7 @@ Media(id, albumId, url, type, uploaderId, caption)
 - **기수(Cohort)**: 입회한 모집 회차(예: 4기). 학기당 1기수, 연 2기수. 프로젝트가 다음 기수와 맞물려 **잠시 2기수 동시 활성**.
 
 ## 부록 E. 변경 이력 (Changelog)
+- **v0.9** — 백엔드 스택 확정. 기존 레포 관행 확인(mokkoji-be·sejong-life-be·doogoo-be) → **Spring Boot 3.x · JPA · springdoc-openapi(Swagger)** 로 8장 명시(別언어 제거). 계약 워크플로우 열린질문 Q11(spec-first vs code-first) 추가.
 - **v0.8** — Q4·Q5 확정. **공개 범위**: 기술블로그 공개(SEO)·공지/자유 회원전용(6.6, 사이트맵, 권한매트릭스, `Post.category`). **미디어 저장**: 오브젝트 스토리지/이미지 CDN + 작성 중 자동 업로드, 구글 포토/드라이브 부적합 명시(8장). 열린질문 Q9만 남음.
 - **v0.7** — 통독 정합성 보강. 성공지표에 리뷰가이드 작성률·이력서 누적률·블로그 글 수 추가(3장). 온보딩에 가입 시 기수·트랙·역할 세팅 + 이전기수/외부 리뷰어 경로 명시(6.1). 지원에 에타 공고→웹 폼 외부 유입 경로 추가(6.7). 권한매트릭스에 기수역할 스코프 주석(부록 B).
 - **v0.6** — 이력서 공개 정책 확정(6.4): **기본 공개 + 성취(완료)만 노출 + 안전판**(가입 고지·전체 비공개 토글 `User.resumePublic`). 미완료·저조 기록은 비공개 대시보드에만.
