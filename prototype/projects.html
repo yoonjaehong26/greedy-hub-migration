@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>프로젝트 — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-6xl px-5 py-10">
+    <div class="flex items-center gap-3"><h1 class="text-2xl md:text-3xl font-bold">팀 프로젝트 아카이브</h1><span id="rolebadge"></span></div>
+    <p class="mt-1 text-slate-600 dark:text-slate-400">스터디 이후 팀을 꾸려 만든 결과물 · 데모데이 발표작. <span class="text-slate-400">(데모데이별 요구사항 추적은 추후)</span></p>
+
+    <div class="mt-6 flex flex-wrap gap-2 text-sm">
+      <button class="px-3 py-1.5 rounded-full bg-brand text-white">전체</button>
+      <button class="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">4기</button>
+      <button class="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">3기</button>
+      <button class="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">FE</button>
+      <button class="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">BE</button>
+    </div>
+
+    <div id="grid" class="mt-8 grid md:grid-cols-3 sm:grid-cols-2 gap-5"></div>
+  </main>
+
+  <div id="footer"></div>
+  <script>
+    renderChrome('projects.html');
+    document.getElementById('rolebadge').innerHTML = roleBadge('공개');
+    const gradients = ['from-brand/30','from-emerald-400/30','from-amber-400/30','from-rose-400/30','from-violet-400/30','from-cyan-400/30'];
+    const projs = [
+      ['모꼬지','4기 · 공통','세종대 동아리 통합 플랫폼','5명'],
+      ['두구두구','3기 · FE/BE','행사용 실시간 추첨 도구','4명'],
+      ['리더보드','축제 · 부스','세종대 축제 부스 게임 웹','3명'],
+      ['세종라이프','3기 · 공통','세종대 생활 정보 서비스','5명'],
+      ['그리니 목늘이기','축제 · 게임','웹 미니게임 (축제 부스)','2명'],
+      ['밋링크','2기 · FE/BE','모임 일정 조율 서비스','4명'],
+    ];
+    document.getElementById('grid').innerHTML = projs.map(([name,meta,desc,team],i)=>`
+      <a href="project-detail.html" title="${name} 상세 — 팀원·스택·링크 보기" class="block rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 overflow-hidden hover:-translate-y-0.5 transition">
+        <div class="h-32 bg-gradient-to-br ${gradients[i%gradients.length]} to-slate-300 dark:to-slate-700"></div>
+        <div class="p-5">
+          <div class="text-xs text-slate-500">${meta}</div>
+          <h3 class="mt-1 font-semibold">${name}</h3>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">${desc}</p>
+          <div class="mt-3 flex items-center justify-between text-xs text-slate-500">
+            <span>👥 ${team}</span>
+            <span class="text-brand font-medium">상세 →</span>
+          </div>
+        </div>
+      </a>`).join('');
+  </script>
+</body>
+</html>

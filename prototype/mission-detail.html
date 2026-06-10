@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>미션 상세 — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-4xl px-5 py-10">
+    <a href="missions.html" class="text-sm text-slate-500 hover:text-brand">← 미션 목록</a>
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <span class="text-xs px-2 py-1 rounded-full bg-brand/10 text-brand font-medium">FE · 6주차</span>
+      <span class="text-xs px-2 py-1 rounded-full bg-slate-200 dark:bg-white/10">adv-2.1</span>
+      <span id="rolebadge"></span>
+    </div>
+    <h1 class="mt-2 text-2xl md:text-3xl font-bold">상태관리 심화 — Zustand</h1>
+    <p class="mt-2 text-slate-600 dark:text-slate-400">전역 상태 도구를 직접 선택하고, 그 근거를 설명할 수 있어야 합니다.</p>
+
+    <div class="mt-6 grid md:grid-cols-[1fr_300px] gap-6">
+      <div class="space-y-6">
+        <!-- 요구사항 -->
+        <section class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6">
+          <h2 class="font-bold mb-3">요구사항 체크리스트 <span class="text-sm font-normal text-slate-500">(멤버용)</span></h2>
+          <ul class="space-y-2 text-sm">
+            <li class="flex gap-2"><input type="checkbox" checked class="mt-1"/> Context API로 구현된 기존 코드를 Zustand로 마이그레이션</li>
+            <li class="flex gap-2"><input type="checkbox" checked class="mt-1"/> store를 도메인 단위로 분리</li>
+            <li class="flex gap-2"><input type="checkbox" class="mt-1"/> selector로 불필요한 리렌더 방지</li>
+            <li class="flex gap-2"><input type="checkbox" class="mt-1"/> 비동기 데이터는 Tanstack Query로 분리</li>
+            <li class="flex gap-2"><input type="checkbox" class="mt-1"/> README에 "왜 Zustand인가" 작성</li>
+          </ul>
+        </section>
+        <!-- 제출 -->
+        <section class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6">
+          <h2 class="font-bold mb-3">내 제출</h2>
+          <div class="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-900 p-4">
+            <div><div class="font-medium">PR #128 — [adv-2.1] 박지호 미션 제출합니다</div><div class="text-sm text-slate-500 mt-0.5">리뷰어 정우진 · 2라운드 · 마감 D-1</div></div>
+            <a href="#" class="px-3 py-2 rounded-lg text-sm font-semibold bg-slate-900 text-white dark:bg-white dark:text-slate-900 whitespace-nowrap">PR 열기 ↗</a>
+          </div>
+          <p class="mt-3 text-xs text-slate-400">실제 리뷰 대화는 GitHub PR에서 진행됩니다.</p>
+        </section>
+      </div>
+
+      <aside class="space-y-6">
+        <section class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6">
+          <h2 class="font-bold mb-3">진행 상태</h2>
+          <ol class="relative border-s-2 border-slate-200 dark:border-white/10 ml-1 space-y-4 text-sm">
+            <li class="ms-4"><span class="absolute -start-[7px] w-3 h-3 rounded-full bg-emerald-500"></span>제출됨</li>
+            <li class="ms-4"><span class="absolute -start-[7px] w-3 h-3 rounded-full bg-emerald-500"></span>리뷰어 배정 (정우진)</li>
+            <li class="ms-4"><span class="absolute -start-[7px] w-3 h-3 rounded-full bg-brand animate-pulse"></span><b class="text-brand">리뷰 중 · 2R</b></li>
+            <li class="ms-4 opacity-50"><span class="absolute -start-[7px] w-3 h-3 rounded-full bg-slate-300"></span>기간 종료 → 머지(완료)</li>
+          </ol>
+        </section>
+        <a href="review.html" class="block rounded-2xl bg-brand/5 ring-1 ring-brand/20 p-5 hover:bg-brand/10">
+          <div class="text-sm font-semibold text-brand">리뷰어이신가요?</div>
+          <div class="text-sm text-slate-600 dark:text-slate-300 mt-1">리뷰 가이드라인 보기 →</div>
+        </a>
+      </aside>
+    </div>
+  </main>
+
+  <div id="footer"></div>
+  <script>renderChrome('missions.html'); document.getElementById('rolebadge').innerHTML = roleBadge('멤버');</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>리뷰어 워크스페이스 — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-6xl px-5 py-10">
+    <div class="flex flex-wrap items-center gap-3">
+      <h1 class="text-2xl md:text-3xl font-bold">리뷰어 워크스페이스</h1>
+      <span id="rolebadge"></span>
+    </div>
+    <p class="mt-1 text-slate-600 dark:text-slate-400">정우진 · FE 리뷰어 — 내게 배정된 PR과 <b>미션별 리뷰 가이드라인</b>을 한 화면에서.</p>
+
+    <div class="mt-8 grid lg:grid-cols-[320px_1fr] gap-6">
+      <!-- 배정된 PR 리스트 (FE 멤버) -->
+      <aside class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 divide-y divide-slate-100 dark:divide-white/10 h-max">
+        <div class="p-4 text-sm font-semibold text-slate-500">내게 배정된 PR · 3</div>
+        <button class="w-full text-left p-4 bg-brand/5 border-l-2 border-brand" title="선택됨 — 오른쪽에 상세·가이드라인 표시">
+          <div class="flex justify-between items-center"><span class="font-semibold">박지호</span><span class="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">D-1</span></div>
+          <div class="text-sm text-slate-500 mt-0.5">[adv-2.1] 상태관리 심화 · 2R</div>
+        </button>
+        <button class="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-white/5" title="김민준의 제출 — 클릭해 리뷰">
+          <div class="flex justify-between items-center"><span class="font-semibold">김민준</span><span class="text-xs px-2 py-0.5 rounded-full bg-brand/10 text-brand">리뷰중</span></div>
+          <div class="text-sm text-slate-500 mt-0.5">[adv-2.1] 상태관리 심화 · 1R</div>
+        </button>
+        <button class="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-white/5" title="최예린의 신규 제출 — 아직 리뷰 시작 전">
+          <div class="flex justify-between items-center"><span class="font-semibold">최예린</span><span class="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-white/10">신규</span></div>
+          <div class="text-sm text-slate-500 mt-0.5">[adv-2.1] 상태관리 심화 · 0R</div>
+        </button>
+      </aside>
+
+      <!-- 선택된 제출 + 가이드라인 -->
+      <section class="space-y-6">
+        <div class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="text-sm text-slate-500">FE · 6주차 · 박지호</div>
+              <h2 class="text-xl font-bold mt-0.5">[adv-2.1] 상태관리 심화 — Zustand</h2>
+            </div>
+            <div class="flex gap-2">
+              <a href="mission-detail.html" class="px-3 py-2 rounded-lg text-sm font-semibold bg-slate-900 text-white dark:bg-white dark:text-slate-900" title="미션 상세·제출 PR로 이동">PR #128 →</a>
+              <button class="px-3 py-2 rounded-lg text-sm font-semibold ring-1 ring-slate-900/10 dark:ring-white/15" title="리뷰 기간을 연장합니다 (리뷰어 재량)">리뷰 기간 연장</button>
+            </div>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
+            <span>상태 <b class="text-brand">리뷰 중</b></span><span>라운드 <b>2</b></span><span>마감 <b class="text-amber-600">내일 23:59</b> (1회 연장됨)</span>
+          </div>
+          <p class="mt-3 text-xs text-slate-400">※ 실제 리뷰 대화는 GitHub PR에서. 웹은 상태·기한·가이드만 추적.</p>
+        </div>
+
+        <div class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6">
+          <div class="flex items-center gap-2 mb-3"><span class="text-brand">📌</span><h3 class="font-bold">리뷰 가이드라인 <span class="text-sm font-normal text-slate-500">· 리드(강민서) 작성 · 열람 전용</span></h3></div>
+          <div class="text-slate-700 dark:text-slate-300 space-y-3 text-sm leading-relaxed">
+            <p>이번 미션은 <b>전역 상태 도구 선택의 근거</b>를 보는 게 핵심입니다. "왜 Zustand인가"가 PR 설명/코드에 드러나는지 확인해주세요.</p>
+            <div>
+              <div class="font-semibold mb-1">리뷰 체크포인트</div>
+              <ul class="space-y-1">
+                <li class="flex gap-2"><input type="checkbox" class="mt-1"/> store 분리 기준이 합리적인가 (도메인별 vs 화면별)</li>
+                <li class="flex gap-2"><input type="checkbox" class="mt-1"/> 불필요한 리렌더 방지(selector) 적용 여부</li>
+                <li class="flex gap-2"><input type="checkbox" class="mt-1"/> Context 대비 트레이드오프를 설명할 수 있는가</li>
+                <li class="flex gap-2"><input type="checkbox" class="mt-1"/> 비동기 상태는 Tanstack Query로 분리했는가</li>
+              </ul>
+            </div>
+            <p class="text-slate-500">톤: 정답 강요보다 <b>"왜?"를 묻는 티키타카</b>로. 좋은 포인트는 칭찬도 남겨주세요.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="footer"></div>
+  <script>renderChrome('review.html'); document.getElementById('rolebadge').innerHTML = roleBadge('리뷰어');</script>
+</body>
+</html>

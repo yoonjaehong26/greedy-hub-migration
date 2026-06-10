@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>멤버 — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-6xl px-5 py-10">
+    <div class="flex items-center gap-3">
+      <h1 class="text-2xl md:text-3xl font-bold">멤버</h1>
+      <span id="rolebadge"></span>
+    </div>
+    <p class="mt-1 text-slate-600 dark:text-slate-400">4기 구성원 · 카드를 누르면 개인 이력서로 이동합니다.</p>
+
+    <!-- 필터 -->
+    <div class="mt-6 flex flex-wrap gap-2 text-sm" id="filters">
+      <button data-f="all" class="filt px-3 py-1.5 rounded-full bg-brand text-white">전체</button>
+      <button data-f="FE" class="filt px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">FE</button>
+      <button data-f="BE" class="filt px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">BE</button>
+    </div>
+
+    <div id="grid" class="mt-6 grid md:grid-cols-3 sm:grid-cols-2 gap-4"></div>
+    <p class="mt-4 text-xs text-slate-400">실제 4기 명단 기준 — FE 멤버 4·리뷰어 6 / BE 멤버 6·리뷰어 9 (PRD 인원수와 일치).</p>
+  </main>
+
+  <div id="footer"></div>
+  <script>
+    renderChrome('member.html');
+    document.getElementById('rolebadge').innerHTML = roleBadge('공개');
+
+    const people = [
+      // FE 멤버
+      ...['김민준','이서연','박지호','최예린'].map(n=>({n,t:'FE',r:['멤버']})),
+      // FE 리뷰어 / 리드
+      {n:'정우진',t:'FE',r:['리뷰어']},{n:'한도윤',t:'FE',r:['리뷰어']},{n:'오세찬',t:'FE',r:['리뷰어']},
+      {n:'배준서',t:'FE',r:['리뷰어']},{n:'윤하준',t:'FE',r:['리뷰어','OB']},
+      {n:'강민서',t:'FE',r:['리드','리뷰어','메인테이너']},
+      // BE 멤버
+      ...['임시우','조하준','신유나','권태양','문서윤','배현우'].map(n=>({n,t:'BE',r:['멤버']})),
+      // BE 리뷰어
+      ...['홍지우','곽도현','남시현','백승호','서지안','고은채','류현수','차예준','장유진'].map(n=>({n,t:'BE',r:['리뷰어']})),
+    ];
+    const chipCls = {
+      '멤버':'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300',
+      '리뷰어':'bg-brand/10 text-brand',
+      '리드':'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
+      '메인테이너':'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
+      'OB':'bg-slate-200 text-slate-500 dark:bg-white/10',
+    };
+    function render(f){
+      document.getElementById('grid').innerHTML = people.filter(p=>f==='all'||p.t===f).map(p=>`
+        <a href="member-profile.html" title="${p.n} 이력서 보기" class="flex items-center gap-3 rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:-translate-y-0.5 transition">
+          <div class="w-11 h-11 rounded-full bg-slate-300 dark:bg-white/20 grid place-items-center font-bold shrink-0">${p.n[0]}</div>
+          <div class="min-w-0">
+            <div class="font-semibold">${p.n}</div>
+            <div class="text-xs text-slate-500">${p.t} · 4기</div>
+            <div class="mt-1 flex flex-wrap gap-1">${p.r.map(r=>`<span class="text-[10px] px-1.5 py-0.5 rounded-full ${chipCls[r]||''}">${r}</span>`).join('')}</div>
+          </div>
+        </a>`).join('');
+    }
+    render('all');
+    document.querySelectorAll('.filt').forEach(b=>b.onclick=()=>{
+      document.querySelectorAll('.filt').forEach(x=>{x.className='filt px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10';});
+      b.className='filt px-3 py-1.5 rounded-full bg-brand text-white';
+      render(b.dataset.f);
+    });
+  </script>
+</body>
+</html>

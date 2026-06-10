@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>박지호 — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-5xl px-5 py-10">
+    <a href="member.html" class="text-sm text-slate-500 hover:text-brand">← 멤버 디렉토리</a>
+    <!-- 프로필 헤더 -->
+    <div class="mt-3 rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6 md:p-8">
+      <div class="flex flex-wrap items-center gap-5">
+        <div class="w-20 h-20 rounded-2xl bg-slate-300 dark:bg-white/20 grid place-items-center text-2xl font-bold">박</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2"><h1 class="text-2xl font-bold">박지호</h1><span id="rolebadge"></span></div>
+          <div class="text-slate-500 mt-0.5">@jiho-park · 세종대학교</div>
+          <div class="mt-2 flex flex-wrap gap-1.5">
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 font-medium">FE 4기 · 멤버</span>
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-2 text-sm">
+          <label class="flex items-center gap-2 text-slate-500" title="끄면 외부에 이력서가 보이지 않습니다 (resumePublic)"><input type="checkbox" checked> 이력서 공개</label>
+          <button class="px-3 py-2 rounded-lg ring-1 ring-slate-900/10 dark:ring-white/15 font-semibold" title="공개 이력서 URL을 복사합니다">공유 링크 복사</button>
+        </div>
+      </div>
+      <p class="mt-5 text-slate-600 dark:text-slate-300">프론트엔드에 관심 많은 개발자. 그리디에서 미션·리뷰로 성장 중. 이 페이지는 활동이 쌓이며 <b>자동으로 갱신</b>됩니다.</p>
+    </div>
+
+    <div class="mt-6 grid grid-cols-3 gap-4">
+      <div class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-5 text-center" title="머지 완료된 미션 수"><div class="text-3xl font-bold text-brand">5</div><div class="text-sm text-slate-500 mt-1">완료 미션</div></div>
+      <div class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-5 text-center" title="참여한 팀 프로젝트 수"><div class="text-3xl font-bold">1</div><div class="text-sm text-slate-500 mt-1">팀 프로젝트</div></div>
+      <div class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-5 text-center" title="작성한 기술블로그 글 수"><div class="text-3xl font-bold">3</div><div class="text-sm text-slate-500 mt-1">기술 글</div></div>
+    </div>
+
+    <div class="mt-6 grid md:grid-cols-2 gap-6">
+      <section class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6">
+        <h2 class="font-bold mb-1">완료 미션</h2>
+        <p class="text-xs text-slate-400 mb-4">성취(머지 완료)만 공개 · 미완료/진행중은 본인에게만 표시</p>
+        <ul class="space-y-3 text-sm">
+          <li><a href="mission-detail.html" title="미션 상세 보기" class="flex items-center gap-3 hover:text-brand"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><div class="flex-1"><div class="font-medium">[adv-1] 라우팅 기반 SPA</div><div class="text-slate-500">FE 4기 · 5주차</div></div><span class="text-slate-400">→</span></a></li>
+          <li><a href="mission-detail.html" title="미션 상세 보기" class="flex items-center gap-3 hover:text-brand"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><div class="flex-1"><div class="font-medium">React Pokemon SSR</div><div class="text-slate-500">FE 4기 · 4주차</div></div><span class="text-slate-400">→</span></a></li>
+          <li><a href="mission-detail.html" title="미션 상세 보기" class="flex items-center gap-3 hover:text-brand"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><div class="flex-1"><div class="font-medium">TodoList 최적화</div><div class="text-slate-500">FE 4기 · 3주차</div></div><span class="text-slate-400">→</span></a></li>
+        </ul>
+      </section>
+
+      <section class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6">
+        <h2 class="font-bold mb-4">기술블로그</h2>
+        <ul class="space-y-3 text-sm">
+          <li><a href="blog-detail.html" title="글 보기" class="font-medium hover:text-brand">상태관리 미션, Zustand로 다시 짜며 배운 것</a><div class="text-slate-500">회고 · 3일 전</div></li>
+          <li><a href="blog-detail.html" title="글 보기" class="font-medium hover:text-brand">렌더링 최적화 삽질기</a><div class="text-slate-500">기술 · 3주 전</div></li>
+          <li><a href="blog-detail.html" title="글 보기" class="font-medium hover:text-brand">첫 미션 PR, 리뷰 받고 느낀 것</a><div class="text-slate-500">회고 · 한 달 전</div></li>
+        </ul>
+      </section>
+
+      <section class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6 md:col-span-2">
+        <h2 class="font-bold mb-4">팀 프로젝트</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <a href="project-detail.html" title="프로젝트 상세 보기" class="flex gap-3 p-3 rounded-xl ring-1 ring-slate-900/5 dark:ring-white/10 hover:bg-slate-50 dark:hover:bg-white/5">
+            <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-brand/30 to-slate-300 dark:to-slate-700"></div>
+            <div><div class="font-medium">모꼬지</div><div class="text-sm text-slate-500">4기 · FE 담당</div></div>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="footer"></div>
+  <script>renderChrome('member.html'); document.getElementById('rolebadge').innerHTML = roleBadge('공개');</script>
+</body>
+</html>

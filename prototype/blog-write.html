@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>글쓰기 — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-3xl px-5 py-10">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3"><a href="blog.html" class="text-sm text-slate-500 hover:text-brand">← 블로그</a><span id="rolebadge"></span></div>
+      <div class="flex gap-2 text-sm">
+        <button class="px-3 py-2 rounded-lg ring-1 ring-slate-900/10 dark:ring-white/15 font-semibold" title="임시저장 (DRAFT) — 나중에 이어쓰기">임시저장</button>
+        <a href="blog-detail.html" class="px-3 py-2 rounded-lg bg-brand text-white font-semibold" title="발행하면 공개되고 내 이력서에 자동 반영됩니다">발행</a>
+      </div>
+    </div>
+
+    <form class="mt-6 space-y-4" onsubmit="return false">
+      <input class="w-full text-2xl font-bold bg-transparent outline-none placeholder:text-slate-400" placeholder="제목을 입력하세요" />
+      <div class="flex flex-wrap gap-2 text-sm">
+        <select class="rounded-lg px-3 py-1.5 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10" title="주제 분류"><option>회고</option><option>기술</option><option>취업</option><option>트러블슈팅</option></select>
+        <input class="rounded-lg px-3 py-1.5 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10" placeholder="태그 (예: React)" />
+      </div>
+      <div class="rounded-xl bg-white dark:bg-slate-800/70 ring-1 ring-slate-900/5 dark:ring-white/10 p-4">
+        <div class="flex gap-3 text-slate-400 text-sm border-b border-slate-100 dark:border-white/10 pb-2 mb-3">
+          <span title="굵게">B</span><span title="기울임" class="italic">i</span><span title="코드블록">&lt;/&gt;</span>
+          <span title="작성 중 드래그하면 이미지 CDN에 자동 업로드됩니다" class="cursor-help">🖼️ 이미지</span>
+        </div>
+        <textarea rows="14" class="w-full bg-transparent outline-none resize-none placeholder:text-slate-400" placeholder="마크다운으로 작성하세요. 이미지는 드래그하면 자동 업로드됩니다."></textarea>
+      </div>
+      <p class="text-xs text-slate-400">발행하면 공개(SEO) 기술블로그에 올라가고, 작성자 프로필·이력서에 자동으로 연결됩니다.</p>
+    </form>
+  </main>
+
+  <div id="footer"></div>
+  <script>renderChrome('blog.html'); document.getElementById('rolebadge').innerHTML = roleBadge('멤버');</script>
+</body>
+</html>

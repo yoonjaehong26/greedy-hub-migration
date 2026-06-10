@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>기술블로그 — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-6xl px-5 py-10">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3"><h1 class="text-2xl md:text-3xl font-bold">기술블로그</h1><span id="rolebadge"></span></div>
+        <p class="mt-1 text-slate-600 dark:text-slate-400">쓰면 동아리에 기여되고, 내 이력으로 남습니다.</p>
+      </div>
+      <a href="blog-write.html" data-roles="member,reviewer,staff,alumni" class="px-4 py-2 rounded-lg bg-brand text-white font-semibold text-sm" title="글쓰기 — 마크다운 작성 화면으로 이동 (외부인은 보이지 않음)">글쓰기</a>
+    </div>
+
+    <!-- 태그 필터 -->
+    <div class="mt-6 flex flex-wrap gap-2 text-sm">
+      <button class="px-3 py-1.5 rounded-full bg-brand text-white">전체</button>
+      <button class="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">회고</button>
+      <button class="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">기술</button>
+      <button class="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">취업</button>
+      <button class="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10">트러블슈팅</button>
+    </div>
+
+    <div id="grid" class="mt-8 grid md:grid-cols-3 sm:grid-cols-2 gap-5"></div>
+  </main>
+
+  <div id="footer"></div>
+  <script>
+    renderChrome('blog.html');
+    document.getElementById('rolebadge').innerHTML = roleBadge('공개');
+    const posts = [
+      ['회고','React','상태관리 미션, Zustand로 다시 짜며 배운 것','박지호','FE 4기','3일 전'],
+      ['기술','Spring','N+1 쿼리, 리뷰에서 잡힌 그날의 기록','이서연','BE 4기','1주 전'],
+      ['취업','','그리디 활동을 이력서로 정리한 방법','최예린','FE 2기','2주 전'],
+      ['트러블슈팅','CORS','로컬에선 되는데 배포만 하면 막히던 CORS','권태양','BE 4기','3주 전'],
+      ['기술','JPA','연관관계 매핑, 언제 단방향/양방향?','배현우','BE 4기','3주 전'],
+      ['회고','','첫 미션 PR, 리뷰 30개 받고 느낀 것','문서윤','FE 4기','한 달 전'],
+    ];
+    document.getElementById('grid').innerHTML = posts.map(([tag,sub,title,who,track,when])=>`
+      <a href="blog-detail.html" class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6 hover:-translate-y-0.5 transition block">
+        <div class="flex gap-2 mb-3"><span class="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-white/10">${tag}</span>${sub?`<span class="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-white/10">${sub}</span>`:''}</div>
+        <h3 class="font-semibold leading-snug">${title}</h3>
+        <div class="mt-4 flex items-center gap-2 text-xs text-slate-500"><span class="w-6 h-6 rounded-full bg-slate-300 dark:bg-white/20"></span>${who} · ${track} · ${when}</div>
+      </a>`).join('');
+  </script>
+</body>
+</html>

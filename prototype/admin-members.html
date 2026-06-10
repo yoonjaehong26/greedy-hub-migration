@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>멤버·권한 관리 — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-5xl px-5 py-10">
+    <div class="flex items-center gap-3"><a href="admin.html" class="text-sm text-slate-500 hover:text-brand">← 운영진</a><span id="rolebadge"></span></div>
+    <h1 class="mt-4 text-2xl font-bold">멤버·권한 관리</h1>
+    <p class="mt-1 text-slate-600 dark:text-slate-400">역할은 기수별로 다중 부여 가능(겸직). 세부 권한은 역할 기본값에 더해 개별 부여합니다.</p>
+
+    <div class="mt-6 flex flex-wrap gap-2 text-sm">
+      <input class="rounded-lg px-3 py-2 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10" placeholder="멤버 검색…" />
+      <select class="rounded-lg px-3 py-2 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10"><option>4기</option><option>3기</option></select>
+      <select class="rounded-lg px-3 py-2 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10"><option>전체 트랙</option><option>FE</option><option>BE</option></select>
+    </div>
+
+    <div class="mt-4 overflow-x-auto rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+      <table class="w-full text-sm">
+        <thead class="text-slate-500"><tr class="border-b border-slate-100 dark:border-white/10">
+          <th class="text-left font-medium p-3">멤버</th><th class="text-left font-medium p-3">트랙</th><th class="text-left font-medium p-3">기수 역할 (다중)</th><th class="text-right font-medium p-3">관리</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <!-- 권한 편집 패널 (예시: 정우진) -->
+    <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6">
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold">세부 권한 편집 — 정우진 <span class="text-sm font-normal text-slate-500">(FE 4기 · 리뷰어)</span></h2>
+        <button class="text-sm font-semibold text-brand" title="변경 저장">저장</button>
+      </div>
+      <p class="mt-1 text-xs text-slate-400">역할 기본 권한 외에 개별로 켜고 끌 수 있어요. (예: 평소 리뷰어지만 이번엔 출제도 맡김)</p>
+      <div class="mt-4 grid sm:grid-cols-2 gap-3 text-sm" id="perms"></div>
+    </section>
+  </main>
+
+  <div id="footer"></div>
+  <script>
+    renderChrome('admin.html');
+    document.getElementById('rolebadge').innerHTML = roleBadge('운영진');
+
+    const chip = (t, on) => `<span class="text-xs px-2 py-0.5 rounded-full ${on?'bg-brand/10 text-brand':'bg-slate-200 dark:bg-white/10 text-slate-500'}">${t}</span>`;
+    // FE 4기 (실제 명단)
+    const people = [
+      ['박지호','FE',['멤버']],
+      ['김민준','FE',['멤버']],
+      ['정우진','FE',['리뷰어']],
+      ['강민서','FE',['리드','리뷰어','메인테이너']],
+      ['윤하준','FE',['리뷰어']],
+    ];
+    document.getElementById('rows').innerHTML = people.map(([n,t,roles])=>`
+      <tr class="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5">
+        <td class="p-3 font-medium"><a href="member-profile.html" class="hover:text-brand" title="${n} 프로필 보기">${n}</a></td>
+        <td class="p-3">${t}</td>
+        <td class="p-3"><div class="flex flex-wrap gap-1">${['멤버','리뷰어','리드','메인테이너'].map(r=>chip(r, roles.includes(r))).join('')}</div></td>
+        <td class="p-3 text-right"><button class="text-brand font-semibold" title="${n}의 역할·세부권한 편집">편집</button></td>
+      </tr>`).join('');
+
+    const perms = [
+      ['mission:create','미션 출제·요구사항', false],
+      ['mission:review','배정 미션 리뷰', true],
+      ['mission:assign','리뷰어 배정', false],
+      ['study:manage','커리큘럼·자료 관리', false],
+      ['board:moderate','게시판 모더레이션', false],
+      ['recruit:review','지원 심사', false],
+      ['admin:roles','역할·권한 관리', false],
+    ];
+    document.getElementById('perms').innerHTML = perms.map(([k,label,on])=>`
+      <label class="flex items-center justify-between rounded-lg ring-1 ring-slate-900/5 dark:ring-white/10 px-3 py-2 cursor-pointer" title="${k}">
+        <span><span class="font-medium">${label}</span> <code class="text-xs text-slate-400">${k}</code></span>
+        <input type="checkbox" ${on?'checked':''} />
+      </label>`).join('');
+  </script>
+</body>
+</html>
