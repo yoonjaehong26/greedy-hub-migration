@@ -14,10 +14,29 @@
     <h1 class="mt-4 text-2xl font-bold">멤버·권한 관리</h1>
     <p class="mt-1 text-slate-600 dark:text-slate-400">역할은 기수별로 다중 부여 가능(겸직). 세부 권한은 역할 기본값에 더해 개별 부여합니다.</p>
 
-    <div class="mt-6 flex flex-wrap gap-2 text-sm">
+    <div class="mt-6 flex flex-wrap items-center gap-2 text-sm">
       <input class="rounded-lg px-3 py-2 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10" placeholder="멤버 검색…" />
       <select class="rounded-lg px-3 py-2 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10"><option>4기</option><option>3기</option></select>
       <select class="rounded-lg px-3 py-2 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10"><option>전체 트랙</option><option>FE</option><option>BE</option></select>
+      <button onclick="toggleAdd()" class="ml-auto px-3.5 py-2 rounded-lg bg-brand text-white font-semibold" title="새 멤버를 추가하고 역할을 부여합니다">+ 멤버 추가</button>
+    </div>
+
+    <!-- 멤버 추가 폼 -->
+    <div id="addForm" class="hidden mt-4 rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-5">
+      <div class="grid sm:grid-cols-3 gap-4 text-sm">
+        <div><label class="block font-medium mb-1.5">이름</label><input id="aName" class="w-full rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-900 ring-1 ring-slate-900/10 dark:ring-white/10" placeholder="이름" /></div>
+        <div><label class="block font-medium mb-1.5">트랙</label><select id="aTrack" class="w-full rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-900 ring-1 ring-slate-900/10 dark:ring-white/10"><option>FE</option><option>BE</option><option>COMMON</option></select></div>
+        <div><label class="block font-medium mb-1.5">기수</label><select class="w-full rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-900 ring-1 ring-slate-900/10 dark:ring-white/10"><option>4기</option><option>3기</option></select></div>
+      </div>
+      <div class="mt-3 text-sm">
+        <label class="block font-medium mb-1.5">기수 역할 (다중)</label>
+        <div class="flex flex-wrap gap-3" id="aRoles"></div>
+      </div>
+      <div class="mt-4 flex gap-2 text-sm">
+        <button onclick="addMember()" class="px-3.5 py-2 rounded-lg bg-brand text-white font-semibold">추가</button>
+        <button onclick="toggleAdd()" class="px-3.5 py-2 rounded-lg ring-1 ring-slate-900/10 dark:ring-white/15 font-semibold">취소</button>
+        <span class="text-xs text-slate-400 self-center">추가 후 행의 ‘편집’에서 세부 권한을 켤 수 있어요.</span>
+      </div>
     </div>
 
     <div class="mt-4 overflow-x-auto rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
@@ -29,14 +48,25 @@
       </table>
     </div>
 
-    <!-- 권한 편집 패널 (예시: 정우진) -->
+    <!-- 세부 권한 편집 -->
     <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6">
       <div class="flex items-center justify-between">
-        <h2 class="font-bold">세부 권한 편집 — 정우진 <span class="text-sm font-normal text-slate-500">(FE 4기 · 리뷰어)</span></h2>
+        <h2 class="font-bold">세부 권한 편집 — <span id="permWho">정우진 <span class="text-sm font-normal text-slate-500">(FE 4기 · 리뷰어)</span></span></h2>
         <button class="text-sm font-semibold text-brand" title="변경 저장">저장</button>
       </div>
       <p class="mt-1 text-xs text-slate-400">역할 기본 권한 외에 개별로 켜고 끌 수 있어요. (예: 평소 리뷰어지만 이번엔 출제도 맡김)</p>
       <div class="mt-4 grid sm:grid-cols-2 gap-3 text-sm" id="perms"></div>
+
+      <!-- 새 권한 추가 -->
+      <div class="mt-4 border-t border-slate-100 dark:border-white/10 pt-4">
+        <div class="text-sm font-semibold text-slate-500 mb-2">새 권한 추가</div>
+        <div class="flex flex-wrap gap-2 text-sm">
+          <input id="pLabel" class="rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-900 ring-1 ring-slate-900/10 dark:ring-white/10" placeholder="이름 (예: 갤러리 큐레이션)" />
+          <input id="pKey" class="rounded-lg px-3 py-2 bg-slate-50 dark:bg-slate-900 ring-1 ring-slate-900/10 dark:ring-white/10 font-mono" placeholder="키 (예: gallery:curate)" />
+          <button onclick="addPerm()" class="px-3.5 py-2 rounded-lg ring-1 ring-slate-900/10 dark:ring-white/15 font-semibold">+ 권한 추가</button>
+        </div>
+        <p class="mt-1 text-xs text-slate-400">새 권한 타입을 정의하면 모든 멤버의 권한 편집에 나타납니다.</p>
+      </div>
     </section>
   </main>
 
@@ -45,37 +75,71 @@
     renderChrome('admin.html');
     document.getElementById('rolebadge').innerHTML = roleBadge('운영진');
 
+    const ROLE_OPTS = ['멤버','리뷰어','리드','메인테이너'];
     const chip = (t, on) => `<span class="text-xs px-2 py-0.5 rounded-full ${on?'bg-brand/10 text-brand':'bg-slate-200 dark:bg-white/10 text-slate-500'}">${t}</span>`;
-    // FE 4기 (실제 명단)
-    const people = [
-      ['박지호','FE',['멤버']],
-      ['김민준','FE',['멤버']],
-      ['정우진','FE',['리뷰어']],
-      ['강민서','FE',['리드','리뷰어','메인테이너']],
-      ['윤하준','FE',['리뷰어']],
-    ];
-    document.getElementById('rows').innerHTML = people.map(([n,t,roles])=>`
-      <tr class="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5">
-        <td class="p-3 font-medium"><a href="member-profile.html" class="hover:text-brand" title="${n} 프로필 보기">${n}</a></td>
-        <td class="p-3">${t}</td>
-        <td class="p-3"><div class="flex flex-wrap gap-1">${['멤버','리뷰어','리드','메인테이너'].map(r=>chip(r, roles.includes(r))).join('')}</div></td>
-        <td class="p-3 text-right"><button class="text-brand font-semibold" title="${n}의 역할·세부권한 편집">편집</button></td>
-      </tr>`).join('');
 
-    const perms = [
-      ['mission:create','미션 출제·요구사항', false],
-      ['mission:review','배정 미션 리뷰', true],
-      ['mission:assign','리뷰어 배정', false],
-      ['study:manage','커리큘럼·자료 관리', false],
-      ['board:moderate','게시판 모더레이션', false],
-      ['recruit:review','지원 심사', false],
-      ['admin:roles','역할·권한 관리', false],
+    let people = [
+      {n:'박지호',t:'FE',roles:['멤버']},
+      {n:'김민준',t:'FE',roles:['멤버']},
+      {n:'정우진',t:'FE',roles:['리뷰어']},
+      {n:'강민서',t:'FE',roles:['리드','리뷰어','메인테이너']},
+      {n:'윤하준',t:'FE',roles:['리뷰어']},
     ];
-    document.getElementById('perms').innerHTML = perms.map(([k,label,on])=>`
-      <label class="flex items-center justify-between rounded-lg ring-1 ring-slate-900/5 dark:ring-white/10 px-3 py-2 cursor-pointer" title="${k}">
-        <span><span class="font-medium">${label}</span> <code class="text-xs text-slate-400">${k}</code></span>
-        <input type="checkbox" ${on?'checked':''} />
-      </label>`).join('');
+    function renderRows(){
+      document.getElementById('rows').innerHTML = people.map((p,i)=>`
+        <tr class="border-b border-slate-50 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5">
+          <td class="p-3 font-medium"><a href="member-profile.html" class="hover:text-brand" title="${p.n} 프로필 보기">${p.n}</a></td>
+          <td class="p-3">${p.t}</td>
+          <td class="p-3"><div class="flex flex-wrap gap-1">${ROLE_OPTS.map(r=>chip(r, p.roles.includes(r))).join('')}</div></td>
+          <td class="p-3 text-right"><button onclick="editMember(${i})" class="text-brand font-semibold" title="${p.n}의 역할·세부권한 편집">편집</button></td>
+        </tr>`).join('');
+    }
+    function editMember(i){
+      const p=people[i];
+      document.getElementById('permWho').innerHTML = `${p.n} <span class="text-sm font-normal text-slate-500">(${p.t} 4기 · ${p.roles.join('·')})</span>`;
+      document.querySelector('#perms').scrollIntoView({behavior:'smooth',block:'center'});
+    }
+
+    // 멤버 추가
+    document.getElementById('aRoles').innerHTML = ROLE_OPTS.map(r=>`<label class="flex items-center gap-1.5"><input type="checkbox" value="${r}" ${r==='멤버'?'checked':''}/> ${r}</label>`).join('');
+    function toggleAdd(){ document.getElementById('addForm').classList.toggle('hidden'); }
+    function addMember(){
+      const n=document.getElementById('aName').value.trim(); if(!n){alert('이름을 입력하세요');return;}
+      const t=document.getElementById('aTrack').value;
+      const roles=[...document.querySelectorAll('#aRoles input:checked')].map(c=>c.value);
+      people.unshift({n,t,roles:roles.length?roles:['멤버']});
+      renderRows(); toggleAdd(); document.getElementById('aName').value='';
+    }
+    window.toggleAdd=toggleAdd; window.addMember=addMember; window.editMember=editMember;
+
+    // 세부 권한
+    let perms = [
+      {k:'mission:create',label:'미션 출제·요구사항',on:false},
+      {k:'mission:review',label:'배정 미션 리뷰',on:true},
+      {k:'mission:assign',label:'리뷰어 배정',on:false},
+      {k:'study:manage',label:'커리큘럼·자료 관리',on:false},
+      {k:'board:moderate',label:'게시판 모더레이션',on:false},
+      {k:'recruit:review',label:'지원 심사',on:false},
+      {k:'admin:roles',label:'역할·권한 관리',on:false},
+    ];
+    function renderPerms(){
+      document.getElementById('perms').innerHTML = perms.map((p,i)=>`
+        <label class="flex items-center justify-between rounded-lg ring-1 ring-slate-900/5 dark:ring-white/10 px-3 py-2 cursor-pointer" title="${p.k}">
+          <span><span class="font-medium">${p.label}</span> <code class="text-xs text-slate-400">${p.k}</code></span>
+          <input type="checkbox" ${p.on?'checked':''} onchange="perms[${i}].on=this.checked" />
+        </label>`).join('');
+    }
+    function addPerm(){
+      const label=document.getElementById('pLabel').value.trim();
+      const k=document.getElementById('pKey').value.trim();
+      if(!label||!k){alert('이름과 키를 모두 입력하세요');return;}
+      if(perms.some(p=>p.k===k)){alert('이미 있는 권한 키예요');return;}
+      perms.push({k,label,on:false}); renderPerms();
+      document.getElementById('pLabel').value=''; document.getElementById('pKey').value='';
+    }
+    window.perms=perms; window.addPerm=addPerm;
+
+    renderRows(); renderPerms();
   </script>
 </body>
 </html>
