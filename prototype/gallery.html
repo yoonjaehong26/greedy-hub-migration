@@ -15,7 +15,7 @@
         <div class="flex items-center gap-3"><h1 class="text-2xl md:text-3xl font-bold">활동 타임라인</h1><span id="rolebadge"></span></div>
         <p class="mt-1 text-slate-600 dark:text-slate-400">그리디가 함께한 순간들 — 사진과 한 줄로 남기는 기록.</p>
       </div>
-      <button data-roles="member,reviewer,staff,alumni" class="px-4 py-2 rounded-lg bg-brand text-white font-semibold text-sm" title="활동 사진과 소개를 추가합니다 (멤버)">+ 활동 올리기</button>
+      <a href="activity-edit.html" data-roles="member,reviewer,staff,alumni" class="px-4 py-2 rounded-lg bg-brand text-white font-semibold text-sm" title="활동 사진과 소개를 추가합니다 (멤버도 가능)">+ 활동 올리기</a>
     </div>
 
     <!-- 필터 -->
@@ -60,7 +60,7 @@
             <time class="text-sm font-semibold text-slate-500">${it.date}</time>
             <span class="text-xs px-2 py-0.5 rounded-full ${tagCls[it.tag]||''}">${it.tag}</span>
           </div>
-          <a href="#" title="활동 상세·사진 더 보기" class="block rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:-translate-y-0.5 transition">
+          <a href="activity-detail.html" title="활동 상세·사진 더 보기" class="block rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:-translate-y-0.5 transition">
             <h3 class="font-semibold">${it.title}</h3>
             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">${it.desc}</p>
             <div class="mt-3 grid grid-cols-3 gap-2">${imgs}</div>

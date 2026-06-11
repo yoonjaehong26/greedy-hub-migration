@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>4기 MT — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-4xl px-5 py-10">
+    <div class="flex items-center justify-between gap-3">
+      <a href="gallery.html" class="text-sm text-slate-500 hover:text-brand">← 활동 타임라인</a>
+      <a href="activity-edit.html" data-roles="staff" class="px-3 py-2 rounded-lg text-sm font-semibold ring-1 ring-slate-900/10 dark:ring-white/15" title="운영진: 이 활동을 편집·정리">편집</a>
+    </div>
+
+    <div class="mt-4 flex items-center gap-2">
+      <time class="text-sm font-semibold text-slate-500">2026.05</time>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-brand/10 text-brand">행사</span>
+      <span id="rolebadge"></span>
+    </div>
+    <h1 class="mt-2 text-2xl md:text-3xl font-bold">4기 MT — 1박 2일</h1>
+
+    <!-- 대표 사진 -->
+    <div class="mt-5 aspect-[16/7] rounded-2xl bg-gradient-to-br from-brand/40 to-slate-300 dark:to-slate-700" title="대표 사진 (예시)"></div>
+
+    <!-- 본문 -->
+    <article class="mt-6 space-y-3 leading-relaxed text-slate-700 dark:text-slate-300">
+      <p>4기가 처음으로 다 같이 모인 엠티였습니다. 낮엔 팀 게임, 밤엔 각자 관심 분야 코드 이야기로 새벽까지.</p>
+      <p>처음 만난 멤버들도 금방 친해졌고, 다음 스터디·프로젝트로 이어질 팀워크의 시작이 됐어요.</p>
+    </article>
+
+    <!-- 함께한 멤버 -->
+    <h2 class="mt-8 mb-3 font-bold">함께한 멤버</h2>
+    <div class="flex flex-wrap gap-2">
+      <a href="member-profile.html" class="inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full bg-brand/10 text-brand hover:bg-brand/20" title="박지호 프로필">@박지호</a>
+      <a href="member-profile.html" class="inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full bg-brand/10 text-brand hover:bg-brand/20" title="최예린 프로필">@최예린</a>
+      <a href="member-profile.html" class="inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full bg-brand/10 text-brand hover:bg-brand/20" title="김민준 프로필">@김민준</a>
+      <a href="member-profile.html" class="inline-flex items-center gap-1 text-sm px-2.5 py-1 rounded-full bg-brand/10 text-brand hover:bg-brand/20" title="이서연 프로필">@이서연</a>
+      <span class="inline-flex items-center text-sm px-2.5 py-1 rounded-full bg-slate-200 dark:bg-white/10 text-slate-500">+8</span>
+    </div>
+
+    <!-- 사진 그리드 -->
+    <h2 class="mt-8 mb-3 font-bold">사진</h2>
+    <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+
+    <p class="mt-6 text-xs text-slate-400">사진·내용 추가는 멤버도 가능합니다. 편집·정리(대표 사진 지정·삭제)는 운영진이 합니다.</p>
+  </main>
+
+  <div id="footer"></div>
+  <script>
+    renderChrome('gallery.html');
+    document.getElementById('rolebadge').innerHTML = roleBadge('공개');
+    const g=['from-brand/30','from-emerald-400/30','from-amber-400/30','from-rose-400/30','from-violet-400/30','from-cyan-400/30'];
+    document.getElementById('grid').innerHTML = g.map(c=>`<div class="aspect-[4/3] rounded-xl bg-gradient-to-br ${c} to-slate-200 dark:to-slate-700" title="활동 사진 (예시)"></div>`).join('');
+  </script>
+</body>
+</html>

@@ -22,12 +22,25 @@
             <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 font-medium">FE 4기 · 멤버</span>
           </div>
         </div>
-        <div class="flex flex-col items-end gap-2 text-sm">
-          <label class="flex items-center gap-2 text-slate-500" title="끄면 외부에 이력서가 보이지 않습니다 (resumePublic)"><input type="checkbox" checked> 이력서 공개</label>
-          <button class="px-3 py-2 rounded-lg ring-1 ring-slate-900/10 dark:ring-white/15 font-semibold" title="공개 이력서 URL을 복사합니다">공유 링크 복사</button>
+        <div class="flex flex-col items-end gap-3 text-sm">
+          <button id="pubBtn" onclick="togglePublic()" class="flex items-center gap-2" title="끄면 외부(비로그인)에게 보이지 않습니다">
+            <span id="pubTrack" class="relative w-11 h-6 rounded-full bg-brand transition-colors"><span id="pubKnob" class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform" style="transform:translateX(20px)"></span></span>
+            <span id="pubLabel" class="font-medium text-slate-700 dark:text-slate-200">외부 공개</span>
+          </button>
+          <button onclick="editBio()" class="px-3 py-2 rounded-lg ring-1 ring-slate-900/10 dark:ring-white/15 font-semibold" title="한 줄 소개를 마크다운으로 편집">편집</button>
         </div>
       </div>
-      <p class="mt-5 text-slate-600 dark:text-slate-300">프론트엔드에 관심 많은 개발자. 그리디에서 미션·리뷰로 성장 중. 이 페이지는 활동이 쌓이며 <b>자동으로 갱신</b>됩니다.</p>
+      <p id="bioView" class="mt-5 text-slate-600 dark:text-slate-300">프론트엔드에 관심 많은 개발자. 그리디에서 미션·리뷰로 성장 중. 이 페이지는 활동이 쌓이며 <b>자동으로 갱신</b>됩니다.</p>
+      <div id="bioEdit" class="mt-5 hidden">
+        <textarea id="bioInput" rows="4" class="w-full rounded-lg p-3 bg-slate-50 dark:bg-slate-900 ring-1 ring-slate-900/10 dark:ring-white/10 text-sm" placeholder="마크다운으로 자기소개를 적어보세요">프론트엔드에 관심 많은 개발자. 그리디에서 미션·리뷰로 성장 중.
+
+**관심 분야**: React, 상태관리, 렌더링 최적화</textarea>
+        <div class="mt-2 flex items-center gap-2 text-sm">
+          <button onclick="saveBio()" class="px-3 py-2 rounded-lg bg-brand text-white font-semibold">저장</button>
+          <button onclick="cancelBio()" class="px-3 py-2 rounded-lg ring-1 ring-slate-900/10 dark:ring-white/15 font-semibold">취소</button>
+          <span class="text-xs text-slate-400">마크다운 지원 (**굵게**, `코드`)</span>
+        </div>
+      </div>
     </div>
 
     <div class="mt-6 grid grid-cols-3 gap-4">
@@ -57,6 +70,25 @@
       </section>
 
       <section class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6 md:col-span-2">
+        <h2 class="font-bold mb-1">참여한 활동</h2>
+        <p class="text-xs text-slate-400 mb-4">활동에 멘션되면 자동으로 모입니다</p>
+        <div class="grid sm:grid-cols-3 gap-3">
+          <a href="activity-detail.html" title="활동 상세" class="rounded-xl ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:bg-slate-50 dark:hover:bg-white/5">
+            <div class="text-xs text-slate-500">2026.05 · <span class="text-brand">행사</span></div>
+            <div class="font-medium mt-0.5">4기 MT — 1박 2일</div>
+          </a>
+          <a href="activity-detail.html" title="활동 상세" class="rounded-xl ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:bg-slate-50 dark:hover:bg-white/5">
+            <div class="text-xs text-slate-500">2026.04 · <span class="text-brand">세션</span></div>
+            <div class="font-medium mt-0.5">React 심화 세션</div>
+          </a>
+          <a href="activity-detail.html" title="활동 상세" class="rounded-xl ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:bg-slate-50 dark:hover:bg-white/5">
+            <div class="text-xs text-slate-500">2026.03 · <span class="text-brand">행사</span></div>
+            <div class="font-medium mt-0.5">4기 OT</div>
+          </a>
+        </div>
+      </section>
+
+      <section class="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-6 md:col-span-2">
         <h2 class="font-bold mb-4">팀 프로젝트</h2>
         <div class="grid sm:grid-cols-2 gap-4">
           <a href="project-detail.html" title="프로젝트 상세 보기" class="flex gap-3 p-3 rounded-xl ring-1 ring-slate-900/5 dark:ring-white/10 hover:bg-slate-50 dark:hover:bg-white/5">
@@ -69,6 +101,27 @@
   </main>
 
   <div id="footer"></div>
-  <script>renderChrome('member.html'); document.getElementById('rolebadge').innerHTML = roleBadge('공개');</script>
+  <script>
+    renderChrome('member.html');
+    document.getElementById('rolebadge').innerHTML = roleBadge('공개');
+    let pub = true;
+    function togglePublic(){
+      pub = !pub;
+      document.getElementById('pubTrack').classList.toggle('bg-brand', pub);
+      document.getElementById('pubTrack').classList.toggle('bg-slate-300', !pub);
+      document.getElementById('pubKnob').style.transform = pub ? 'translateX(20px)' : 'translateX(2px)';
+      document.getElementById('pubLabel').textContent = pub ? '외부 공개' : '비공개';
+    }
+    // 아주 작은 마크다운 (굵게/코드/줄바꿈)
+    function mdToHtml(t){
+      return t.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+        .replace(/`(.+?)`/g,'<code class="px-1 rounded bg-slate-100 dark:bg-white/10">$1</code>')
+        .replace(/\n/g,'<br>');
+    }
+    function editBio(){ document.getElementById('bioView').classList.add('hidden'); document.getElementById('bioEdit').classList.remove('hidden'); }
+    function cancelBio(){ document.getElementById('bioEdit').classList.add('hidden'); document.getElementById('bioView').classList.remove('hidden'); }
+    function saveBio(){ document.getElementById('bioView').innerHTML = mdToHtml(document.getElementById('bioInput').value); cancelBio(); }
+  </script>
 </body>
 </html>

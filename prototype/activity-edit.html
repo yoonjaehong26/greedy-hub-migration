@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ko" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>활동 올리기 — 그리디 허브</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/site.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans antialiased">
+  <div id="nav"></div>
+
+  <main class="mx-auto max-w-3xl px-5 py-10">
+    <div class="flex items-center justify-between gap-3">
+      <a href="gallery.html" class="text-sm text-slate-500 hover:text-brand">← 활동 타임라인</a>
+      <div class="flex gap-2 text-sm">
+        <a href="gallery.html" class="px-3 py-2 rounded-lg ring-1 ring-slate-900/10 dark:ring-white/15 font-semibold" title="취소">취소</a>
+        <a href="gallery.html" class="px-3 py-2 rounded-lg bg-brand text-white font-semibold" title="저장하면 타임라인에 올라갑니다">올리기</a>
+      </div>
+    </div>
+    <h1 class="mt-4 text-2xl font-bold">활동 올리기</h1>
+    <p class="mt-1 text-sm text-slate-500">멤버 누구나 활동·사진을 올릴 수 있어요. 정리·삭제는 운영진이 합니다.</p>
+
+    <form class="mt-6 space-y-5" onsubmit="return false">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="block text-sm font-medium mb-1.5">날짜</label><input type="month" value="2026-05" class="w-full rounded-lg px-3 py-2 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10" /></div>
+        <div><label class="block text-sm font-medium mb-1.5">분류</label><select class="w-full rounded-lg px-3 py-2 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10"><option>행사</option><option>세션</option><option>데모데이</option><option>축제</option><option>MT</option></select></div>
+      </div>
+      <div><label class="block text-sm font-medium mb-1.5">제목</label><input class="w-full rounded-lg px-3 py-2 bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10" placeholder="예: 4기 MT — 1박 2일" /></div>
+
+      <!-- 함께한 멤버 멘션 -->
+      <div>
+        <label class="block text-sm font-medium mb-1.5">함께한 멤버 <span class="font-normal text-slate-400">· @멘션</span></label>
+        <div class="rounded-lg bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10 p-2">
+          <div id="mchips" class="flex flex-wrap gap-1.5"></div>
+          <input id="minput" list="mlist" autocomplete="off" class="w-full bg-transparent outline-none px-1 py-1.5 text-sm" placeholder="이름을 입력해 멤버를 멘션 (예: 박지호) — Enter로 추가" />
+          <datalist id="mlist"></datalist>
+        </div>
+        <p class="mt-1 text-xs text-slate-400">참여한 멤버를 멘션하면 각자의 프로필·이력에도 이 활동이 연결됩니다.</p>
+      </div>
+
+      <!-- 마크다운 본문 -->
+      <div>
+        <label class="block text-sm font-medium mb-1.5">내용 <span class="font-normal text-slate-400">· 마크다운</span></label>
+        <div class="rounded-xl bg-white dark:bg-slate-800/70 ring-1 ring-slate-900/5 dark:ring-white/10 p-3">
+          <div class="flex gap-3 text-slate-400 text-sm border-b border-slate-100 dark:border-white/10 pb-2 mb-2">
+            <span title="굵게"><b>B</b></span><span title="기울임" class="italic">i</span><span title="코드">&lt;/&gt;</span><span title="리스트">≣</span>
+          </div>
+          <textarea rows="6" class="w-full bg-transparent outline-none resize-none placeholder:text-slate-400" placeholder="활동을 한두 문단으로 적어주세요. **굵게**, `코드`, - 리스트 지원."></textarea>
+        </div>
+      </div>
+
+      <!-- 사진 추가 -->
+      <div>
+        <label class="block text-sm font-medium mb-1.5">사진</label>
+        <button type="button" onclick="addPhoto()" class="w-full rounded-xl border-2 border-dashed border-slate-300 dark:border-white/15 p-6 text-center text-sm text-slate-500 hover:border-brand hover:text-brand" title="작성 중 이미지가 자동 업로드됩니다">
+          📷 사진을 끌어다 놓거나 <b>클릭해서 추가</b><br><span class="text-xs">업로드하면 자동 저장됩니다</span>
+        </button>
+        <div id="photos" class="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
+      </div>
+    </form>
+  </main>
+
+  <div id="footer"></div>
+  <script>
+    renderChrome('gallery.html');
+    const g=['from-brand/30','from-emerald-400/30','from-amber-400/30','from-rose-400/30','from-violet-400/30','from-cyan-400/30'];
+    let i=0;
+    function addPhoto(){
+      const d=document.createElement('div');
+      d.className='relative aspect-[4/3] rounded-lg bg-gradient-to-br '+g[i++%g.length]+' to-slate-200 dark:to-slate-700';
+      d.innerHTML='<button onclick="this.parentElement.remove()" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-slate-900/70 text-white text-xs leading-none" title="삭제">×</button>';
+      document.getElementById('photos').appendChild(d);
+    }
+    addPhoto(); addPhoto();
+
+    // 함께한 멤버 멘션
+    const MEMBERS=['김민준','이서연','박지호','최예린','정우진','강민서','윤하준','임시우','조하준','신유나','권태양','문서윤','배현우'];
+    const tagged=new Set();
+    document.getElementById('mlist').innerHTML = MEMBERS.map(n=>`<option value="${n}">`).join('');
+    function renderChips(){
+      document.getElementById('mchips').innerHTML = [...tagged].map(n=>
+        `<span class="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-full bg-brand/10 text-brand">@${n}<button onclick="removeTag('${n}')" class="leading-none" title="제외">×</button></span>`).join('');
+    }
+    function addTag(n){ n=n.trim(); if(!n) return; tagged.add(n); renderChips(); }
+    window.removeTag=function(n){ tagged.delete(n); renderChips(); };
+    const mi=document.getElementById('minput');
+    mi.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addTag(mi.value); mi.value=''; }});
+    mi.addEventListener('change',()=>{ if(MEMBERS.includes(mi.value)){ addTag(mi.value); mi.value=''; }});
+    addTag('박지호'); addTag('최예린');
+  </script>
+</body>
+</html>
