@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { AppQueryProvider } from '@/shared/components/providers/AppQueryProvider';
-import { StyledComponentsRegistry } from '@/shared/components/providers/StyledComponentsRegistry';
 import { ThemeProvider } from '@/shared/components/providers/ThemeProvider';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: '그리디 허브',
@@ -25,11 +25,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <StyledComponentsRegistry>
-          <AppQueryProvider>
-            <ThemeProvider>{children}</ThemeProvider>
-          </AppQueryProvider>
-        </StyledComponentsRegistry>
+        <AppQueryProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </AppQueryProvider>
       </body>
     </html>
   );

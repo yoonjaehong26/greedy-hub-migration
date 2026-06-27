@@ -29,7 +29,7 @@
 ## 파일 내 코드 순서
 | 파일 타입 | 순서 |
 |---|---|
-| 컴포넌트 | Imports → Constants → Types → Component 함수 → Styled Components |
+| 컴포넌트 | Imports → Constants → Types → Component 함수 |
 | 훅 | Types → Hook 함수 (Refs → State → Callbacks → Effects → Return) |
 | Store | Types → 초기 상태 → Store 정의 → Selector 헬퍼 |
 
@@ -48,7 +48,6 @@
 import { useState } from 'react';
 // 2. 외부 라이브러리
 import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
 // 3. 내부 (@/ alias)
 import { itemQueries } from '@/shared/core/queries/itemQueries';
 ```
@@ -71,17 +70,23 @@ gradient?: string;
 
 ---
 
-## styled-components
+## Tailwind CSS
 ```tsx
-// Transient props — DOM 누수 방지
-const Box = styled.div<{ $active: boolean }>`
-  opacity: ${({ $active }) => ($active ? 1 : 0.5)};
-`;
+// 테마 컬러는 CSS 변수 또는 @theme inline 토큰 사용
+<div className="bg-[var(--c-surface)] text-brand border-[var(--c-border)]" />
 
-// 테마 토큰만 — 하드코딩 금지
-color: ${({ theme }) => theme.colors.text};   // ✅
-color: #333;                                   // ❌
+// 동적 값 (런타임에 결정되는 수치)은 style prop 병용
+<div
+  className="grid gap-4"
+  style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+/>
+
+// 다크모드: data-theme 속성 전환 방식 (Tailwind dark: 변형 대신)
+// globals.css 의 [data-theme='dark'] 블록이 CSS 변수를 재정의함
 ```
+
+브랜드 컬러 (`text-brand`, `bg-brand`, `bg-brand-soft`, `bg-brand-deep`) 는  
+`globals.css` 의 `@theme inline` 블록에서 CSS 변수와 매핑되어 있어 다크모드에서도 자동 전환된다.
 
 ---
 
@@ -100,8 +105,8 @@ const isVersePage = (p: Page): p is VersePage => p.type === 'verse';
 | 금지 | 권장 |
 |---|---|
 | `any` 타입 | `unknown` + 타입 가드 |
-| 인라인 스타일 | styled-components |
-| 하드코딩 색상 | 테마 토큰 |
+| 인라인 스타일 (레이아웃용) | Tailwind 클래스 |
+| 하드코딩 색상 | CSS 변수 (`var(--c-*)`) |
 | `console.log` 커밋 | `logger` 유틸 사용 |
 | 기존 주석 삭제·축약 | 반드시 보전 |
 | shared → features import | props/render prop으로 DI |
