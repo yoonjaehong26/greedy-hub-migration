@@ -2,7 +2,8 @@
 
 > **한 줄**: 등록된 사이트를 **살아있는 iframe**으로 띄워 스토리처럼 넘겨 보고, 원할 때 진짜로 조작한다. 가장 큰 차별점.
 >
-> **선행**: C(여기서 진입) · **걸린 결정**: D7(sandbox)·D6(7초 타임아웃 공유) · **상태**: 재생 상태는 Zustand(persist X)
+> **라우트**: `/showcase/live/[siteId]`
+> **선행**: C(여기서 진입 — `/showcase`) · **걸린 결정**: D7(sandbox)·D6(7초 타임아웃 공유) · **상태**: 재생 상태는 Zustand(persist X)
 >
 > 📄 개요: [../migration-plan.md](../migration-plan.md) · 결정: [../decisions.md](../decisions.md)
 
@@ -56,7 +57,7 @@ useLiveGestures
 | `features/live/useLiveGestures.ts` | features | 탭/스와이프/휠/키 → store, `isInteractive` 게이팅 |
 | `features/live/BlockedCard.tsx` | features | 차단/타임아웃 폴백(스크린샷 배경 + 새 탭 열기) |
 | `features/live/MetaStrip.tsx` · `PageDots.tsx` | features | 제목/카운트, 페이지 인디케이터(표시 전용) |
-| `app/live/[siteId]/page.tsx` | app | 진입점 — `params.siteId`를 `LiveViewport`에 전달만 |
+| `app/showcase/live/[siteId]/page.tsx` | app | 진입점 — `params.siteId`를 `LiveViewport`에 전달만 |
 
 ---
 
@@ -87,7 +88,7 @@ useLiveGestures
 - [ ] D7·D6 확정 + siteId 미존재 처리 정의
 - [ ] `liveViewStore`(윈도잉·게이팅) → `useLiveGestures` → `LiveViewport`/`LiveCard`
 - [ ] `BlockedCard` · `MetaStrip` · `PageDots`
-- [ ] `app/live/[siteId]/page.tsx`
+- [ ] `app/showcase/live/[siteId]/page.tsx`
 - [ ] `tsc`/`lint` 통과
 
 **Done 정의**: 카드 탭 → 라이브뷰, iframe 크로스페이드, 둘러보기↔체험 토글, 차단/7초 타임아웃 시 BlockedCard 폴백, 윈도잉 최대 2 유지, siteId 미존재 시 우아한 처리.

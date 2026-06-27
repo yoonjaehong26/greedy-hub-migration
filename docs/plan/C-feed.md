@@ -1,8 +1,9 @@
-# C · 그리드 피드
+# C · 외부 사이드 프로젝트 그리드 (`/showcase`)
 
-> **한 줄**: 등록된 프로젝트를 한눈에 **발견**. 인스타식 그리드 + 매력적인 카드를 앞에 배치.
+> **한 줄**: 등록된 외부 사이드 프로젝트를 한눈에 **발견**. 인스타식 그리드 + 매력적인 카드를 앞에 배치.
 >
-> **선행**: A(등록 데이터가 있어야 함) · **걸린 결정**: D8(스케일)·D10a(썸네일 높이)·D14(이미지) · **이동**: 카드 탭 → `router.push('/live/'+id)`
+> **라우트**: `/showcase` (그리디 팀 포트폴리오 `/projects`와 **별개**)
+> **선행**: A(등록 데이터가 있어야 함) · **걸린 결정**: D8(스케일)·D10a(썸네일 높이)·D14(이미지) · **이동**: 카드 탭 → `router.push('/showcase/live/'+id)`
 >
 > 📄 개요: [../migration-plan.md](../migration-plan.md) · 결정: [../decisions.md](../decisions.md)
 
@@ -30,7 +31,7 @@ SiteCard
   ├─ useSiteThumbnail(site)  →  screenshotUrl
   ├─ 있으면: 이미지 렌더 (높이 정책 = D10a)
   ├─ 없으면/onError: thumbnailColor 그래디언트 + 도메인/페이지수 폴백
-  └─ 클릭 → router.push('/live/' + site.id)     ※ import 아님!
+  └─ 클릭 → router.push('/showcase/live/' + site.id)     ※ import 아님!
 ```
 
 ---
@@ -43,7 +44,7 @@ SiteCard
 | `features/feed/SiteCard.tsx` | features | soft 카드(D10) + 썸네일/폴백, 탭 → 라이브뷰 |
 | `features/feed/useSiteThumbnail.ts` | features | `(홈 ?? pages[0])?.screenshotUrl ?? null` (읽기 전용) |
 | `features/feed/useFeedColumns.ts` | features | `<480px→2열`, 그 외 3열 (resize 갱신) |
-| `app/(feed)/page.tsx` | app | 진입점(로직 없음) — `FeedGrid` 렌더만 |
+| `app/showcase/page.tsx` | app | 진입점(로직 없음) — `FeedGrid` 렌더만 |
 
 > ❌ **`RewardBadge`는 만들지 않는다** (D1 E 제거). `SiteCard`에 `isPaid`/`reward` 분기 없음.
 
