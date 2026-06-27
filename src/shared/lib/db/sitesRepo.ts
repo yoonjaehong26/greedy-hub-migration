@@ -5,6 +5,23 @@ import type { Site, Page } from '@/shared/core/types/site';
 import { getCurrentUserId } from './usersRepo';
 import { SEED_SITES } from './seedData';
 
+const THUMBNAIL_COLORS = [
+  '#017356', '#7C3AED', '#0EA5E9', '#F59E0B',
+  '#EF4444', '#10B981', '#F97316', '#8B5CF6',
+];
+
+function colorFromDomain(domain: string): string {
+  let hash = 0;
+  for (const char of domain) hash = ((hash * 31) + char.charCodeAt(0)) >>> 0;
+  return THUMBNAIL_COLORS[hash % THUMBNAIL_COLORS.length];
+}
+
+export interface CreateSiteInput {
+  url: string;
+  frameBlocked: boolean;
+  screenshotUrl: string | null;
+}
+
 const DB_NAME = process.env.MONGODB_DB ?? 'greedy-hub';
 const COLLECTION = 'sites';
 
@@ -63,4 +80,40 @@ export async function ensureSeeded(): Promise<void> {
   });
 
   await col.insertMany(docs as Document[]);
+}
+
+export async function createSite(input: CreateSiteInput): Promise<Site> {
+  const col = await getCollection();
+  const now = new Date().toISOString();
+  const ownerId = getCurrentUserId();
+
+  const parsed = new URL(input.url);
+  const domain = parsed.hostname.replace(/^www\./, '');
+
+  const homePage: Page = {
+    pageId: nanoid(),
+    label: '홈',
+    url: input.url,
+    isHome: true,
+    frameBlocked: input.frameBlocked,
+    frameCheckedAt: now,
+    screenshotUrl: input.screenshotUrl,
+    ogDescription: null,
+  };
+
+  const site: Site = {
+    id: nanoid(),
+    ownerId,
+    title: domain,
+    description: '',
+    domain,
+    thumbnailColor: colorFromDomain(domain),
+    pages: [homePage],
+    status: 'live',
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  await col.insertOne(site as Document);
+  return site;
 }

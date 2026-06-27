@@ -23,13 +23,13 @@
 | **D11** | env·시크릿 부트스트랩 | 0·1 | `.env.local`+`.env.example`, 컬렉션 `sites`/`users` | 🔴 |
 | **D13** | Pretendard 폰트 로딩 | 0 | `next/font/local` self-host | 🔴 |
 | **D15** | 테마/다크모드 상태 소유 + persist | 0 | `shared/core/stores` Zustand(persist O)+`[data-theme]` | 🔴 |
-| **D4** | microlink 쿼터 운영 정책 | 1(B) | 무키 무료 + null 재resolve 안전망 | 🔴 |
-| **D6** | frame-check 타임아웃·안전기본값 | 1·3 | 4s/7s, unknown=차단, 상수화 | 🔴 |
-| **D16** | id 생성·thumbnailColor 발급·domain 파싱 | 1·2 | nanoid id, 해시순환 색, www제거 도메인 | 🔴 |
-| **D17** | 개발 중 microlink 쿼터 보호(mock) | 1 | `MOCK_SCREENSHOTS` env 토글 | 🔴 |
-| **D8** | 피드 스케일(페이지네이션) | 2(C) | 서버 status 필터 + 전체 live 반환 | 🔴 |
-| **D14** | `next/image` vs `<img>` | 2(C) | `<img>`(외부 도메인이라 최적화 의미 적음) | 🔴 |
-| **D7** | iframe sandbox 정책 | 3(D) | 원본 유지 + referrerpolicy/allow 보강 | 🔴 |
+| **D4** | microlink 쿼터 운영 정책 | 1(B) | 무키 무료 + null 재resolve 안전망 | 🟢 |
+| **D6** | frame-check 타임아웃·안전기본값 | 1·3 | 7s, unknown=차단, 상수화 | 🟢 |
+| **D16** | id 생성·thumbnailColor 발급·domain 파싱 | 1·2 | nanoid id, 해시순환 색, www제거 도메인 | 🟢 |
+| **D17** | 개발 중 microlink 쿼터 보호(mock) | 1 | `MOCK_SCREENSHOTS` env 토글 | 🟢 |
+| **D8** | 피드 스케일(페이지네이션) | 2(C) | 서버 status 필터 + 전체 live 반환 | 🟢 |
+| **D14** | `next/image` vs `<img>` | 2(C) | `<img>`(외부 도메인이라 최적화 의미 적음) | 🟢 |
+| **D7** | iframe sandbox 정책 | 3(D) | `allow-scripts allow-same-origin allow-forms allow-popups` | 🟢 |
 | **D5** | 시드 데이터 | 1~2 | 실제 산출물 3~6개 + frame-check 사전계산 | 🔴 |
 | **D9** | cross-feature import 강제 | (가로지름) | ESLint zone 추가 | 🔴 |
 | **D12** | 루트 라우트 충돌 처리 | 0·2 | `page.tsx` → `(feed)/page.tsx` 이동 | 🔴 |
@@ -100,23 +100,27 @@
 ### D4 · microlink 쿼터(50건/일) 운영 정책
 - **선택지**: ① 무키 무료 + 실패 시 null 폴백, 재시도 없음(원본) · ② 무키 무료 + `screenshotUrl===null`만 재resolve 안전망 · ③ 유료/API키(`MICROLINK_API_KEY`).
 - **권장 ① 출시 + ② 안전망 준비**: resolve-once+CDN 캐싱이라 정상 트래픽엔 50/일 거의 안 씀. 단 모집 시즌 동시 등록·일시 장애로 null이 박히면 영구 폴백이 되므로, null인 페이지만 쓰기 경로로 다시 resolve하는 가벼운 안전망(관리자 액션/백그라운드)을 둔다. **클라 직접 호출 금지 불변식은 절대 유지.**
-- **막는 단계**: 1(B) → C·D 폴백 품질. **확정 근거**: _(미정)_
+- **막는 단계**: 1(B) → C·D 폴백 품질.
+- 🟢 **확정 (2026-06-27)**: 무키 무료 + `MOCK_SCREENSHOTS=true` 시 즉시 null 반환 (`screenshotApi.ts`). 쿼터 실패·네트워크 오류도 null 폴백. 재시도 없음(resolve-once). `screenshotUrl===null` 재resolve 안전망은 향후 관리자 기능으로 분리.
 
 ### D6 · frame-check 타임아웃 & 안전 기본값
 - **무엇이 갈리나**: 등록 속도 + 라이브뷰 폴백 비율. frame-check 4s, iframe 7s, `checkFrameBlocked` 실패=`true`(차단).
 - **선택지**: ① 원본(4s/7s, unknown=차단) · ② 타임아웃 상향(6~8s) · ③ unknown=허용(낙관적 — 빈 흰 iframe 위험).
 - **권장 ①**: spec 설계 철학이 "모르면 막아 iframe 깨짐 방지", BlockedCard 폴백이 우아해 false-positive 비용이 낮다. 두 타임아웃은 **상수(constants)로 노출**해 튜닝 가능하게.
-- **막는 단계**: 1(A 등록 지연) · 3(iframe vs BlockedCard). **확정 근거**: _(미정)_
+- **막는 단계**: 1(A 등록 지연) · 3(iframe vs BlockedCard).
+- 🟢 **확정 (2026-06-27)**: 타임아웃 **7초 단일** (`TIMEOUT_MS=7000` — `useFrameCheck.ts`·`LiveCard.tsx`에서 동일 상수 사용). `onload` 미도달 시 `frameBlocked=true`. unknown=차단 원칙 유지. X-Frame-Options DENY 사이트는 `onload`가 발화하지 않아 타임아웃으로 자연스럽게 처리됨.
 
 ### D16 · id 생성 · thumbnailColor 발급 · domain 파싱/중복
 - **무엇이 갈리나**: 모든 라우트·쿼리키가 의존하는 `Site.id` 생성 주체(spec은 `pageId=nanoid`만 명시), 폴백 색 `thumbnailColor` 발급 규칙(팔레트를 무엇으로 순환?), `domain` 파싱 규칙(www/서브도메인), URL 중복 등록 허용 여부.
 - **권장**: `Site.id`=`nanoid`(pageId와 동일), `thumbnailColor`=등록 순서/URL 해시 기반 팔레트 순환(단색 기반), `domain`=`new URL(url).hostname`에서 `www.` 제거. **URL unique 인덱스는 1차 보류**(또는 soft 경고) — 도배 방지는 인증(D2) 도입 후.
-- **막는 단계**: 1(id) · 2(thumbnailColor·domain). **확정 근거**: _(미정)_
+- **막는 단계**: 1(id) · 2(thumbnailColor·domain).
+- 🟢 **확정 (2026-06-27)**: `Site.id`·`Page.pageId` = `nanoid`. `thumbnailColor` = 도메인 해시 기반 8색 팔레트 결정론적 순환 (`colorFromDomain()` in `sitesRepo.ts` — 같은 도메인=같은 색). `domain` = `new URL(url).hostname`에서 `www.` 제거. URL unique 인덱스 1차 보류.
 
 ### D17 · 개발 중 microlink 쿼터 보호 (mock)
 - **무엇이 갈리나**: B/A 반복 테스트로 **개발 단계에서 50/일이 금방 소진**되면 이후 작업이 전부 폴백만 보게 된다.
 - **권장**: `MOCK_SCREENSHOTS` env 토글 — 켜지면 `resolveScreenshotUrl`이 실제 호출 없이 고정 더미 이미지 URL(또는 null) 반환. 실제 microlink 검증이 필요할 때만 끔.
-- **막는 단계**: 1(B 개발). **확정 근거**: _(미정)_
+- **막는 단계**: 1(B 개발).
+- 🟢 **확정 (2026-06-27)**: `MOCK_SCREENSHOTS=true` 이면 `screenshotApi.ts`가 즉시 `null` 반환 (microlink 미호출). 개발 중 `.env.local`에 설정. 실제 검증 시에만 해제.
 
 ---
 
@@ -126,12 +130,14 @@
 - **무엇이 갈리나**: `/api/sites` 계약(C와 D가 같은 전체목록 쿼리를 공유, D는 인덱스 네비게이션 전제), status 필터를 서버/클라 어디서.
 - **선택지**: ① 전체 로드 + 클라 필터(원본) · ② **서버 status 필터 + 전체 live 반환** · ③ 커서 페이지네이션(D 재설계 필요, 과투자).
 - **권장 ②**: 전체 로드 모델은 D 네비게이션 전제라 깨면 안 되고 그리디 규모(수십~수백)엔 충분. 단 `removed`를 네트워크에 싣지 않게 status 필터만 서버로 올린다. 수백 초과 시 D 포함 재설계.
-- **막는 단계**: 2(C) · D 공유. **확정 근거**: _(미정)_
+- **막는 단계**: 2(C) · D 공유.
+- 🟢 **확정 (2026-06-27)**: 서버 status 필터 + 전체 live 반환 (`GET /api/sites`에서 `status==='live'` filter). C·D 모두 `useSitesQuery()` 단일 훅 공유. 수백 초과 시 커서 페이지네이션 재설계.
 
 ### D14 · `next/image` vs `<img>`
 - **무엇이 갈리나**: `next/image`를 쓰면 microlink CDN 도메인을 `next.config`의 `images.remotePatterns`에 등록해야 함(미등록 시 런타임 에러).
 - **권장 `<img>`**: 임의의 외부 도메인 스크린샷이라 `next/image` 최적화 이점이 적고 remotePatterns 관리가 번거롭다. spec도 `<img>` 자연높이 렌더 전제. `next/image`를 택하면 remotePatterns에 microlink 호스트 추가 필요.
-- **막는 단계**: 2(C SiteCard·BlockedCard). **확정 근거**: _(미정)_
+- **막는 단계**: 2(C SiteCard·BlockedCard).
+- 🟢 **확정 (2026-06-27)**: `<img>` 사용 (`SiteCard.tsx`). 임의 외부 도메인 스크린샷이라 `next/image` 최적화 이점 없음. `remotePatterns` 추가 불필요.
 
 ---
 
@@ -141,7 +147,8 @@
 - **무엇이 갈리나**: 임의 외부 URL을 iframe으로 띄우는 보안 + 체험 품질. 원본: `sandbox="allow-scripts allow-same-origin allow-forms allow-popups"`, `allow-top-navigation` 없음.
 - **선택지**: ① 원본 유지 · ② 더 엄격(`allow-same-origin` 제거 → 다수 사이트 렌더 깨짐, 핵심 체험 훼손) · ③ 엄격 + 등록 URL 허용리스트(공개등록 시, 무마찰 등록과 충돌).
 - **권장 ①** + **보강**: D의 핵심 가치가 '살아있는 iframe'이라 `allow-same-origin` 제거는 체험을 깬다. 멤버 등록 전제(D2)면 악성 임베드 리스크 낮음. `allow-top-navigation` 미부여 **반드시 유지**(부모 탈취 방지), 추가로 `referrerpolicy="no-referrer"` + 권한정책 `allow=""`(카메라/마이크/결제 차단). 공개(비멤버) 등록을 허용한다면 그때 ③ 재검토.
-- **막는 단계**: 3(D). **확정 근거**: _(미정)_
+- **막는 단계**: 3(D).
+- 🟢 **확정 (2026-06-27)**: `sandbox="allow-scripts allow-same-origin allow-forms allow-popups"` (`LiveCard.tsx`). `allow-top-navigation` 미부여(부모 URL 탈취 방지). 공개 등록 허용 시 허용리스트(③) 재검토.
 
 ---
 
@@ -169,3 +176,4 @@
 ## 변경 이력
 - **2026-06-27 (1)** 18개 결정 식별 — 8개는 스펙 직접, 9개는 완전성 비평에서 보강. 전부 🔴 미결.
 - **2026-06-27 (2)** 0단계 게이트 4개 확정: **D1 완전제거 · D2 getCurrentUserId · D3 E제거+live\|removed · D10 프로토타입 soft 일관**(→🟢). D10에서 파생된 썸네일 높이 결정 **D10a** 신설(🔴).
+- **2026-06-27 (3)** A+B+D 구현 완료로 1·2·3단계 게이트 결정 7개 확정: **D4·D6·D7·D8·D14·D16·D17**(→🟢). 미결 잔존: D5·D9·D10a·D11·D12·D13·D15.

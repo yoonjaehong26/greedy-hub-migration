@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useSitesQuery } from '@/shared/core/queries/siteQueries';
 import { useThemeStore } from '@/shared/core/stores/themeStore';
+import { RegisterModal } from '@/features/register/RegisterModal';
 import { SiteCard } from './SiteCard';
 import { useFeedColumns } from './useFeedColumns';
 
@@ -10,6 +12,7 @@ export function FeedGrid() {
   const toggle = useThemeStore((s) => s.toggle);
   const colorScheme = useThemeStore((s) => s.colorScheme);
   const columns = useFeedColumns();
+  const [showRegister, setShowRegister] = useState(false);
 
   return (
     <div className="min-h-dvh bg-[var(--c-bg)]">
@@ -24,9 +27,8 @@ export function FeedGrid() {
             {colorScheme === 'light' ? '🌙' : '☀️'}
           </button>
           <button
-            disabled
-            title="등록 기능 준비 중"
-            className="bg-brand text-white border-none rounded-lg py-[0.4rem] px-[0.875rem] text-sm font-semibold cursor-pointer font-[inherit] transition-[background] duration-150 [&:not(:disabled):hover]:bg-brand-soft disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setShowRegister(true)}
+            className="bg-brand text-white border-none rounded-lg py-[0.4rem] px-[0.875rem] text-sm font-semibold cursor-pointer font-[inherit] transition-[background] duration-150 hover:bg-brand-soft"
           >
             + 등록
           </button>
@@ -63,6 +65,8 @@ export function FeedGrid() {
           </div>
         )}
       </main>
+
+      {showRegister && <RegisterModal onClose={() => setShowRegister(false)} />}
     </div>
   );
 }

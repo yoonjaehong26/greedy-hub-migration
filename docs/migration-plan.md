@@ -50,9 +50,10 @@
 |---|---|---|
 | **0. 토대** | 타입·테마·DB·env·Tailwind | ✅ 완료 |
 | **읽기 인프라** | getSites · GET /api/sites · useSitesQuery · 시드 | ✅ 완료 |
-| **C 그리드** | FeedGrid · SiteCard at `/showcase` | ✅ 완료 (라우트 수정됨) |
-| **1. B+A** | 등록 파이프라인 (screenshotApi · frame-check · RegisterModal) | 🔴 미시작 |
-| **2. D** | iframe 라이브뷰 at `/showcase/live/[siteId]` | 🔴 미시작 |
+| **C 그리드** | FeedGrid · SiteCard at `/showcase` | ✅ 완료 |
+| **B 스크린샷** | screenshotApi · MOCK_SCREENSHOTS 토글 · POST 라우트 연동 | ✅ 완료 |
+| **A 등록** | createSite · useCreateSiteMutation · useFrameCheck · RegisterModal | ✅ 완료 |
+| **D 라이브뷰** | liveViewStore · useLiveGestures · LiveViewport · LiveCard · BlockedCard | ✅ 완료 |
 
 ---
 
@@ -84,14 +85,19 @@
 | 사이트 CRUD | `src/shared/lib/db/sitesRepo.ts` | lib |
 | 시드 | `src/shared/lib/db/seedData.ts` | lib |
 | 스크린샷 API (B) | `src/shared/core/api/screenshotApi.ts` | core |
-| frame-check API | `src/shared/core/api/frameCheckApi.ts` | core |
 | fetch 래퍼 | `src/shared/core/api/siteApi.ts` | core |
-| Query 훅 | `src/shared/core/queries/siteQueries.ts` | core |
-| 등록 로직 | `src/features/register/useRegisterForm.ts` | features |
+| Query·Mutation 훅 | `src/shared/core/queries/siteQueries.ts` | core |
+| 라이브뷰 Store | `src/shared/core/stores/liveViewStore.ts` | core |
+| frame-check 훅 | `src/features/register/useFrameCheck.ts` | features |
 | 등록 모달 | `src/features/register/RegisterModal.tsx` | features |
+| 제스처 훅 | `src/shared/lib/hooks/useLiveGestures.ts` | lib |
 | 그리드 | `src/features/feed/FeedGrid.tsx` | features |
 | 카드 | `src/features/feed/SiteCard.tsx` | features |
-| 라이브뷰 | `src/features/live/LiveViewport.tsx` 외 | features |
-| API 라우트 | `src/app/api/sites/…` · `src/app/api/frame-check/…` | app |
+| 라이브뷰 컨테이너 | `src/features/live/LiveViewport.tsx` | features |
+| iframe 카드 | `src/features/live/LiveCard.tsx` | features |
+| 차단 폴백 | `src/features/live/BlockedCard.tsx` | features |
+| 메타 띠 | `src/features/live/MetaStrip.tsx` | features |
+| 페이지 닷 | `src/features/live/PageDots.tsx` | features |
+| API 라우트 | `src/app/api/sites/route.ts` | app |
 | 쇼케이스 페이지 | `src/app/showcase/page.tsx` | app |
 | 라이브 페이지 | `src/app/showcase/live/[siteId]/page.tsx` | app |
