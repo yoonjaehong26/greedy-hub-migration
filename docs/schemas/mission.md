@@ -46,17 +46,25 @@ export interface MissionSubmissionDocument {
   reviewRound: number;              // 리뷰 라운드 수 (1R, 2R …)
   status: SubmissionStatus;
   deadline: Date | null;            // 이번 리뷰 라운드 마감일
-  reflectedAt: Date | null;         // 멤버가 "리뷰 반영 완료" 누른 시각
+  deadlineExtensionCount: number;   // 기간 연장 횟수 (기본 0, '1회 연장됨' 표시에 사용)
+  reflectedAt: Date | null;         // 멤버가 "리뷰 반영 완료" 누른 시각 → 재리뷰 요청 상태
+  reviewDoneAt: Date | null;        // 리뷰어가 "리뷰 완료" 누른 시각
   mergedAt: Date | null;            // 머지(완료) 처리 시각
   submittedAt: Date;
   updatedAt: Date;
 }
 
 export type SubmissionStatus =
-  | 'submitted'  // PR 제출됨, 리뷰어 미배정
+  | 'submitted'  // PR 제출됨, 리뷰어 미배정 (review.html의 '신규·0R')
   | 'in_review'  // 리뷰어 배정 후 리뷰 진행 중
   | 'merged'     // 기간 종료 → 완료
   | 'skipped';   // 쉬는 주
+
+// review.html 리뷰어 워크스페이스의 세부 상태는 필드 조합으로 표현
+// '신규'       → status: 'submitted',  reviewRound: 0
+// '리뷰중'     → status: 'in_review',  reflectedAt: null
+// '재리뷰 요청' → status: 'in_review',  reflectedAt: Date (멤버가 반영 완료 누름)
+// '완료'       → status: 'merged'
 
 // ── 앱용 변환형 ─────────────────────────────────────────────────────────────
 export interface Mission extends Omit<MissionDocument, '_id' | 'createdAt' | 'updatedAt'> {
