@@ -4,6 +4,7 @@ import clientPromise from './mongodb';
 import type { Site, Page } from '@/shared/core/types/site';
 import { getCurrentUserId } from './usersRepo';
 import { SEED_SITES } from './seedData';
+import { fetchScreenshotUrl } from '@/shared/core/api/screenshotApi';
 
 const THUMBNAIL_COLORS = [
   '#017356', '#7C3AED', '#0EA5E9', '#F59E0B',
@@ -80,6 +81,28 @@ export async function ensureSeeded(): Promise<void> {
   });
 
   await col.insertMany(docs as Document[]);
+}
+
+export async function refreshNullScreenshots(): Promise<number> {
+  const col = await getCollection();
+  const docs = await col.find({ 'pages.screenshotUrl': null }).toArray();
+
+  let updated = 0;
+  for (const doc of docs) {
+    const newPages = await Promise.all(
+      (doc.pages as Page[]).map(async (p) => {
+        if (p.screenshotUrl !== null) return p;
+        const url = await fetchScreenshotUrl(p.url);
+        return url ? { ...p, screenshotUrl: url } : p;
+      }),
+    );
+    const changed = newPages.some((p, i) => p.screenshotUrl !== (doc.pages as Page[])[i].screenshotUrl);
+    if (changed) {
+      await col.updateOne({ _id: doc._id }, { $set: { pages: newPages } });
+      updated++;
+    }
+  }
+  return updated;
 }
 
 export async function createSite(input: CreateSiteInput): Promise<Site> {

@@ -19,6 +19,7 @@ export const NAV_ITEMS = [
   { href: '/review',   label: '리뷰',     roles: ['reviewer','staff'] as Role[] },
   { href: '/study',    label: '스터디',   roles: ['member','reviewer','staff'] as Role[] },
   { href: '/blog',     label: '블로그',   roles: ['guest','member','reviewer','staff','alumni'] as Role[] },
+  { href: '/showcase', label: '쇼케이스', roles: ['guest','member','reviewer','staff','alumni'] as Role[] },
   { href: '/projects', label: '프로젝트', roles: ['guest','member','reviewer','staff','alumni'] as Role[] },
   { href: '/gallery',  label: '활동',     roles: ['guest','member','reviewer','staff','alumni'] as Role[] },
   { href: '/members',  label: '멤버',     roles: ['guest','member','reviewer','staff','alumni'] as Role[] },

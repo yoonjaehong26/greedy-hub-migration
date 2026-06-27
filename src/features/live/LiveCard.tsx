@@ -7,17 +7,15 @@ import { BlockedCard } from './BlockedCard';
 interface Props {
   site: Site;
   page: Page;
-  isInteractive: boolean;
 }
 
 const TIMEOUT_MS = 7000;
 
-export function LiveCard({ site, page, isInteractive }: Props) {
+export function LiveCard({ site, page }: Props) {
   const [blocked, setBlocked] = useState(page.frameBlocked);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Reset on page change
     if (page.frameBlocked) {
       setBlocked(true);
       return;
@@ -36,7 +34,7 @@ export function LiveCard({ site, page, isInteractive }: Props) {
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="w-full h-full">
       <iframe
         key={page.pageId}
         src={page.url}
@@ -47,8 +45,6 @@ export function LiveCard({ site, page, isInteractive }: Props) {
         title={`${site.title} — ${page.label}`}
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
       />
-      {/* Shield: 둘러보기 모드에서 iframe 직접 조작 차단 */}
-      {!isInteractive && <div className="absolute inset-0 cursor-default" />}
     </div>
   );
 }

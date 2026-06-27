@@ -85,7 +85,7 @@ export default function HomePage() {
 
       {/* 무엇을 하나 */}
       <section id="about" className="mx-auto max-w-6xl px-5 py-14">
-        <h2 className="text-2xl md:text-3xl font-bold">그리디는 이렇게 굴러갑니다</h2>
+        <h2 className="text-2xl md:text-3xl font-bold leading-snug">그리디는 이렇게 굴러갑니다</h2>
         <p className="mt-2 text-slate-600 dark:text-slate-400">
           모집 → OT → 스터디(미션·리뷰 티키타카) → 팀 프로젝트(데모데이) → 회고
         </p>
@@ -110,7 +110,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl px-5 py-14">
         <div className="flex items-end justify-between">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold">최신 기술블로그</h2>
+            <h2 className="text-2xl md:text-3xl font-bold leading-snug">최신 기술블로그</h2>
             <p className="mt-2 text-slate-600 dark:text-slate-400">
               멤버와 이전 기수가 남긴 기록 — 공개
             </p>
@@ -149,7 +149,7 @@ export default function HomePage() {
       {/* 프로젝트 */}
       <section className="mx-auto max-w-6xl px-5 py-14">
         <div className="flex items-end justify-between">
-          <h2 className="text-2xl md:text-3xl font-bold">기수별 팀 프로젝트</h2>
+          <h2 className="text-2xl md:text-3xl font-bold leading-snug">기수별 팀 프로젝트</h2>
           <Link href="/projects" className="text-sm font-semibold text-brand hover:underline">
             아카이브 →
           </Link>
@@ -174,7 +174,7 @@ export default function HomePage() {
       {/* 모집 CTA */}
       <section className="mx-auto max-w-6xl px-5 py-14">
         <div className="rounded-2xl p-8 md:p-12 text-center bg-gradient-to-br from-brand to-brand-soft text-white">
-          <h2 className="text-2xl md:text-3xl font-bold">개발, 같이 꾸준히 하고 싶다면</h2>
+          <h2 className="text-2xl md:text-3xl font-bold leading-snug">개발, 같이 꾸준히 하고 싶다면</h2>
           <p className="mt-3 text-white/90">방학마다 새 기수를 모집합니다. 재학생·휴학생 누구나 환영.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link

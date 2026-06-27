@@ -2,30 +2,20 @@
 
 import { useState } from 'react';
 import { useSitesQuery } from '@/shared/core/queries/siteQueries';
-import { useThemeStore } from '@/shared/core/stores/themeStore';
 import { RegisterModal } from '@/features/register/RegisterModal';
 import { SiteCard } from './SiteCard';
 import { useFeedColumns } from './useFeedColumns';
 
 export function FeedGrid() {
   const { data: sites, isLoading, isError } = useSitesQuery();
-  const toggle = useThemeStore((s) => s.toggle);
-  const colorScheme = useThemeStore((s) => s.colorScheme);
   const columns = useFeedColumns();
   const [showRegister, setShowRegister] = useState(false);
 
   return (
     <div className="min-h-dvh bg-[var(--c-bg)]">
-      <header className="sticky top-0 z-10 bg-[var(--c-surface)] border-b border-[var(--c-border)] px-6 h-14 flex items-center justify-between backdrop-blur">
-        <span className="text-lg font-bold text-brand tracking-tight">Greedy Hub</span>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={toggle}
-            title="테마 전환"
-            className="bg-transparent border-none cursor-pointer text-lg p-1 rounded-md leading-none hover:bg-[var(--c-border)]"
-          >
-            {colorScheme === 'light' ? '🌙' : '☀️'}
-          </button>
+      <main className="max-w-[1200px] mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-5">
+          <h1 className="text-xl font-bold text-[var(--c-text)]">쇼케이스</h1>
           <button
             onClick={() => setShowRegister(true)}
             className="bg-brand text-white border-none rounded-lg py-[0.4rem] px-[0.875rem] text-sm font-semibold cursor-pointer font-[inherit] transition-[background] duration-150 hover:bg-brand-soft"
@@ -33,9 +23,6 @@ export function FeedGrid() {
             + 등록
           </button>
         </div>
-      </header>
-
-      <main className="max-w-[1200px] mx-auto px-4 py-6">
         {isLoading && (
           <p className="text-center text-[var(--c-text-sub)] py-12 text-[0.9375rem]">
             불러오는 중…
