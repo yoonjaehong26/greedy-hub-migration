@@ -18,6 +18,7 @@ export const useThemeStore = create<ThemeState>()(
         set((s) => {
           const next: ColorScheme = s.colorScheme === 'light' ? 'dark' : 'light';
           document.documentElement.setAttribute('data-theme', next);
+          document.documentElement.classList.toggle('dark', next === 'dark');
           return { colorScheme: next };
         }),
     }),
@@ -26,6 +27,7 @@ export const useThemeStore = create<ThemeState>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           document.documentElement.setAttribute('data-theme', state.colorScheme);
+          document.documentElement.classList.toggle('dark', state.colorScheme === 'dark');
         }
       },
     }

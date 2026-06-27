@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { AppQueryProvider } from '@/shared/components/providers/AppQueryProvider';
 import { ThemeProvider } from '@/shared/components/providers/ThemeProvider';
+import { Header } from '@/shared/components/ui/Header';
+import { Footer } from '@/shared/components/ui/Footer';
+import { RoleSwitcher } from '@/shared/components/ui/RoleSwitcher';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -9,8 +12,8 @@ export const metadata: Metadata = {
   description: '그리디의 연혁·멤버·스터디·미션·게시판·지원·추억을 한곳에서 추적하는 공식 허브',
 };
 
-// FOUC 방지: React 하이드레이션 전에 localStorage 테마를 html[data-theme]에 주입
-const themeInitScript = `(function(){try{var t=localStorage.getItem('greedy-hub-theme');var v=t?JSON.parse(t)?.state?.colorScheme:null;document.documentElement.setAttribute('data-theme',v==='dark'?'dark':'light');}catch(e){}})()`;
+// FOUC 방지: 하이드레이션 전에 data-theme + .dark 클래스를 html에 주입
+const themeInitScript = `(function(){try{var t=localStorage.getItem('greedy-hub-theme');var v=t?JSON.parse(t)?.state?.colorScheme:null;var d=v==='dark';document.documentElement.setAttribute('data-theme',d?'dark':'light');if(d)document.documentElement.classList.add('dark');}catch(e){}})()`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -26,7 +29,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <AppQueryProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <Header />
+            {children}
+            <Footer />
+            <RoleSwitcher />
+          </ThemeProvider>
         </AppQueryProvider>
       </body>
     </html>

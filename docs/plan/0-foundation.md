@@ -58,17 +58,17 @@ interface Site {
 
 > 💡 **E 제거(D1)의 효과**: `isPaid`/`reward`/`fundingSource`/`completedByMe`가 사라져 **`SiteDoc`이 `Site`와 동일**해진다. 따라서 `toSite(doc)`는 `userId` 인자 없이 `_id`만 제거하면 끝 — Moa 원본보다 매핑이 단순하다.
 
-### 2) 디자인 토큰 — `theme.ts` + `GlobalStyle.tsx`
+### 2) 디자인 토큰 — Tailwind 설정 + `globals.css`
 | 항목 | 값 (프로토타입 `site.js`에서 이식) |
 |---|---|
-| 브랜드 | `--c-brand: #017356` · `--c-brand-soft: #02916C` · `--c-brand-deep: #014C39` |
+| 브랜드 | `brand: #017356` · `brand-soft: #02916C` · `brand-deep: #014C39` |
 | 중립 | slate 계열 (라이트 `slate-50` 배경 / 다크 `slate-900`) |
 | **카드 (D10 soft 확정)** | `rounded-2xl` + `shadow-sm` + `ring-1`(slate-900/5) + `hover:-translate-y-0.5` |
-| 폰트 | Pretendard (D13에서 로딩 방식 결정) |
-| 라이브카드 | `liveCard.desktopWidth = 420px` |
+| 폰트 | Pretendard (jsDelivr CDN, globals.css 또는 layout.tsx link) |
+| 다크모드 | `[data-theme="dark"]` CSS 변수 방식, FOUC 방지 인라인 스크립트 |
 
-- `GlobalStyle`이 `[data-theme]`에 CSS 변수를 주입하고, 컴포넌트는 `theme.colors.*` / `var(--c-*)`만 쓴다(하드코딩 금지).
-- **`layout.tsx`에 `GlobalStyle` 추가** — 현재 `StyledComponentsRegistry → AppQueryProvider`만 있고 GlobalStyle이 빠져 있다.
+- **styled-components 제거 완료** — `StyledComponentsRegistry` · `GlobalStyle` 없음.
+- Tailwind 클래스를 프로토타입 HTML에서 그대로 이식 가능.
 
 ### 3) 사용자 식별 — `getCurrentUserId` (D2)
 ```ts

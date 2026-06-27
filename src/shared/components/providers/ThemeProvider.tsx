@@ -8,6 +8,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', colorScheme);
+    document.documentElement.classList.toggle('dark', colorScheme === 'dark');
   }, [colorScheme]);
 
   return <>{children}</>;
