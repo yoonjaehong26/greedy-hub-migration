@@ -13,10 +13,12 @@ const SEED_REPOS = [
   'greedy-team/self-paced-react-advanced',     // React 심화
   'greedy-team/react-spa-routing',             // SPA 라우팅 (newsViewer)
   'greedy-team/react-todo-list',               // Todo (렌더링 최적화)
-  // ── 3기 백엔드 (nextstep 공용 레포 — public, 명부로 귀속) ──
-  'next-step/java-racingcar-simple-playground',
-  'next-step/java-lotto-clean-playground',
-  'next-step/spring-basic-roomescape-playground',
+  // ── 2·3기 백엔드 (nextstep 공용 레포 — public, 명부로 귀속) ──
+  'next-step/java-racingcar-simple-playground',   // 자동차 경주
+  'next-step/java-lotto-clean-playground',        // 로또
+  'next-step/java-ladder-func-playground',        // 사다리
+  'next-step/spring-roomescape-playground',       // 방탈출① (MVC·JDBC·Core)
+  'next-step/spring-basic-roomescape-playground', // 방탈출② (MVC·JPA·Core)
   // ── 4기 프론트 (파일럿 범위 밖 · 추후 카탈로그 추가 시 사용) ──
   'greedy-team/javascript-greedy-roulette',
   'greedy-team/javascript-zombie-survival',

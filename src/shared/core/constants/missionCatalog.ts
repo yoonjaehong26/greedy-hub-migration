@@ -29,13 +29,17 @@ function sharedCurriculum(cohort: CohortId): CatalogMission[] {
     { cohort, track: 'FE', order: 4, label: 'Todo (최적화)', repository: 'greedy-team/react-todo-list', introUrl: 'https://github.com/greedy-team/react-todo-list/blob/main/README.md',
       units: [{ id: '1', label: 'step1' }, { id: '2', label: 'step2' }] },
 
-    // ── 백엔드 (nextstep 공용 레포 — 접근 가능, 명부로 귀속) ──
-    { cohort, track: 'BE', order: 0, label: '자동차 경주', repository: 'next-step/java-racingcar-simple-playground', introUrl: 'https://github.com/next-step/java-racingcar-simple-playground', note: 'nextstep 강의 상세는 로그인 필요',
+    // ── 백엔드 (nextstep 공용 레포 5종 — 접근 가능, 명부+날짜창으로 귀속) ──
+    { cohort, track: 'BE', order: 0, label: '자동차 경주', repository: 'next-step/java-racingcar-simple-playground', introUrl: 'https://github.com/next-step/java-racingcar-simple-playground', note: '1~2주차',
       units: ['1', '2', '3', '4'].map((n) => ({ id: n, label: `${n}단계` })) },
-    { cohort, track: 'BE', order: 1, label: '로또', repository: 'next-step/java-lotto-clean-playground', introUrl: 'https://github.com/next-step/java-lotto-clean-playground', note: 'nextstep 강의 상세는 로그인 필요',
+    { cohort, track: 'BE', order: 1, label: '로또', repository: 'next-step/java-lotto-clean-playground', introUrl: 'https://github.com/next-step/java-lotto-clean-playground', note: '3~4주차',
       units: ['1', '2', '3', '4', '5'].map((n) => ({ id: n, label: `${n}단계` })) },
-    { cohort, track: 'BE', order: 2, label: '방탈출', repository: 'next-step/spring-basic-roomescape-playground', introUrl: 'https://github.com/next-step/spring-basic-roomescape-playground', note: '9단계 = 3페이즈(MVC·JPA·Core)',
-      units: [{ id: 'mvc', label: 'MVC 인증(1-3)' }, { id: 'jpa', label: 'JPA(4-6)' }, { id: 'core', label: 'Core 배포(7-9)' }] },
+    { cohort, track: 'BE', order: 2, label: '사다리', repository: 'next-step/java-ladder-func-playground', introUrl: 'https://github.com/next-step/java-ladder-func-playground', note: '5주차 · 단일 제출',
+      units: [{ id: '1', label: '제출' }] },
+    { cohort, track: 'BE', order: 3, label: '방탈출① (JDBC)', repository: 'next-step/spring-roomescape-playground', introUrl: 'https://github.com/next-step/spring-roomescape-playground', note: '6~9주차 · Spring MVC·JDBC·Core',
+      units: [{ id: 'mvc', label: 'MVC' }, { id: 'jdbc', label: 'JDBC' }, { id: 'core', label: 'Core' }] },
+    { cohort, track: 'BE', order: 4, label: '방탈출② (JPA)', repository: 'next-step/spring-basic-roomescape-playground', introUrl: 'https://github.com/next-step/spring-basic-roomescape-playground', note: '11~14주차 · Spring MVC·JPA·Core',
+      units: [{ id: 'mvc', label: 'MVC 인증' }, { id: 'jpa', label: 'JPA' }, { id: 'core', label: 'Core 배포' }] },
   ];
 }
 
@@ -90,6 +94,15 @@ export function matchUnits(repository: string, title: string): string[] {
       break;
     case 'next-step/java-lotto-clean-playground':
       for (const u of ['1', '2', '3', '4', '5']) if (n.has(u)) got.add(u);
+      break;
+    case 'next-step/java-ladder-func-playground':
+      got.add('1'); // 단일 제출 — 이 레포 PR이면 완료로 간주
+      break;
+    case 'next-step/spring-roomescape-playground':
+      // 제목에 [Spring MVC/JDBC/Core] 페이즈명 명시 → 키워드 우선
+      if (/MVC|인증/i.test(t)) got.add('mvc');
+      if (/JDBC/i.test(t)) got.add('jdbc');
+      if (/Core|배포/i.test(t)) got.add('core');
       break;
     case 'next-step/spring-basic-roomescape-playground':
       if (/MVC|인증/i.test(t) || n.has('1') || n.has('2') || n.has('3')) got.add('mvc');

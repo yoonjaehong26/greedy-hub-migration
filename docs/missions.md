@@ -18,7 +18,7 @@
 | 무엇이든 | 라우팅·접근성·테스트 | `greedy-team/react-whatever-you-want` | 4 |
 | SSR | 포켓몬 도감 | `greedy-team/react-pokemon-ssr` | 4 |
 
-> 백엔드(nextstep 공용 레포): `next-step/java-racingcar-simple-playground` · `java-lotto-clean-playground` · `spring-basic-roomescape-playground`.
+> 백엔드(nextstep 공용 레포 5종, 2·3기): 자동차 `java-racingcar-simple-playground` · 로또 `java-lotto-clean-playground` · 사다리 `java-ladder-func-playground` · 방탈출①(MVC·JDBC·Core) `spring-roomescape-playground` · 방탈출②(MVC·JPA·Core) `spring-basic-roomescape-playground`.
 
 ---
 
