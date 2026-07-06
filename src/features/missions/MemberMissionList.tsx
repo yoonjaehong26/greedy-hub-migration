@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useMissionsQuery } from '@/shared/core/queries/missionQueries';
-import { PILOT_COHORT } from '@/shared/core/constants/cohorts';
-import type { Track } from '@/shared/core/types/roster';
+import { COHORTS, PILOT_COHORT } from '@/shared/core/constants/cohorts';
+import { availableCohorts } from '@/shared/core/constants/missionCatalog';
+import type { CohortId, Track } from '@/shared/core/types/roster';
+import type { Mission } from '@/shared/core/types/mission';
 import {
   buildMemberRows,
   outsiderSummary,
@@ -27,14 +29,21 @@ const UNIT: Record<UnitState, { pill: string; label: string }> = {
   none:      { pill: 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400', label: '없음' },
 };
 
+const PR_STATE: Record<Mission['state'], { label: string; cls: string }> = {
+  merged: { label: '머지', cls: 'text-emerald-600 dark:text-emerald-400' },
+  open:   { label: '미머지', cls: 'text-amber-600 dark:text-amber-400' },
+  closed: { label: '닫힘', cls: 'text-slate-400 line-through' },
+};
+
 const CARD = 'rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10';
 
 export function MemberMissionList() {
   const { data: missions = [], isLoading, error } = useMissionsQuery();
+  const cohorts = availableCohorts();
+  const [cohort, setCohort] = useState<CohortId>(PILOT_COHORT);
   const [track, setTrack] = useState<Track>('FE');
   const [open, setOpen] = useState<Set<string>>(new Set());
 
-  const cohort = PILOT_COHORT;
   const rows = buildMemberRows(missions, cohort, track);
   const { outsiderAuthors } = outsiderSummary(missions, cohort, track);
   const totalUnmapped = rows.reduce((s, r) => s + r.unmapped, 0);
@@ -50,20 +59,37 @@ export function MemberMissionList() {
 
   return (
     <section className="mt-7">
-      {/* 트랙 토글 + 요약 */}
+      {/* 기수 + 트랙 토글 + 요약 */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-lg ring-1 ring-slate-900/10 dark:ring-white/10 overflow-hidden text-sm">
-          {(['FE', 'BE'] as Track[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTrack(t)}
-              className={`px-4 py-1.5 font-medium transition-colors ${
-                track === t ? 'bg-brand text-white' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'
-              }`}
-            >
-              {t === 'FE' ? '프론트' : '백엔드'}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* 기수 선택 */}
+          <div className="inline-flex rounded-lg ring-1 ring-slate-900/10 dark:ring-white/10 overflow-hidden text-sm">
+            {cohorts.map((c) => (
+              <button
+                key={c}
+                onClick={() => { setCohort(c); setOpen(new Set()); }}
+                className={`px-3 py-1.5 font-medium transition-colors ${
+                  cohort === c ? 'bg-slate-800 text-white dark:bg-white dark:text-slate-900' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                {COHORTS[c].label}
+              </button>
+            ))}
+          </div>
+          {/* 트랙 선택 */}
+          <div className="inline-flex rounded-lg ring-1 ring-slate-900/10 dark:ring-white/10 overflow-hidden text-sm">
+            {(['FE', 'BE'] as Track[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTrack(t)}
+                className={`px-4 py-1.5 font-medium transition-colors ${
+                  track === t ? 'bg-brand text-white' : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                {t === 'FE' ? '프론트' : '백엔드'}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
           <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300">멤버 {rows.length}명</span>
@@ -161,7 +187,7 @@ function MemberItem({ row, expanded, onToggle }: { row: MemberRow; expanded: boo
 }
 
 function MissionDetail({ cell }: { cell: MissionCell }) {
-  const { mission, units, mergedUnits, totalUnits, prs, unmapped } = cell;
+  const { mission, units, mergedUnits, totalUnits, prs, unmapped, closedHidden } = cell;
   return (
     <div className="rounded-lg bg-slate-50 dark:bg-white/5 px-3 py-2">
       {/* 미션 헤더 */}
@@ -176,7 +202,7 @@ function MissionDetail({ cell }: { cell: MissionCell }) {
         )}
       </div>
 
-      {/* 단계별 뱃지 */}
+      {/* 단계별 상태 뱃지 (요약) */}
       <div className="mt-1.5 flex flex-wrap gap-1">
         {units.map((u) => (
           <span key={u.id} className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${UNIT[u.state].pill}`} title={UNIT[u.state].label}>
@@ -185,26 +211,39 @@ function MissionDetail({ cell }: { cell: MissionCell }) {
         ))}
       </div>
 
-      {/* PR 링크 */}
+      {/* PR 목록 — 단계별 라벨 (각 PR이 무슨 단계인지) */}
       {prs.length > 0 ? (
-        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
-          {prs.map((p) => (
-            <a
-              key={p.id}
-              href={p.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`text-xs font-mono hover:text-brand ${p.state === 'merged' ? 'text-emerald-600 dark:text-emerald-400' : p.state === 'open' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 line-through'}`}
-              title={p.title}
-            >
-              PR #{p.prNumber}
-              {p.state === 'open' && ' (미머지)'}
-              {p.state === 'closed' && ' (닫힘)'}
-            </a>
+        <ul className="mt-2 space-y-1">
+          {prs.map(({ pr, unitLabels }) => (
+            <li key={pr.id} className="flex items-center gap-2 flex-wrap text-xs">
+              {/* 이 PR이 커버하는 단계 */}
+              <span className="flex flex-wrap gap-1">
+                {unitLabels.length > 0 ? (
+                  unitLabels.map((l, i) => (
+                    <span key={i} className="px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-white/10 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                      {l}
+                    </span>
+                  ))
+                ) : (
+                  <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 dark:bg-rose-400/10 dark:text-rose-300" title="어느 단계에도 매핑 안 됨">
+                    매핑불명
+                  </span>
+                )}
+              </span>
+              <span className="text-slate-300 dark:text-slate-600">→</span>
+              <a href={pr.url} target="_blank" rel="noopener noreferrer" title={pr.title} className={`font-mono hover:underline ${PR_STATE[pr.state].cls}`}>
+                PR #{pr.prNumber}
+              </a>
+              <span className={PR_STATE[pr.state].cls}>{PR_STATE[pr.state].label}</span>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
         <p className="mt-1 text-xs text-slate-400">제출된 PR 없음</p>
+      )}
+
+      {closedHidden > 0 && (
+        <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">닫힌 PR {closedHidden}건 숨김 (재제출·실수)</p>
       )}
     </div>
   );

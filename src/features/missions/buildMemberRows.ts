@@ -16,14 +16,21 @@ export type CellState = 'done' | 'pending' | 'gap' | 'none';
 
 export type UnitState = 'merged' | 'submitted' | 'none';
 
+/** PR 한 건 + 이 PR이 커버하는 단계 라벨(매핑불명이면 빈 배열). */
+export interface MissionPr {
+  pr: Mission;
+  unitLabels: string[];
+}
+
 export interface MissionCell {
   mission: CatalogMission;
   state: CellState;
   units: { id: string; label: string; state: UnitState }[];
   mergedUnits: number;   // 머지된 단계 수
   totalUnits: number;    // 총 단계 수
-  prs: Mission[];        // 이 멤버가 이 레포에 올린 PR들
-  unmapped: number;      // 어떤 단계에도 매핑 안 된 PR 수 (QA 대상)
+  prs: MissionPr[];      // 표시용 PR들 (머지·미머지만, 단계 순 정렬)
+  closedHidden: number;  // 숨긴 닫힌 PR 수 (재제출/실수 — 집계·표시 제외)
+  unmapped: number;      // 어떤 단계에도 매핑 안 된 PR 수 (머지·미머지 기준, QA 대상)
 }
 
 export interface MemberRow {
@@ -55,16 +62,29 @@ function memberFlags(member: Member, cohort: CohortId): string[] {
 
 /** 한 멤버의 한 미션(레포) PR들 → 단계별 상태 셀. */
 function buildCell(mission: CatalogMission, prs: Mission[]): MissionCell {
+  const labelById = new Map(mission.units.map((u) => [u.id, u.label]));
+  const orderById = new Map(mission.units.map((u, i) => [u.id, i]));
   const merged = new Set<string>();
   const opened = new Set<string>();
   let unmapped = 0;
+  let closedHidden = 0;
 
+  // 닫힌 PR(재제출·실수)은 표시·집계에서 제외. 머지/미머지만 단계 매핑.
+  const prList: (MissionPr & { _order: number })[] = [];
   for (const pr of prs) {
+    if (pr.state === 'closed') {
+      closedHidden++;
+      continue;
+    }
     const hit = matchUnits(mission.repository, pr.title);
-    if (hit.length === 0 && (pr.state === 'merged' || pr.state === 'open')) unmapped++;
+    if (hit.length === 0) unmapped++;
     if (pr.state === 'merged') hit.forEach((u) => merged.add(u));
     else if (pr.state === 'open') hit.forEach((u) => opened.add(u));
+    const order = hit.length ? Math.min(...hit.map((id) => orderById.get(id) ?? 99)) : 99;
+    prList.push({ pr, unitLabels: hit.map((id) => labelById.get(id) ?? id), _order: order });
   }
+  // 단계 순 → 같은 단계면 PR 번호 순
+  prList.sort((a, b) => a._order - b._order || a.pr.prNumber - b.pr.prNumber);
 
   const units = mission.units.map((u) => ({
     id: u.id,
@@ -79,11 +99,20 @@ function buildCell(mission: CatalogMission, prs: Mission[]): MissionCell {
 
   let state: CellState;
   if (mergedUnits === totalUnits) state = 'done';
-  else if (prs.length === 0 || !anyProgress) state = 'none';
+  else if (!anyProgress) state = 'none'; // 머지·미머지 없음 (닫힌 PR만 있어도 미착수)
   else if (hasNoPrUnit) state = 'gap'; // 진행했지만 PR 없는 단계가 남음
   else state = 'pending'; // 미완 단계 전부 open PR → 머지만 하면 됨
 
-  return { mission, state, units, mergedUnits, totalUnits, prs, unmapped };
+  return {
+    mission,
+    state,
+    units,
+    mergedUnits,
+    totalUnits,
+    prs: prList.map(({ pr, unitLabels }) => ({ pr, unitLabels })),
+    closedHidden,
+    unmapped,
+  };
 }
 
 /**

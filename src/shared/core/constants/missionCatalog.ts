@@ -11,26 +11,37 @@ import type { CatalogMission, CohortId, Track } from '@/shared/core/types/roster
  *
  * 조직명은 실제 존재하는 `greedy-team`(구 코드의 `greedy-study`는 오타 버그).
  */
-export const MISSION_CATALOG: CatalogMission[] = [
-  // ── 3기 프론트 ──
-  { cohort: 3, track: 'FE', order: 0, label: '숫자야구 (JS)', repository: 'greedy-team/javascript-baseball-precourse', introUrl: 'https://github.com/greedy-team/javascript-baseball-precourse',
-    units: [{ id: 'w1', label: '1주차' }, { id: 'w2', label: '2주차(MVC)' }] },
-  { cohort: 3, track: 'FE', order: 1, label: 'React 기초', repository: 'cho-log/self-paced-react', introUrl: 'https://github.com/cho-log/self-paced-react/blob/main/00-introduction/README.md',
-    units: ['1', '2', '3', '4', '5'].map((n) => ({ id: n, label: `${n}단계` })) },
-  { cohort: 3, track: 'FE', order: 2, label: 'React 심화', repository: 'greedy-team/self-paced-react-advanced', introUrl: 'https://github.com/greedy-team/self-paced-react-advanced',
-    units: [{ id: '1', label: 'styled' }, { id: '2.1', label: 'Context' }, { id: '2.2', label: 'Zustand' }, { id: '2.3', label: 'TanStack' }] },
-  { cohort: 3, track: 'FE', order: 3, label: 'SPA 라우팅', repository: 'greedy-team/react-spa-routing', introUrl: 'https://github.com/greedy-team/react-spa-routing/blob/main/README.md',
-    units: [{ id: '1', label: 'newsViewer' }] },
-  { cohort: 3, track: 'FE', order: 4, label: 'Todo (최적화)', repository: 'greedy-team/react-todo-list', introUrl: 'https://github.com/greedy-team/react-todo-list/blob/main/README.md',
-    units: [{ id: '1', label: 'step1' }, { id: '2', label: 'step2' }] },
+/**
+ * 2·3기 공용 커리큘럼 (노션상 2,3기는 미션·주차 동일 — 11주).
+ * 4기는 커리큘럼이 다르므로(룰렛·좀비·whatever·pokemon) 별도 정의 예정.
+ */
+function sharedCurriculum(cohort: CohortId): CatalogMission[] {
+  return [
+    // ── 프론트 ──
+    { cohort, track: 'FE', order: 0, label: '숫자야구 (JS)', repository: 'greedy-team/javascript-baseball-precourse', introUrl: 'https://github.com/greedy-team/javascript-baseball-precourse',
+      units: [{ id: 'w1', label: '1주차' }, { id: 'w2', label: '2주차(MVC)' }] },
+    { cohort, track: 'FE', order: 1, label: 'React 기초', repository: 'cho-log/self-paced-react', introUrl: 'https://github.com/cho-log/self-paced-react/blob/main/00-introduction/README.md',
+      units: ['1', '2', '3', '4', '5'].map((n) => ({ id: n, label: `${n}단계` })) },
+    { cohort, track: 'FE', order: 2, label: 'React 심화', repository: 'greedy-team/self-paced-react-advanced', introUrl: 'https://github.com/greedy-team/self-paced-react-advanced',
+      units: [{ id: '1', label: 'styled' }, { id: '2.1', label: 'Context' }, { id: '2.2', label: 'Zustand' }, { id: '2.3', label: 'TanStack' }] },
+    { cohort, track: 'FE', order: 3, label: 'SPA 라우팅', repository: 'greedy-team/react-spa-routing', introUrl: 'https://github.com/greedy-team/react-spa-routing/blob/main/README.md',
+      units: [{ id: '1', label: 'newsViewer' }] },
+    { cohort, track: 'FE', order: 4, label: 'Todo (최적화)', repository: 'greedy-team/react-todo-list', introUrl: 'https://github.com/greedy-team/react-todo-list/blob/main/README.md',
+      units: [{ id: '1', label: 'step1' }, { id: '2', label: 'step2' }] },
 
-  // ── 3기 백엔드 (nextstep 공용 레포 — 접근 가능, 명부로 귀속) ──
-  { cohort: 3, track: 'BE', order: 0, label: '자동차 경주', repository: 'next-step/java-racingcar-simple-playground', introUrl: 'https://github.com/next-step/java-racingcar-simple-playground', note: 'nextstep 강의 상세는 로그인 필요',
-    units: ['1', '2', '3', '4'].map((n) => ({ id: n, label: `${n}단계` })) },
-  { cohort: 3, track: 'BE', order: 1, label: '로또', repository: 'next-step/java-lotto-clean-playground', introUrl: 'https://github.com/next-step/java-lotto-clean-playground', note: 'nextstep 강의 상세는 로그인 필요',
-    units: ['1', '2', '3', '4', '5'].map((n) => ({ id: n, label: `${n}단계` })) },
-  { cohort: 3, track: 'BE', order: 2, label: '방탈출', repository: 'next-step/spring-basic-roomescape-playground', introUrl: 'https://github.com/next-step/spring-basic-roomescape-playground', note: '9단계 = 3페이즈(MVC·JPA·Core)',
-    units: [{ id: 'mvc', label: 'MVC 인증(1-3)' }, { id: 'jpa', label: 'JPA(4-6)' }, { id: 'core', label: 'Core 배포(7-9)' }] },
+    // ── 백엔드 (nextstep 공용 레포 — 접근 가능, 명부로 귀속) ──
+    { cohort, track: 'BE', order: 0, label: '자동차 경주', repository: 'next-step/java-racingcar-simple-playground', introUrl: 'https://github.com/next-step/java-racingcar-simple-playground', note: 'nextstep 강의 상세는 로그인 필요',
+      units: ['1', '2', '3', '4'].map((n) => ({ id: n, label: `${n}단계` })) },
+    { cohort, track: 'BE', order: 1, label: '로또', repository: 'next-step/java-lotto-clean-playground', introUrl: 'https://github.com/next-step/java-lotto-clean-playground', note: 'nextstep 강의 상세는 로그인 필요',
+      units: ['1', '2', '3', '4', '5'].map((n) => ({ id: n, label: `${n}단계` })) },
+    { cohort, track: 'BE', order: 2, label: '방탈출', repository: 'next-step/spring-basic-roomescape-playground', introUrl: 'https://github.com/next-step/spring-basic-roomescape-playground', note: '9단계 = 3페이즈(MVC·JPA·Core)',
+      units: [{ id: 'mvc', label: 'MVC 인증(1-3)' }, { id: 'jpa', label: 'JPA(4-6)' }, { id: 'core', label: 'Core 배포(7-9)' }] },
+  ];
+}
+
+export const MISSION_CATALOG: CatalogMission[] = [
+  ...sharedCurriculum(2),
+  ...sharedCurriculum(3),
 ];
 
 /** PR 제목에서 "N단계" 숫자(소수 포함)를 추출. */
@@ -91,4 +102,9 @@ export function matchUnits(repository: string, title: string): string[] {
 
 export function getCatalog(cohort: CohortId, track: Track): CatalogMission[] {
   return MISSION_CATALOG.filter((m) => m.cohort === cohort && m.track === track).sort((a, b) => a.order - b.order);
+}
+
+/** 카탈로그가 정의된(= 대시보드로 볼 수 있는) 기수 목록. 확장 시 자동 반영. */
+export function availableCohorts(): CohortId[] {
+  return [...new Set(MISSION_CATALOG.map((m) => m.cohort))].sort((a, b) => b - a) as CohortId[];
 }
