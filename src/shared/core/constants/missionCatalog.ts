@@ -12,8 +12,11 @@ import type { CatalogMission, CohortId, Track } from '@/shared/core/types/roster
  * 조직명은 실제 존재하는 `greedy-team`(구 코드의 `greedy-study`는 오타 버그).
  */
 /**
- * 2·3기 공용 커리큘럼 (노션상 2,3기는 미션·주차 동일 — 11주).
+ * 1~3기 공용 커리큘럼 (노션상 1,2,3기는 미션 동일 — 11주. 단, 1기는 레포별 세부 제출 방식이 다름).
  * 4기는 커리큘럼이 다르므로(룰렛·좀비·whatever·pokemon) 별도 정의 예정.
+ *
+ * 1기 특이사항: racingcar·lotto를 단계 분할 없이 PR 1건("[N주차]" 또는 무표기 제목)으로 통짜 제출.
+ * matchUnits의 racingcar/lotto 폴백(단계 매칭 실패 시 전 단계 완료 처리)이 이를 커버한다.
  */
 function sharedCurriculum(cohort: CohortId): CatalogMission[] {
   return [
@@ -44,6 +47,7 @@ function sharedCurriculum(cohort: CohortId): CatalogMission[] {
 }
 
 export const MISSION_CATALOG: CatalogMission[] = [
+  ...sharedCurriculum(1),
   ...sharedCurriculum(2),
   ...sharedCurriculum(3),
 ];
@@ -77,10 +81,11 @@ export function matchUnits(repository: string, title: string): string[] {
       for (const u of ['1', '2', '3', '4', '5']) if (n.has(u)) got.add(u);
       break;
     case 'greedy-team/self-paced-react-advanced':
+      // 2.1/2.2/2.3 표기 변형: "2.1" 점 표기 또는 "2(1)" 괄호 표기(1기 일부) 모두 인식
       if (/adv-1|(?<![\d.])1단계/.test(t) && /adv/i.test(t)) got.add('1');
-      if (t.includes('2.1') || /Context/i.test(t)) got.add('2.1');
-      if (t.includes('2.2') || /Zustand/i.test(t)) got.add('2.2');
-      if (t.includes('2.3') || /Tanstack/i.test(t)) got.add('2.3');
+      if (t.includes('2.1') || /2\(1\)/.test(t) || /Context/i.test(t)) got.add('2.1');
+      if (t.includes('2.2') || /2\(2\)/.test(t) || /Zustand/i.test(t)) got.add('2.2');
+      if (t.includes('2.3') || /2\(3\)/.test(t) || /Tanstack/i.test(t)) got.add('2.3');
       break;
     case 'greedy-team/react-spa-routing':
       got.add('1'); // 단일 제출 — 이 레포 PR이면 완료로 간주
@@ -91,9 +96,12 @@ export function matchUnits(repository: string, title: string): string[] {
       break;
     case 'next-step/java-racingcar-simple-playground':
       for (const u of ['1', '2', '3', '4']) if (n.has(u)) got.add(u);
+      // 1기: 단계 분할 없이 미션 전체를 PR 1건("[N주차]" 또는 무표기)으로 제출 → 전 단계 완료로 간주
+      if (got.size === 0) return ['1', '2', '3', '4'];
       break;
     case 'next-step/java-lotto-clean-playground':
       for (const u of ['1', '2', '3', '4', '5']) if (n.has(u)) got.add(u);
+      if (got.size === 0) return ['1', '2', '3', '4', '5'];
       break;
     case 'next-step/java-ladder-func-playground':
       got.add('1'); // 단일 제출 — 이 레포 PR이면 완료로 간주

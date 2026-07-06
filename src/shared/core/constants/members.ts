@@ -4,7 +4,7 @@ import type { Member } from '@/shared/core/types/roster';
  * 멤버 명부 — 노션 정리본(데모데이·기념비) 기준. 실데이터(PR 작성자) 교차검증 완료.
  * cross-cohort 멤버는 memberships 배열에 전 기수 이력을 담아 "중복기수" 플래그가 뜨게 함.
  * QA로 이름/아이디가 확정되면 이 파일을 직접 고친다 ("DB로 하드하게" 정리).
- * 확장 상태: 2·3기 완료. 4·1기 예정.
+ * 확장 상태: 1·2·3기 완료. 4기 예정.
  */
 export const MEMBERS: Member[] = [
   // ── 3기 두구두구 · 프론트 ──
@@ -41,11 +41,8 @@ export const MEMBERS: Member[] = [
   {
     login: 'ChangwooJ',
     name: '정창우',
-    note: 'cross-cohort: 1기 프론트(모꼬지) → 2기 프론트(슬종생)',
-    memberships: [
-      { cohort: 1, track: 'FE', role: 'F', team: '모꼬지' },
-      { cohort: 2, track: 'FE', role: 'F', team: '슬종생' },
-    ],
+    note: '노션 명부엔 1기 모꼬지로도 기재되어 있었으나, 실데이터상 미션 PR은 전부 2기 창(2025-03~07)에만 존재 → 2기 전담으로 정정(1기 이력 제거)',
+    memberships: [{ cohort: 2, track: 'FE', role: 'F', team: '슬종생' }],
   },
   {
     login: 'developowl',
@@ -68,11 +65,32 @@ export const MEMBERS: Member[] = [
   { login: 'HyerimH', name: '황혜림', memberships: [{ cohort: 2, track: 'BE', role: 'B', team: '줍줍' }] },
   { login: 'chxghee', name: '이창희', memberships: [{ cohort: 2, track: 'BE', role: 'B', team: '줍줍' }] },
   { login: 'jeonseohee9', name: '전서희', memberships: [{ cohort: 2, track: 'BE', role: 'B', team: '줍줍' }] },
-];
 
-// 참고 — 1기 확장 시 추가할 멤버 (2기 명부에서 제외한 케이스 포함):
-//   남해윤(haeyoon1): 1기 BE(따라행). 2기 줍줍 데모팀 명단엔 있으나 미션 수행은 1기 → 2기 명부 제외.
-//   (developowl 신지훈·ChangwooJ 정창우는 위에 1기 이력 포함되어 있음)
+  // ── 1기(2024-2) 모꼬지 · 프론트 ──
+  // ⚠️ 신혁수·방재경: 노션 데모데이 명부엔 있으나 숫자야구·React·next-step 전 레포에서 PR 0건 확인
+  //    (GitHub search API + 전체 동기화 데이터 이중 교차검증). 계정 자체는 존재하나 기념비 감사
+  //    명단에도 이름 없음 → 미션 미참여로 추정. QA 대기 — 실제 참여 증거 나오면 갱신.
+  { login: 'sins051301', name: '신혁수', note: '미션 PR 0건(전 레포, 이중 교차검증). 계정 존재·기념비 명단 없음 — QA 대기', memberships: [{ cohort: 1, track: 'FE', role: 'F', team: '모꼬지' }] },
+  { login: 'Jae-kyoung', name: '방재경', note: '미션 PR 0건(전 레포, 이중 교차검증). 계정 존재·기념비 명단 없음 — QA 대기', memberships: [{ cohort: 1, track: 'FE', role: 'F', team: '모꼬지' }] },
+
+  // ── 1기 따라행 · 프론트 ──
+  { login: 'Songhyejeong', name: '송혜정', memberships: [{ cohort: 1, track: 'FE', role: 'F', team: '따라행' }] },
+  { login: 'gogo1414', name: '김준수', memberships: [{ cohort: 1, track: 'FE', role: 'F', team: '따라행' }] },
+
+  // ── 1기 모꼬지 · 백엔드 ──
+  { login: 'c0mpuTurtle', name: '신혜빈', memberships: [{ cohort: 1, track: 'BE', role: 'B', team: '모꼬지' }] },
+  { login: 'goldm0ng', name: '안금서', memberships: [{ cohort: 1, track: 'BE', role: 'B', team: '모꼬지' }] },
+  { login: 'davidolleh', name: '황승준', memberships: [{ cohort: 1, track: 'BE', role: 'B', team: '모꼬지' }] },
+  { login: 'sansan20535', name: '김의진', memberships: [{ cohort: 1, track: 'BE', role: 'B', team: '모꼬지' }] },
+
+  // ── 1기 따라행 · 백엔드 (신지훈은 위 2기 항목에 1기 이력 포함) ──
+  { login: 'haeyoon1', name: '남해윤', note: '2기 줍줍 데모팀 명단에도 있으나 미션 수행은 전부 1기 창 → 1기 전담', memberships: [{ cohort: 1, track: 'BE', role: 'B', team: '따라행' }] },
+  { login: 'SANGHEEJEONG', name: '정상희', memberships: [{ cohort: 1, track: 'BE', role: 'B', team: '따라행' }] },
+
+  // ── 1기 탈퇴 멤버 (프론트, 팀 미상 — 숫자야구·self-paced-react 참여 이력 있음) ──
+  { login: 'ye6194', name: '박예은', withdrawn: true, note: '탈퇴. 숫자야구·React 기초·심화 참여 이력 있음(팀 미상)', memberships: [{ cohort: 1, track: 'FE', role: 'F' }] },
+  { login: 'bae-kh', name: '배강현', withdrawn: true, note: '탈퇴. 숫자야구·React 기초 참여 이력 있음(팀 미상)', memberships: [{ cohort: 1, track: 'FE', role: 'F' }] },
+];
 
 /** login 소문자 → Member 조회 (매칭은 항상 대소문자 무시). */
 export const MEMBER_BY_LOGIN = new Map(MEMBERS.map((m) => [m.login.toLowerCase(), m]));

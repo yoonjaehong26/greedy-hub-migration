@@ -18,15 +18,16 @@ import {
 
 const CELL: Record<CellState, { dot: string; label: string }> = {
   done:    { dot: 'bg-emerald-500', label: '완주' },
-  pending: { dot: 'bg-amber-400',   label: '미머지(머지만)' },
-  gap:     { dot: 'bg-rose-500',    label: 'PR 누락' },
+  pending: { dot: 'bg-amber-400',   label: '제출·미머지' },
+  gap:     { dot: 'bg-rose-500',    label: 'PR 누락(미제출)' },
   none:    { dot: 'bg-slate-300 dark:bg-white/15', label: '미착수' },
 };
 
 const UNIT: Record<UnitState, { pill: string; label: string }> = {
   merged:    { pill: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300', label: '머지' },
   submitted: { pill: 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300', label: '미머지' },
-  none:      { pill: 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400', label: '없음' },
+  closed:    { pill: 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400 line-through', label: '닫힘(제출)' },
+  none:      { pill: 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-500', label: '미제출' },
 };
 
 const PR_STATE: Record<Mission['state'], { label: string; cls: string }> = {
@@ -186,8 +187,10 @@ function MemberItem({ row, expanded, onToggle }: { row: MemberRow; expanded: boo
   );
 }
 
+const UNIT_GAP_PILL = 'bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300';
+
 function MissionDetail({ cell }: { cell: MissionCell }) {
-  const { mission, units, mergedUnits, totalUnits, prs, unmapped, closedHidden } = cell;
+  const { mission, state, units, mergedUnits, totalUnits, prs, unmapped, closedHidden } = cell;
   return (
     <div className="rounded-lg bg-slate-50 dark:bg-white/5 px-3 py-2">
       {/* 미션 헤더 */}
@@ -202,13 +205,20 @@ function MissionDetail({ cell }: { cell: MissionCell }) {
         )}
       </div>
 
-      {/* 단계별 상태 뱃지 (요약) */}
+      {/* 단계별 상태 뱃지 (요약). gap 미션에서 PR 자체가 없는 단계는 빨강으로 구분 */}
       <div className="mt-1.5 flex flex-wrap gap-1">
-        {units.map((u) => (
-          <span key={u.id} className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${UNIT[u.state].pill}`} title={UNIT[u.state].label}>
-            {u.label}
-          </span>
-        ))}
+        {units.map((u) => {
+          const isGapUnit = state === 'gap' && u.state === 'none';
+          return (
+            <span
+              key={u.id}
+              className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${isGapUnit ? UNIT_GAP_PILL : UNIT[u.state].pill}`}
+              title={isGapUnit ? 'PR 누락 — 머지로 해결 안 됨' : UNIT[u.state].label}
+            >
+              {u.label}
+            </span>
+          );
+        })}
       </div>
 
       {/* PR 목록 — 단계별 라벨 (각 PR이 무슨 단계인지) */}

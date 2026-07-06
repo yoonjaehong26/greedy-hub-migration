@@ -8,13 +8,20 @@ import { OVERRIDE_BY_ID } from '@/shared/core/constants/prOverrides';
 /**
  * 셀 상태(미션 단위):
  *  done    = 전 단계 머지 (완주)
- *  pending = 미완 단계가 전부 open PR 보유 → 머지만 하면 됨
- *  gap     = 미완 단계 중 PR 자체가 없는 게 있음 → 머지로 해결 안 됨 (진짜 누락)
+ *  pending = 미완 단계가 전부 제출됨(open 또는 closed) → 머지/재오픈만 하면 됨
+ *  gap     = 미완 단계 중 PR 자체가 아예 없는 게 있음 → 진짜 미제출
  *  none    = 이 미션에 제출된 PR이 하나도 없음 (미착수)
  */
 export type CellState = 'done' | 'pending' | 'gap' | 'none';
 
-export type UnitState = 'merged' | 'submitted' | 'none';
+/**
+ * 단계 상태:
+ *  merged    = 머지됨 (완료)
+ *  submitted = open PR 있음 (미머지)
+ *  closed    = 닫힌 PR만 있음 (제출했으나 머지 못 받음 — "누락"과 구분)
+ *  none      = 어떤 PR도 없음 (진짜 미제출)
+ */
+export type UnitState = 'merged' | 'submitted' | 'closed' | 'none';
 
 /** PR 한 건 + 이 PR이 커버하는 단계 라벨(매핑불명이면 빈 배열). */
 export interface MissionPr {
@@ -66,42 +73,66 @@ function buildCell(mission: CatalogMission, prs: Mission[]): MissionCell {
   const orderById = new Map(mission.units.map((u, i) => [u.id, i]));
   const merged = new Set<string>();
   const opened = new Set<string>();
+  const closed = new Set<string>(); // 닫힌 PR이 덮는 단계
   let unmapped = 0;
-  let closedHidden = 0;
 
-  // 닫힌 PR(재제출·실수)은 표시·집계에서 제외. 머지/미머지만 단계 매핑.
-  const prList: (MissionPr & { _order: number })[] = [];
+  // 1차 패스: 머지/미머지 단계 확정. 닫힌 PR은 따로 모아둔다.
+  const closedPrs: Mission[] = [];
+  const openMergedList: (MissionPr & { _order: number })[] = [];
   for (const pr of prs) {
     if (pr.state === 'closed') {
-      closedHidden++;
+      closedPrs.push(pr);
+      matchUnits(mission.repository, pr.title).forEach((u) => closed.add(u));
       continue;
     }
     const hit = matchUnits(mission.repository, pr.title);
     if (hit.length === 0) unmapped++;
     if (pr.state === 'merged') hit.forEach((u) => merged.add(u));
-    else if (pr.state === 'open') hit.forEach((u) => opened.add(u));
+    else hit.forEach((u) => opened.add(u));
     const order = hit.length ? Math.min(...hit.map((id) => orderById.get(id) ?? 99)) : 99;
-    prList.push({ pr, unitLabels: hit.map((id) => labelById.get(id) ?? id), _order: order });
+    openMergedList.push({ pr, unitLabels: hit.map((id) => labelById.get(id) ?? id), _order: order });
   }
-  // 단계 순 → 같은 단계면 PR 번호 순
-  prList.sort((a, b) => a._order - b._order || a.pr.prNumber - b.pr.prNumber);
+
+  // 2차 패스: 닫힌 PR 분류.
+  //  - 이미 머지/미머지된 단계만 덮음 → 재제출/실수 (숨김).
+  //  - 머지/미머지 안 된 단계를 덮음 → 유일한 제출 증거 (표시, "닫힘" 상태).
+  let closedHidden = 0;
+  const closedList: (MissionPr & { _order: number })[] = [];
+  for (const pr of closedPrs) {
+    const hit = matchUnits(mission.repository, pr.title);
+    const meaningful = hit.filter((u) => !merged.has(u) && !opened.has(u));
+    if (meaningful.length === 0) {
+      closedHidden++; // 전부 이미 처리된 단계 → 재제출
+      continue;
+    }
+    const order = meaningful.length ? Math.min(...meaningful.map((id) => orderById.get(id) ?? 99)) : 99;
+    closedList.push({ pr, unitLabels: hit.map((id) => labelById.get(id) ?? id), _order: order });
+  }
+
+  const prList = [...openMergedList, ...closedList].sort((a, b) => a._order - b._order || a.pr.prNumber - b.pr.prNumber);
 
   const units = mission.units.map((u) => ({
     id: u.id,
     label: u.label,
-    state: (merged.has(u.id) ? 'merged' : opened.has(u.id) ? 'submitted' : 'none') as UnitState,
+    state: (merged.has(u.id)
+      ? 'merged'
+      : opened.has(u.id)
+        ? 'submitted'
+        : closed.has(u.id)
+          ? 'closed'
+          : 'none') as UnitState,
   }));
 
   const mergedUnits = units.filter((u) => u.state === 'merged').length;
   const totalUnits = units.length;
-  const hasNoPrUnit = units.some((u) => u.state === 'none'); // 어떤 PR도 커버 못 한 단계
-  const anyProgress = units.some((u) => u.state !== 'none');
+  const hasNoPrUnit = units.some((u) => u.state === 'none'); // 어떤 PR도(닫힘 포함) 없는 단계
+  const anyPr = units.some((u) => u.state !== 'none');
 
   let state: CellState;
   if (mergedUnits === totalUnits) state = 'done';
-  else if (!anyProgress) state = 'none'; // 머지·미머지 없음 (닫힌 PR만 있어도 미착수)
-  else if (hasNoPrUnit) state = 'gap'; // 진행했지만 PR 없는 단계가 남음
-  else state = 'pending'; // 미완 단계 전부 open PR → 머지만 하면 됨
+  else if (!anyPr) state = 'none'; // PR이 하나도 없음 (미착수)
+  else if (hasNoPrUnit) state = 'gap'; // 일부 단계는 PR 자체가 없음 (진짜 미제출)
+  else state = 'pending'; // 미완 단계 전부 제출됨(open 또는 closed)
 
   return {
     mission,
