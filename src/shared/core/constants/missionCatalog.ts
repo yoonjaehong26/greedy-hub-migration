@@ -12,15 +12,31 @@ import type { CatalogMission, CohortId, Track } from '@/shared/core/types/roster
  * 조직명은 실제 존재하는 `greedy-team`(구 코드의 `greedy-study`는 오타 버그).
  */
 /**
- * 1~3기 공용 커리큘럼 (노션상 1,2,3기는 미션 동일 — 11주. 단, 1기는 레포별 세부 제출 방식이 다름).
- * 4기는 커리큘럼이 다르므로(룰렛·좀비·whatever·pokemon) 별도 정의 예정.
- *
- * 1기 특이사항: racingcar·lotto를 단계 분할 없이 PR 1건("[N주차]" 또는 무표기 제목)으로 통짜 제출.
- * matchUnits의 racingcar/lotto 폴백(단계 매칭 실패 시 전 단계 완료 처리)이 이를 커버한다.
+ * 백엔드 커리큘럼 (nextstep 공용 레포 5종) — 1·2·3·4기 전부 동일.
+ * 명부+날짜창으로 기수 귀속. 1기는 racingcar·lotto를 통짜 제출("[N주차]")하는데
+ * matchUnits의 폴백(단계 매칭 실패 시 전 단계 완료)이 커버한다.
  */
-function sharedCurriculum(cohort: CohortId): CatalogMission[] {
+function sharedBE(cohort: CohortId): CatalogMission[] {
   return [
-    // ── 프론트 ──
+    { cohort, track: 'BE', order: 0, label: '자동차 경주', repository: 'next-step/java-racingcar-simple-playground', introUrl: 'https://github.com/next-step/java-racingcar-simple-playground',
+      units: ['1', '2', '3', '4'].map((n) => ({ id: n, label: `${n}단계` })) },
+    { cohort, track: 'BE', order: 1, label: '로또', repository: 'next-step/java-lotto-clean-playground', introUrl: 'https://github.com/next-step/java-lotto-clean-playground',
+      units: ['1', '2', '3', '4', '5'].map((n) => ({ id: n, label: `${n}단계` })) },
+    { cohort, track: 'BE', order: 2, label: '사다리', repository: 'next-step/java-ladder-func-playground', introUrl: 'https://github.com/next-step/java-ladder-func-playground', note: '단일 제출',
+      units: [{ id: '1', label: '제출' }] },
+    { cohort, track: 'BE', order: 3, label: '방탈출① (JDBC)', repository: 'next-step/spring-roomescape-playground', introUrl: 'https://github.com/next-step/spring-roomescape-playground', note: 'Spring MVC·JDBC·Core',
+      units: [{ id: 'mvc', label: 'MVC' }, { id: 'jdbc', label: 'JDBC' }, { id: 'core', label: 'Core' }] },
+    { cohort, track: 'BE', order: 4, label: '방탈출② (JPA)', repository: 'next-step/spring-basic-roomescape-playground', introUrl: 'https://github.com/next-step/spring-basic-roomescape-playground', note: 'Spring MVC·JPA·Core',
+      units: [{ id: 'mvc', label: 'MVC 인증' }, { id: 'jpa', label: 'JPA' }, { id: 'core', label: 'Core 배포' }] },
+  ];
+}
+
+/**
+ * 1~3기 프론트 커리큘럼 (11주 · 노션상 동일).
+ * 숫자야구 2주(기초+MVC) → React 기초·심화 → SPA 라우팅 → Todo.
+ */
+function sharedFE123(cohort: CohortId): CatalogMission[] {
+  return [
     { cohort, track: 'FE', order: 0, label: '숫자야구 (JS)', repository: 'greedy-team/javascript-baseball-precourse', introUrl: 'https://github.com/greedy-team/javascript-baseball-precourse',
       units: [{ id: 'w1', label: '1주차' }, { id: 'w2', label: '2주차(MVC)' }] },
     { cohort, track: 'FE', order: 1, label: 'React 기초', repository: 'cho-log/self-paced-react', introUrl: 'https://github.com/cho-log/self-paced-react/blob/main/00-introduction/README.md',
@@ -31,25 +47,40 @@ function sharedCurriculum(cohort: CohortId): CatalogMission[] {
       units: [{ id: '1', label: 'newsViewer' }] },
     { cohort, track: 'FE', order: 4, label: 'Todo (최적화)', repository: 'greedy-team/react-todo-list', introUrl: 'https://github.com/greedy-team/react-todo-list/blob/main/README.md',
       units: [{ id: '1', label: 'step1' }, { id: '2', label: 'step2' }] },
+  ];
+}
 
-    // ── 백엔드 (nextstep 공용 레포 5종 — 접근 가능, 명부+날짜창으로 귀속) ──
-    { cohort, track: 'BE', order: 0, label: '자동차 경주', repository: 'next-step/java-racingcar-simple-playground', introUrl: 'https://github.com/next-step/java-racingcar-simple-playground', note: '1~2주차',
-      units: ['1', '2', '3', '4'].map((n) => ({ id: n, label: `${n}단계` })) },
-    { cohort, track: 'BE', order: 1, label: '로또', repository: 'next-step/java-lotto-clean-playground', introUrl: 'https://github.com/next-step/java-lotto-clean-playground', note: '3~4주차',
-      units: ['1', '2', '3', '4', '5'].map((n) => ({ id: n, label: `${n}단계` })) },
-    { cohort, track: 'BE', order: 2, label: '사다리', repository: 'next-step/java-ladder-func-playground', introUrl: 'https://github.com/next-step/java-ladder-func-playground', note: '5주차 · 단일 제출',
+/**
+ * 4기 프론트 커리큘럼 (14주 · 1~3기와 다름!).
+ * 다른 점: 숫자야구 1주만 · 룰렛·좀비 추가 · SPA/Todo 대신 무엇이든·포켓몬SSR.
+ * ⚠️ 진행 중 기수(2026-1). whatever·pokemon은 착수 전이라 제출 데이터 없음 →
+ *    해당 파서(matchUnits)는 실제 제출이 들어오면 제목 형식 재확인 후 보정 필요.
+ */
+function cohort4FE(): CatalogMission[] {
+  const cohort: CohortId = 4;
+  return [
+    { cohort, track: 'FE', order: 0, label: '숫자야구 (JS)', repository: 'greedy-team/javascript-baseball-precourse', introUrl: 'https://github.com/greedy-team/javascript-baseball-precourse', note: '1주차 (4기는 1주만)',
+      units: [{ id: 'w1', label: '1주차' }] },
+    { cohort, track: 'FE', order: 1, label: '탐욕의 룰렛', repository: 'greedy-team/javascript-greedy-roulette', introUrl: 'https://github.com/greedy-team/javascript-greedy-roulette', note: '2주차 · 단일 제출',
       units: [{ id: '1', label: '제출' }] },
-    { cohort, track: 'BE', order: 3, label: '방탈출① (JDBC)', repository: 'next-step/spring-roomescape-playground', introUrl: 'https://github.com/next-step/spring-roomescape-playground', note: '6~9주차 · Spring MVC·JDBC·Core',
-      units: [{ id: 'mvc', label: 'MVC' }, { id: 'jdbc', label: 'JDBC' }, { id: 'core', label: 'Core' }] },
-    { cohort, track: 'BE', order: 4, label: '방탈출② (JPA)', repository: 'next-step/spring-basic-roomescape-playground', introUrl: 'https://github.com/next-step/spring-basic-roomescape-playground', note: '11~14주차 · Spring MVC·JPA·Core',
-      units: [{ id: 'mvc', label: 'MVC 인증' }, { id: 'jpa', label: 'JPA' }, { id: 'core', label: 'Core 배포' }] },
+    { cohort, track: 'FE', order: 2, label: '좀비 게임', repository: 'greedy-team/javascript-zombie-survival', introUrl: 'https://github.com/greedy-team/javascript-zombie-survival', note: '3주차 · 단일 제출',
+      units: [{ id: '1', label: '제출' }] },
+    { cohort, track: 'FE', order: 3, label: 'React 기초', repository: 'cho-log/self-paced-react', introUrl: 'https://github.com/cho-log/self-paced-react/blob/main/00-introduction/README.md', note: '4~5주차',
+      units: ['1', '2', '3', '4', '5'].map((n) => ({ id: n, label: `${n}단계` })) },
+    { cohort, track: 'FE', order: 4, label: 'React 심화', repository: 'greedy-team/self-paced-react-advanced', introUrl: 'https://github.com/greedy-team/self-paced-react-advanced', note: '6~9주차',
+      units: [{ id: '1', label: 'styled' }, { id: '2.1', label: 'Context' }, { id: '2.2', label: 'Zustand' }, { id: '2.3', label: 'TanStack' }] },
+    { cohort, track: 'FE', order: 5, label: '무엇이든 만들기', repository: 'greedy-team/react-whatever-you-want', introUrl: 'https://github.com/greedy-team/react-whatever-you-want', note: '10~12주차 (진행 중 · 제목형식 미확정)',
+      units: [{ id: '1', label: 'step1' }, { id: '2', label: 'step2' }, { id: '3', label: 'step3' }] },
+    { cohort, track: 'FE', order: 6, label: '포켓몬 SSR', repository: 'greedy-team/react-pokemon-ssr', introUrl: 'https://github.com/greedy-team/react-pokemon-ssr', note: '13~14주차 (착수 전 · 제목형식 미확정)',
+      units: [{ id: '1', label: '1주차' }, { id: '2', label: '2주차' }] },
   ];
 }
 
 export const MISSION_CATALOG: CatalogMission[] = [
-  ...sharedCurriculum(1),
-  ...sharedCurriculum(2),
-  ...sharedCurriculum(3),
+  ...sharedFE123(1), ...sharedBE(1),
+  ...sharedFE123(2), ...sharedBE(2),
+  ...sharedFE123(3), ...sharedBE(3),
+  ...cohort4FE(), ...sharedBE(4),
 ];
 
 /** PR 제목에서 "N단계" 숫자(소수 포함)를 추출. */
@@ -94,6 +125,24 @@ export function matchUnits(repository: string, title: string): string[] {
       if (/step\s*1/i.test(t)) got.add('1');
       if (/step\s*2/i.test(t)) got.add('2');
       break;
+    // ── 4기 신규 프론트 레포 ──
+    case 'greedy-team/javascript-greedy-roulette':
+      got.add('1'); // 단일 제출 (룰렛)
+      break;
+    case 'greedy-team/javascript-zombie-survival':
+      got.add('1'); // 단일 제출 (좀비)
+      break;
+    case 'greedy-team/react-whatever-you-want':
+      // ⚠️ 진행 중 · 실제 제출 제목 미확정. step/단계/주차(10·11·12) 다각 인식 — 데이터 들어오면 검증.
+      if (/step\s*1/i.test(t) || /(?<![\d.])1\s*단계/.test(t) || t.includes('10주차')) got.add('1');
+      if (/step\s*2/i.test(t) || /(?<![\d.])2\s*단계/.test(t) || t.includes('11주차')) got.add('2');
+      if (/step\s*3/i.test(t) || /(?<![\d.])3\s*단계/.test(t) || t.includes('12주차')) got.add('3');
+      break;
+    case 'greedy-team/react-pokemon-ssr':
+      // ⚠️ 착수 전 · 제목 미확정. 1/2주차 또는 13/14주차 인식 — 데이터 들어오면 검증.
+      if (t.includes('1주차') || t.includes('13주차')) got.add('1');
+      if (t.includes('2주차') || t.includes('14주차')) got.add('2');
+      break;
     case 'next-step/java-racingcar-simple-playground':
       for (const u of ['1', '2', '3', '4']) if (n.has(u)) got.add(u);
       // 1기: 단계 분할 없이 미션 전체를 PR 1건("[N주차]" 또는 무표기)으로 제출 → 전 단계 완료로 간주
@@ -107,10 +156,11 @@ export function matchUnits(repository: string, title: string): string[] {
       got.add('1'); // 단일 제출 — 이 레포 PR이면 완료로 간주
       break;
     case 'next-step/spring-roomescape-playground':
-      // 제목에 [Spring MVC/JDBC/Core] 페이즈명 명시 → 키워드 우선
-      if (/MVC|인증/i.test(t)) got.add('mvc');
-      if (/JDBC/i.test(t)) got.add('jdbc');
-      if (/Core|배포/i.test(t)) got.add('core');
+      // 페이즈명 키워드 + 단계번호 폴백(1~4=MVC, 5~7=JDBC, 8~10=Core).
+      // 4기 일부가 JDBC 단계를 "Spring MVC 5,6,7단계"로 오라벨 → 번호 폴백 필요.
+      if (/MVC|인증/i.test(t) || n.has('1') || n.has('2') || n.has('3') || n.has('4')) got.add('mvc');
+      if (/JDBC/i.test(t) || n.has('5') || n.has('6') || n.has('7')) got.add('jdbc');
+      if (/Core|배포/i.test(t) || n.has('8') || n.has('9') || n.has('10')) got.add('core');
       break;
     case 'next-step/spring-basic-roomescape-playground':
       if (/MVC|인증/i.test(t) || n.has('1') || n.has('2') || n.has('3')) got.add('mvc');

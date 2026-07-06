@@ -105,6 +105,13 @@ export function MemberMissionList() {
         </div>
       </div>
 
+      {/* 진행 중 기수 안내 */}
+      {COHORTS[cohort].ongoing && (
+        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+          ⏳ 진행 중인 기수({COHORTS[cohort].label}) — 아직 안 한 뒤쪽 미션의 미착수(⚪)·미제출(🔴)은 정상입니다. 완주 판정은 종료 후에.
+        </p>
+      )}
+
       {/* 범례 */}
       <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
         {(Object.keys(CELL) as CellState[]).map((s) => (
@@ -190,7 +197,7 @@ function MemberItem({ row, expanded, onToggle }: { row: MemberRow; expanded: boo
 const UNIT_GAP_PILL = 'bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300';
 
 function MissionDetail({ cell }: { cell: MissionCell }) {
-  const { mission, state, units, mergedUnits, totalUnits, prs, unmapped, closedHidden } = cell;
+  const { mission, state, units, mergedUnits, totalUnits, prs, unmapped, closedHidden, excluded } = cell;
   return (
     <div className="rounded-lg bg-slate-50 dark:bg-white/5 px-3 py-2">
       {/* 미션 헤더 */}
@@ -255,6 +262,13 @@ function MissionDetail({ cell }: { cell: MissionCell }) {
       {closedHidden > 0 && (
         <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">닫힌 PR {closedHidden}건 숨김 (재제출·실수)</p>
       )}
+
+      {excluded.map((e) => (
+        <p key={e.prNumber} className="mt-1 text-[11px] text-rose-600 dark:text-rose-300">
+          🚫 불참 처리: {e.note ?? '오버라이드 제외'}{' '}
+          <a href={e.url} target="_blank" rel="noopener noreferrer" className="font-mono underline">PR #{e.prNumber}</a>
+        </p>
+      ))}
     </div>
   );
 }

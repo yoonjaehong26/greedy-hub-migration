@@ -29,6 +29,13 @@ export interface MissionPr {
   unitLabels: string[];
 }
 
+/** 오버라이드로 제외된 PR (불참·부정행위 등) — 이유를 화면에 노출. */
+export interface ExcludedPr {
+  prNumber: number;
+  url: string;
+  note?: string;
+}
+
 export interface MissionCell {
   mission: CatalogMission;
   state: CellState;
@@ -37,6 +44,7 @@ export interface MissionCell {
   totalUnits: number;    // 총 단계 수
   prs: MissionPr[];      // 표시용 PR들 (머지·미머지만, 단계 순 정렬)
   closedHidden: number;  // 숨긴 닫힌 PR 수 (재제출/실수 — 집계·표시 제외)
+  excluded: ExcludedPr[]; // 오버라이드로 제외된 PR (불참 등) — 이유 표기
   unmapped: number;      // 어떤 단계에도 매핑 안 된 PR 수 (머지·미머지 기준, QA 대상)
 }
 
@@ -79,7 +87,14 @@ function buildCell(mission: CatalogMission, prs: Mission[]): MissionCell {
   // 1차 패스: 머지/미머지 단계 확정. 닫힌 PR은 따로 모아둔다.
   const closedPrs: Mission[] = [];
   const openMergedList: (MissionPr & { _order: number })[] = [];
+  const excluded: ExcludedPr[] = [];
   for (const pr of prs) {
+    // 오버라이드 제외(불참·부정행위 등)는 어떤 단계에도 카운트 안 하고 이유만 기록.
+    const ov = OVERRIDE_BY_ID.get(pr.id);
+    if (ov?.status === 'exclude') {
+      excluded.push({ prNumber: pr.prNumber, url: pr.url, note: ov.note });
+      continue;
+    }
     if (pr.state === 'closed') {
       closedPrs.push(pr);
       matchUnits(mission.repository, pr.title).forEach((u) => closed.add(u));
@@ -142,6 +157,7 @@ function buildCell(mission: CatalogMission, prs: Mission[]): MissionCell {
     totalUnits,
     prs: prList.map(({ pr, unitLabels }) => ({ pr, unitLabels })),
     closedHidden,
+    excluded,
     unmapped,
   };
 }
@@ -161,8 +177,8 @@ export function buildMemberRows(missions: Mission[], cohort: CohortId, track: Tr
   for (const pr of missions) {
     if (!catalogRepos.has(pr.repository)) continue;
     if (!inCohortWindow(pr.createdAt, cohort)) continue;
+    // exclude는 buildCell에서 이유와 함께 처리(여기서 드롭하지 않음). reassign만 여기서 거른다.
     const ov = OVERRIDE_BY_ID.get(pr.id);
-    if (ov?.status === 'exclude') continue;
     if (ov?.reassignCohort && ov.reassignCohort !== cohort) continue;
     const key = pr.author.toLowerCase();
     const list = prsByAuthor.get(key) ?? [];

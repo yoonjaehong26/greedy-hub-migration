@@ -4,7 +4,7 @@ import type { Member } from '@/shared/core/types/roster';
  * 멤버 명부 — 노션 정리본(데모데이·기념비) 기준. 실데이터(PR 작성자) 교차검증 완료.
  * cross-cohort 멤버는 memberships 배열에 전 기수 이력을 담아 "중복기수" 플래그가 뜨게 함.
  * QA로 이름/아이디가 확정되면 이 파일을 직접 고친다 ("DB로 하드하게" 정리).
- * 확장 상태: 1·2·3기 완료. 4기 예정.
+ * 확장 상태: 1·2·3기 완료. 4기 진행 중(FE 커리큘럼 상이 · whatever·pokemon 착수 전).
  */
 export const MEMBERS: Member[] = [
   // ── 3기 두구두구 · 프론트 ──
@@ -90,6 +90,19 @@ export const MEMBERS: Member[] = [
   // ── 1기 탈퇴 멤버 (프론트, 팀 미상 — 숫자야구·self-paced-react 참여 이력 있음) ──
   { login: 'ye6194', name: '박예은', withdrawn: true, note: '탈퇴. 숫자야구·React 기초·심화 참여 이력 있음(팀 미상)', memberships: [{ cohort: 1, track: 'FE', role: 'F' }] },
   { login: 'bae-kh', name: '배강현', withdrawn: true, note: '탈퇴. 숫자야구·React 기초 참여 이력 있음(팀 미상)', memberships: [{ cohort: 1, track: 'FE', role: 'F' }] },
+
+  // ── 4기(2026-1) 프론트 — 진행 중 (팀 정보 노션 미기재) ──
+  { login: 'kokunut', name: '고규민', memberships: [{ cohort: 4, track: 'FE', role: 'F' }] },
+  { login: 'realcdh', name: '천동현', memberships: [{ cohort: 4, track: 'FE', role: 'F' }] },
+  { login: 'EM-H20', name: '홍의민', memberships: [{ cohort: 4, track: 'FE', role: 'F' }] },
+  { login: 'rahwan10', name: '김동건', memberships: [{ cohort: 4, track: 'FE', role: 'F' }] },
+  // ── 4기 백엔드 — 진행 중 (1~3기와 동일 5개 nextstep 레포) ──
+  { login: 'hapdaypy', name: '김민욱', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
+  { login: 'htdufhc-bit', name: '정명준', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
+  { login: 'Kdahyn', name: '강대현', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
+  { login: 'Cappucciyes', name: '이태규', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
+  { login: 'chaehyunL', name: '이채현', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
+  { login: 'haeun92e0', name: '김하은', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
 ];
 
 /** login 소문자 → Member 조회 (매칭은 항상 대소문자 무시). */
