@@ -42,6 +42,7 @@ src/
 | 코드 스타일·네이밍·파일 구조 | `docs/conventions.md` |
 | 아키텍처 결정·레이어 ESLint 설정 | `docs/architecture.md` |
 | 최초 프로젝트 세팅 (1회) | `docs/setup.md` |
+| 미션 대시보드(`/missions`) 설계·기수 확장·재이식 | `docs/missions-dashboard.md` |
 
 ## 커밋 메시지
 ```

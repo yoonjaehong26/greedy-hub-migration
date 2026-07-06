@@ -16,18 +16,3 @@ export interface TrackedRepo {
   repository: string; // "org/repo"
   addedAt: string;
 }
-
-export interface MemberMissionStats {
-  author: string;
-  total: number;
-  merged: number;
-  open: number;
-  closed: number;
-}
-
-export interface RepoMissionStats {
-  repository: string;
-  totalPRs: number;
-  uniqueAuthors: number;
-  merged: number;
-}

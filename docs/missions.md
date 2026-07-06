@@ -1,18 +1,24 @@
 # 그리디 프론트엔드 미션 커리큘럼
 
-> 총 14주차 · JavaScript 3주 + React 11주
+> ⚠️ **커리큘럼은 기수마다 다르다.** 1·2·3기 ≈ 11주(JS 2주 + React), **4기 = 14주**(JS 3주·룰렛·좀비·whatever·pokemon 추가).
+> 아래 표는 **4기 기준 전체 레포 목록**이며, 기수별 실제 미션·단계 정의는 카탈로그([missions-dashboard.md](./missions-dashboard.md) §3·§7, `src/shared/core/constants/missionCatalog.ts`)를 정답으로 본다.
+> 대시보드 설계(귀속·단계 집계·확장·재이식)는 **[missions-dashboard.md](./missions-dashboard.md)** 참조.
 
-## 추적 레포 목록
+## 레포 목록 (4기 전체 기준)
 
-| 주차 | 미션명 | 레포 |
-|---|---|---|
-| 1주차 | Javascript 숫자야구 | `greedy-team/javascript-baseball-precourse` |
-| 2주차 | Javascript 탐욕의 룰렛 | `greedy-team/javascript-greedy-roulette` |
-| 3주차 | Javascript 좀비 게임 | `greedy-team/javascript-zombie-survival` |
-| 4~5주차 | React 기초 (cho-log 협업) | `cho-log/self-paced-react` |
-| 6~9주차 | React 심화 | `greedy-team/self-paced-react-advanced` |
-| 10~12주차 | 무엇이든 만들어보세요 | `greedy-team/react-whatever-you-want` |
-| 13~14주차 | React 포켓몬 도감 (SSR) | `greedy-team/react-pokemon-ssr` |
+| 주차 | 미션명 | 레포 | 기수 |
+|---|---|---|---|
+| 1주차 | Javascript 숫자야구 | `greedy-team/javascript-baseball-precourse` | 1·2·3·4 |
+| 2주차 | Javascript 탐욕의 룰렛 | `greedy-team/javascript-greedy-roulette` | 4 |
+| 3주차 | Javascript 좀비 게임 | `greedy-team/javascript-zombie-survival` | 4 |
+| React 기초 | cho-log 협업 | `cho-log/self-paced-react` | 1·2·3·4 |
+| React 심화 | styled·Context·Zustand·TanStack | `greedy-team/self-paced-react-advanced` | 1·2·3·4 |
+| SPA 라우팅 | newsViewer | `greedy-team/react-spa-routing` | 1·2·3 |
+| Todo | 렌더링 최적화 | `greedy-team/react-todo-list` | 1·2·3 |
+| 무엇이든 | 라우팅·접근성·테스트 | `greedy-team/react-whatever-you-want` | 4 |
+| SSR | 포켓몬 도감 | `greedy-team/react-pokemon-ssr` | 4 |
+
+> 백엔드(nextstep 공용 레포): `next-step/java-racingcar-simple-playground` · `java-lotto-clean-playground` · `spring-basic-roomescape-playground`.
 
 ---
 

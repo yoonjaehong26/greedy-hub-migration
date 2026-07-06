@@ -7,17 +7,20 @@ const DB_NAME = process.env.MONGODB_DB ?? 'greedy-hub';
 const COLLECTION = 'trackedRepos';
 
 const SEED_REPOS = [
-  // 1~3주차: JavaScript 기초
-  'greedy-team/javascript-baseball-precourse',
+  // ── 3기 프론트 ──
+  'greedy-team/javascript-baseball-precourse', // 숫자야구
+  'cho-log/self-paced-react',                  // React 기초 (cho-log 공동 운영)
+  'greedy-team/self-paced-react-advanced',     // React 심화
+  'greedy-team/react-spa-routing',             // SPA 라우팅 (newsViewer)
+  'greedy-team/react-todo-list',               // Todo (렌더링 최적화)
+  // ── 3기 백엔드 (nextstep 공용 레포 — public, 명부로 귀속) ──
+  'next-step/java-racingcar-simple-playground',
+  'next-step/java-lotto-clean-playground',
+  'next-step/spring-basic-roomescape-playground',
+  // ── 4기 프론트 (파일럿 범위 밖 · 추후 카탈로그 추가 시 사용) ──
   'greedy-team/javascript-greedy-roulette',
   'greedy-team/javascript-zombie-survival',
-  // 4~5주차: React 기초 (cho-log 공동 운영)
-  'cho-log/self-paced-react',
-  // 6~9주차: React 심화
-  'greedy-team/self-paced-react-advanced',
-  // 10~12주차: 무엇이든 만들어보세요
   'greedy-team/react-whatever-you-want',
-  // 13~14주차: SSR
   'greedy-team/react-pokemon-ssr',
 ];
 
