@@ -32,7 +32,8 @@ export interface Member {
   /** GitHub login (표시용 원본 대소문자. 매칭은 소문자로 정규화). */
   login: string;
   name: string;
-  withdrawn?: boolean;
+  withdrawn?: boolean;   // 동아리 탈퇴
+  abandoned?: boolean;   // 미션 포기(중도 하차) — 남은 미션 미완이 예상됨
   memberships: Membership[];
   /** QA용 사전 메모 (예: 이름 확정, 대소문자 주의). */
   note?: string;

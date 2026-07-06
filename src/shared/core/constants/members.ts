@@ -100,7 +100,7 @@ export const MEMBERS: Member[] = [
   { login: 'hapdaypy', name: '김민욱', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
   { login: 'htdufhc-bit', name: '정명준', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
   { login: 'Kdahyn', name: '강대현', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
-  { login: 'Cappucciyes', name: '이태규', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
+  { login: 'Cappucciyes', name: '이태규', abandoned: true, memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
   { login: 'chaehyunL', name: '이채현', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
   { login: 'haeun92e0', name: '김하은', memberships: [{ cohort: 4, track: 'BE', role: 'B' }] },
 ];

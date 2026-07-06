@@ -23,6 +23,23 @@ const CELL: Record<CellState, { dot: string; label: string }> = {
   none:    { dot: 'bg-slate-300 dark:bg-white/15', label: '미착수' },
 };
 
+// 진행 중 기수: "현재 하는 미션"(= 프론티어: 마지막으로 활동한 미션)만 남색 "진행 중".
+//  - 프론티어가 pending(미머지 제출·리뷰대기) 또는 gap(뒤 단계 예정)이면 남색.
+//  - 초반의 밀린 미머지(프론티어 아님)는 그대로 노랑(제출·미머지) — 머지 대상임을 표시.
+// 완주(초록)·미착수(회색)는 그대로.
+function cellView(state: CellState, ongoing: boolean, isFrontier: boolean): { dot: string; label: string } {
+  if (ongoing && isFrontier && (state === 'pending' || state === 'gap')) return { dot: 'bg-indigo-400', label: '진행 중' };
+  return CELL[state];
+}
+
+// 진행 중 기수 범례(프론티어 개념 반영 — cellView로 못 유도하므로 명시).
+const ONGOING_LEGEND = [
+  { dot: 'bg-emerald-500', label: '완주' },
+  { dot: 'bg-indigo-400', label: '진행 중(현재 미션)' },
+  { dot: 'bg-amber-400', label: '미머지(밀림)' },
+  { dot: 'bg-slate-300 dark:bg-white/15', label: '미착수/예정' },
+];
+
 const UNIT: Record<UnitState, { pill: string; label: string }> = {
   merged:    { pill: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300', label: '머지' },
   submitted: { pill: 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300', label: '미머지' },
@@ -36,6 +53,10 @@ const PR_STATE: Record<Mission['state'], { label: string; cls: string }> = {
   closed: { label: '닫힘', cls: 'text-slate-400 line-through' },
 };
 
+// 진행 중 기수의 "현재 미션"(프론티어) 안에서는 미머지도 남색(진행 중)으로 — 셀 색과 일관.
+const UNIT_ONGOING_PILL = 'bg-indigo-100 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300';
+const PR_OPEN_ONGOING_CLS = 'text-indigo-600 dark:text-indigo-400';
+
 const CARD = 'rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10';
 
 export function MemberMissionList() {
@@ -45,6 +66,7 @@ export function MemberMissionList() {
   const [track, setTrack] = useState<Track>('FE');
   const [open, setOpen] = useState<Set<string>>(new Set());
 
+  const ongoing = COHORTS[cohort].ongoing;
   const rows = buildMemberRows(missions, cohort, track);
   const { outsiderAuthors } = outsiderSummary(missions, cohort, track);
   const totalUnmapped = rows.reduce((s, r) => s + r.unmapped, 0);
@@ -106,18 +128,18 @@ export function MemberMissionList() {
       </div>
 
       {/* 진행 중 기수 안내 */}
-      {COHORTS[cohort].ongoing && (
-        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-          ⏳ 진행 중인 기수({COHORTS[cohort].label}) — 아직 안 한 뒤쪽 미션의 미착수(⚪)·미제출(🔴)은 정상입니다. 완주 판정은 종료 후에.
+      {ongoing && (
+        <p className="mt-2 text-xs text-indigo-600 dark:text-indigo-400">
+          ⏳ 진행 중인 기수({COHORTS[cohort].label}) — <b>현재 하는 미션</b>만 진행 중(남색), 초반의 밀린 미머지는 노랑으로 남깁니다. 완주 판정은 종료 후. 개별 판단은 멤버 플래그(미션 포기 등)로.
         </p>
       )}
 
       {/* 범례 */}
       <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
-        {(Object.keys(CELL) as CellState[]).map((s) => (
-          <span key={s} className="inline-flex items-center gap-1">
-            <i className={`w-3 h-3 rounded-sm inline-block ${CELL[s].dot}`} />
-            {CELL[s].label}
+        {(ongoing ? ONGOING_LEGEND : Object.values(CELL)).map((v) => (
+          <span key={v.label} className="inline-flex items-center gap-1">
+            <i className={`w-3 h-3 rounded-sm inline-block ${v.dot}`} />
+            {v.label}
           </span>
         ))}
         <span className="text-slate-400">· 숫자 = 머지된 단계/총 단계</span>
@@ -130,7 +152,7 @@ export function MemberMissionList() {
       ) : (
         <div className={`mt-4 ${CARD} divide-y divide-slate-100 dark:divide-white/10`}>
           {rows.map((row) => (
-            <MemberItem key={row.member.login} row={row} expanded={open.has(row.member.login)} onToggle={() => toggle(row.member.login)} />
+            <MemberItem key={row.member.login} row={row} ongoing={ongoing} expanded={open.has(row.member.login)} onToggle={() => toggle(row.member.login)} />
           ))}
         </div>
       )}
@@ -138,8 +160,10 @@ export function MemberMissionList() {
   );
 }
 
-function MemberItem({ row, expanded, onToggle }: { row: MemberRow; expanded: boolean; onToggle: () => void }) {
+function MemberItem({ row, ongoing, expanded, onToggle }: { row: MemberRow; ongoing: boolean; expanded: boolean; onToggle: () => void }) {
   const { member, team, cells, mergedUnits, totalUnits, gapUnits, flags } = row;
+  // 프론티어 = 마지막으로 활동(제출)한 미션. 진행 중 기수에서 이 미션만 "진행 중"(남색).
+  const frontierIdx = cells.reduce((f, c, i) => (c.state !== 'none' ? i : f), -1);
 
   return (
     <div>
@@ -153,7 +177,7 @@ function MemberItem({ row, expanded, onToggle }: { row: MemberRow; expanded: boo
               @{member.login}
             </Link>
             {team && <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500">{team}</span>}
-            {gapUnits > 0 && (
+            {gapUnits > 0 && !ongoing && (
               <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300" title="PR 자체가 없는 미완 단계 — 머지로 해결 안 됨">
                 🔴 PR 누락 {gapUnits}건
               </span>
@@ -172,9 +196,10 @@ function MemberItem({ row, expanded, onToggle }: { row: MemberRow; expanded: boo
 
         {/* 미니 셀 스트립 (미션별) */}
         <div className="hidden sm:flex gap-1">
-          {cells.map((c, i) => (
-            <i key={i} title={`${c.mission.label}: ${c.mergedUnits}/${c.totalUnits} (${CELL[c.state].label})`} className={`w-4 h-4 rounded-sm ${CELL[c.state].dot}`} />
-          ))}
+          {cells.map((c, i) => {
+            const v = cellView(c.state, ongoing, i === frontierIdx);
+            return <i key={i} title={`${c.mission.label}: ${c.mergedUnits}/${c.totalUnits} (${v.label})`} className={`w-4 h-4 rounded-sm ${v.dot}`} />;
+          })}
         </div>
 
         <span className="text-sm font-semibold tabular-nums whitespace-nowrap">
@@ -185,8 +210,8 @@ function MemberItem({ row, expanded, onToggle }: { row: MemberRow; expanded: boo
 
       {expanded && (
         <div className="px-4 pb-4 pt-0 space-y-1.5">
-          {cells.map((c) => (
-            <MissionDetail key={c.mission.repository} cell={c} />
+          {cells.map((c, i) => (
+            <MissionDetail key={c.mission.repository} cell={c} ongoing={ongoing} isFrontier={i === frontierIdx} />
           ))}
         </div>
       )}
@@ -196,8 +221,9 @@ function MemberItem({ row, expanded, onToggle }: { row: MemberRow; expanded: boo
 
 const UNIT_GAP_PILL = 'bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300';
 
-function MissionDetail({ cell }: { cell: MissionCell }) {
+function MissionDetail({ cell, ongoing, isFrontier }: { cell: MissionCell; ongoing: boolean; isFrontier: boolean }) {
   const { mission, state, units, mergedUnits, totalUnits, prs, unmapped, closedHidden, excluded } = cell;
+  const inProgress = ongoing && isFrontier; // 진행 중 기수의 현재 미션 → 미머지도 남색
   return (
     <div className="rounded-lg bg-slate-50 dark:bg-white/5 px-3 py-2">
       {/* 미션 헤더 */}
@@ -215,13 +241,15 @@ function MissionDetail({ cell }: { cell: MissionCell }) {
       {/* 단계별 상태 뱃지 (요약). gap 미션에서 PR 자체가 없는 단계는 빨강으로 구분 */}
       <div className="mt-1.5 flex flex-wrap gap-1">
         {units.map((u) => {
-          const isGapUnit = state === 'gap' && u.state === 'none';
+          // 진행 중 기수에선 PR 없는 단계를 빨강으로 강조하지 않음(아직 안 온 단계).
+          const isGapUnit = !ongoing && state === 'gap' && u.state === 'none';
+          const pill = isGapUnit
+            ? UNIT_GAP_PILL
+            : inProgress && u.state === 'submitted'
+              ? UNIT_ONGOING_PILL
+              : UNIT[u.state].pill;
           return (
-            <span
-              key={u.id}
-              className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${isGapUnit ? UNIT_GAP_PILL : UNIT[u.state].pill}`}
-              title={isGapUnit ? 'PR 누락 — 머지로 해결 안 됨' : UNIT[u.state].label}
-            >
+            <span key={u.id} className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${pill}`} title={isGapUnit ? 'PR 누락 — 머지로 해결 안 됨' : UNIT[u.state].label}>
               {u.label}
             </span>
           );
@@ -248,10 +276,17 @@ function MissionDetail({ cell }: { cell: MissionCell }) {
                 )}
               </span>
               <span className="text-slate-300 dark:text-slate-600">→</span>
-              <a href={pr.url} target="_blank" rel="noopener noreferrer" title={pr.title} className={`font-mono hover:underline ${PR_STATE[pr.state].cls}`}>
-                PR #{pr.prNumber}
-              </a>
-              <span className={PR_STATE[pr.state].cls}>{PR_STATE[pr.state].label}</span>
+              {(() => {
+                const prCls = inProgress && pr.state === 'open' ? PR_OPEN_ONGOING_CLS : PR_STATE[pr.state].cls;
+                return (
+                  <>
+                    <a href={pr.url} target="_blank" rel="noopener noreferrer" title={pr.title} className={`font-mono hover:underline ${prCls}`}>
+                      PR #{pr.prNumber}
+                    </a>
+                    <span className={prCls}>{PR_STATE[pr.state].label}</span>
+                  </>
+                );
+              })()}
             </li>
           ))}
         </ul>

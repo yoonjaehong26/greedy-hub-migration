@@ -67,6 +67,7 @@ function inCohortWindow(iso: string, cohort: CohortId): boolean {
 function memberFlags(member: Member, cohort: CohortId): string[] {
   const flags: string[] = [];
   if (member.withdrawn) flags.push('탈퇴');
+  if (member.abandoned) flags.push('미션 포기');
   if (member.memberships.length > 1) {
     const others = member.memberships.filter((m) => m.cohort !== cohort).map((m) => `${m.cohort}기 ${m.track}`);
     if (others.length) flags.push(`중복기수(${others.join('·')})`);
