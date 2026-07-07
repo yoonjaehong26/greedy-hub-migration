@@ -67,11 +67,8 @@ export const MEMBERS: Member[] = [
   { login: 'jeonseohee9', name: '전서희', memberships: [{ cohort: 2, track: 'BE', role: 'B', team: '줍줍' }] },
 
   // ── 1기(2024-2) 모꼬지 · 프론트 ──
-  // ⚠️ 신혁수·방재경: 노션 데모데이 명부엔 있으나 숫자야구·React·next-step 전 레포에서 PR 0건 확인
-  //    (GitHub search API + 전체 동기화 데이터 이중 교차검증). 계정 자체는 존재하나 기념비 감사
-  //    명단에도 이름 없음 → 미션 미참여로 추정. QA 대기 — 실제 참여 증거 나오면 갱신.
-  { login: 'sins051301', name: '신혁수', note: '미션 PR 0건(전 레포, 이중 교차검증). 계정 존재·기념비 명단 없음 — QA 대기', memberships: [{ cohort: 1, track: 'FE', role: 'F', team: '모꼬지' }] },
-  { login: 'Jae-kyoung', name: '방재경', note: '미션 PR 0건(전 레포, 이중 교차검증). 계정 존재·기념비 명단 없음 — QA 대기', memberships: [{ cohort: 1, track: 'FE', role: 'F', team: '모꼬지' }] },
+  // 신혁수·방재경: 그리디 멤버 아님으로 확인(2026-07-06) → 명부에서 제외.
+  //   (노션 데모데이 명부엔 있었으나, 실제 그리디 소속이 아니었음. 이전엔 "미션 PR 0건"으로 QA 대기 중이었음.)
 
   // ── 1기 따라행 · 프론트 ──
   { login: 'Songhyejeong', name: '송혜정', memberships: [{ cohort: 1, track: 'FE', role: 'F', team: '따라행' }] },
@@ -87,9 +84,8 @@ export const MEMBERS: Member[] = [
   { login: 'haeyoon1', name: '남해윤', note: '2기 줍줍 데모팀 명단에도 있으나 미션 수행은 전부 1기 창 → 1기 전담', memberships: [{ cohort: 1, track: 'BE', role: 'B', team: '따라행' }] },
   { login: 'SANGHEEJEONG', name: '정상희', memberships: [{ cohort: 1, track: 'BE', role: 'B', team: '따라행' }] },
 
-  // ── 1기 탈퇴 멤버 (프론트, 팀 미상 — 숫자야구·self-paced-react 참여 이력 있음) ──
-  { login: 'ye6194', name: '박예은', withdrawn: true, note: '탈퇴. 숫자야구·React 기초·심화 참여 이력 있음(팀 미상)', memberships: [{ cohort: 1, track: 'FE', role: 'F' }] },
-  { login: 'bae-kh', name: '배강현', withdrawn: true, note: '탈퇴. 숫자야구·React 기초 참여 이력 있음(팀 미상)', memberships: [{ cohort: 1, track: 'FE', role: 'F' }] },
+  // 박예은(ye6194)·배강현(bae-kh): 그리디 멤버 아님으로 확인(2026-07-06) → 명부에서 제외.
+  //   (PR 이력은 있었으나 실제 그리디 소속이 아니었음. 이전엔 "탈퇴 멤버"로 분류 중이었음.)
 
   // ── 4기(2026-1) 프론트 — 진행 중 (팀 정보 노션 미기재) ──
   { login: 'kokunut', name: '고규민', memberships: [{ cohort: 4, track: 'FE', role: 'F' }] },
