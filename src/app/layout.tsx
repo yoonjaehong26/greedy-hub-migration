@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { AppQueryProvider } from '@/shared/components/providers/AppQueryProvider';
+import { MswProvider } from '@/shared/components/providers/MswProvider';
 import { ThemeProvider } from '@/shared/components/providers/ThemeProvider';
 import { Header } from '@/shared/components/ui/Header';
 import { Footer } from '@/shared/components/ui/Footer';
@@ -28,14 +29,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <AppQueryProvider>
-          <ThemeProvider>
-            <Header />
-            {children}
-            <Footer />
-            <RoleSwitcher />
-          </ThemeProvider>
-        </AppQueryProvider>
+        <MswProvider>
+          <AppQueryProvider>
+            <ThemeProvider>
+              <Header />
+              {children}
+              <Footer />
+              <RoleSwitcher />
+            </ThemeProvider>
+          </AppQueryProvider>
+        </MswProvider>
       </body>
     </html>
   );
