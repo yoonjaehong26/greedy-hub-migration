@@ -1,11 +1,6 @@
 import Link from 'next/link';
-
-const STATS = [
-  { label: '누적 멤버', value: '~50' },
-  { label: '진행 기수', value: '4기' },
-  { label: '트랙', value: 'FE · BE' },
-  { label: '팀 프로젝트', value: '12+' },
-];
+import { HomeStats } from '@/features/home/HomeStats';
+import { HomeProjectsPreview } from '@/features/home/HomeProjectsPreview';
 
 const FEATURES = [
   { icon: '📝', title: '매주 미션', desc: '트랙별 커리큘럼대로 매주 구현하고 PR로 제출합니다.', href: '/missions' },
@@ -18,12 +13,6 @@ const BLOG_POSTS = [
   { tags: ['회고', 'React'], title: '상태관리 미션, Zustand로 다시 짜며 배운 것', author: '박지호', meta: 'FE 4기 · 3일 전' },
   { tags: ['기술', 'Spring'], title: 'N+1 쿼리, 리뷰에서 잡힌 그날의 기록', author: '이서연', meta: 'BE 4기 · 1주 전' },
   { tags: ['취업'], title: '그리디 활동을 이력서로 정리한 방법', author: '최예린', meta: 'FE 2기 · 2주 전' },
-];
-
-const PROJECTS = [
-  { gradient: 'from-brand/30 to-slate-300 dark:to-slate-700', gen: '4기 · 공통', name: '모꼬지 — 동아리 통합 플랫폼' },
-  { gradient: 'from-emerald-400/30 to-slate-300 dark:to-slate-700', gen: '3기 · FE/BE', name: '두구두구 — 실시간 추첨' },
-  { gradient: 'from-amber-400/30 to-slate-300 dark:to-slate-700', gen: '축제 · 부스', name: '리더보드 — 축제 부스 게임' },
 ];
 
 export default function HomePage() {
@@ -70,17 +59,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <dl className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {STATS.map((s) => (
-            <div
-              key={s.label}
-              className="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-5"
-            >
-              <dt className="text-sm text-slate-500">{s.label}</dt>
-              <dd className="mt-1 text-3xl font-bold">{s.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <HomeStats />
       </section>
 
       {/* 무엇을 하나 */}
@@ -147,29 +126,7 @@ export default function HomePage() {
       </section>
 
       {/* 프로젝트 */}
-      <section className="mx-auto max-w-6xl px-5 py-14">
-        <div className="flex items-end justify-between">
-          <h2 className="text-2xl md:text-3xl font-bold leading-snug">기수별 팀 프로젝트</h2>
-          <Link href="/projects" className="text-sm font-semibold text-brand hover:underline">
-            아카이브 →
-          </Link>
-        </div>
-        <div className="mt-8 grid md:grid-cols-3 gap-5">
-          {PROJECTS.map((p) => (
-            <Link
-              key={p.name}
-              href="/projects"
-              className="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 overflow-hidden hover:-translate-y-0.5 transition"
-            >
-              <div className={`h-32 bg-gradient-to-br ${p.gradient}`} />
-              <div className="p-5">
-                <div className="text-xs text-slate-500">{p.gen}</div>
-                <h3 className="mt-1 font-semibold">{p.name}</h3>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <HomeProjectsPreview />
 
       {/* 모집 CTA */}
       <section className="mx-auto max-w-6xl px-5 py-14">
