@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useMembersQuery } from '@/shared/core/queries/memberQueries';
 import type { MemberRoleLabel, Track } from '@/shared/core/types/member';
+import { primaryMembership } from './primaryMembership';
 
 type Filter = 'all' | Track;
 
@@ -19,7 +20,9 @@ export function MemberDirectory() {
   const { data: members = [], isLoading, isError } = useMembersQuery();
   const [filter, setFilter] = useState<Filter>('all');
 
-  const visible = members.filter((m) => filter === 'all' || m.track === filter);
+  const visible = members.filter(
+    (m) => filter === 'all' || m.memberships.some((ms) => ms.track === filter),
+  );
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10">
@@ -49,29 +52,36 @@ export function MemberDirectory() {
         <p className="mt-10 text-sm text-red-500 text-center py-10">멤버 목록을 가져오지 못했습니다.</p>
       ) : (
         <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
-          {visible.map((m) => (
-            <Link
-              key={m.id}
-              href={`/members/${m.login}`}
-              title={`${m.name} 이력서 보기`}
-              className="flex items-center gap-3 rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:-translate-y-0.5 transition"
-            >
-              <div className="w-11 h-11 rounded-full bg-slate-300 dark:bg-white/20 grid place-items-center font-bold shrink-0">
-                {m.name[0]}
-              </div>
-              <div className="min-w-0">
-                <div className="font-semibold">{m.name}</div>
-                <div className="text-xs text-slate-500">{m.track} · {m.cohort}기</div>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  {m.roles.map((r) => (
-                    <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full ${CHIP_CLS[r]}`}>
-                      {r}
-                    </span>
-                  ))}
+          {visible.map((m) => {
+            const primary = primaryMembership(m.memberships);
+            return (
+              <Link
+                key={m.id}
+                href={`/members/${m.login}`}
+                title={`${m.name} 이력서 보기`}
+                className="flex items-center gap-3 rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:-translate-y-0.5 transition"
+              >
+                <div className="w-11 h-11 rounded-full bg-slate-300 dark:bg-white/20 grid place-items-center font-bold shrink-0">
+                  {m.name[0]}
                 </div>
-              </div>
-            </Link>
-          ))}
+                <div className="min-w-0">
+                  <div className="font-semibold">{m.name}</div>
+                  {primary && (
+                    <>
+                      <div className="text-xs text-slate-500">{primary.track} · {primary.cohort}기</div>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {primary.roles.map((r) => (
+                          <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full ${CHIP_CLS[r]}`}>
+                            {r}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
 

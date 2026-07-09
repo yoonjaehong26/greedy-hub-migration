@@ -31,34 +31,37 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 
 ## 3. 멤버 (Members)
 
-- `GET /members` — 파라미터 없음, **탈퇴자(`withdrawn=true`) 제외한** 전체 멤버 반환. 트랙·기수 필터는 프론트가 클라이언트에서 처리. (이건 "필터 파라미터"가 아니라 이 엔드포인트가 반환하는 리소스 자체의 정의 — 탈퇴자는 애초에 멤버 디렉토리 대상이 아님)
+- `GET /members` — 파라미터 없음, 전체 멤버 반환. 트랙·기수 필터는 프론트가 클라이언트에서 처리(어떤 `memberships[]` 항목이든 트랙이 일치하면 노출).
 - `GET /members/{id}` — `id`는 숫자 PK 또는 GitHub 로그인 슬러그 둘 다 허용(레퍼런스 구현: `String(m.id) === id || m.login === id`)
+- **탈퇴자 처리는 이 백엔드가 다루지 않는다** — 탈퇴 시 그냥 DB에서 행을 지우거나 운영진 재량으로 처리. API 계약·유지보수 부담을 줄이기 위해 의도적으로 범위에서 제외(결정).
 
 ```json
 // 목록 item
-{ "id": 12, "login": "jiho-park", "name": "박지호", "track": "FE", "cohort": 4,
-  "roles": ["멤버"], "avatarUrl": null }
+{ "id": 12, "login": "jiho-park", "name": "박지호", "avatarUrl": null,
+  "memberships": [{ "cohort": 4, "track": "FE", "roles": ["멤버"] }] }
 
-// 상세
-{ "id": 12, "login": "jiho-park", "name": "박지호", "school": "세종대학교",
-  "track": "FE", "cohort": 4, "roles": ["멤버"], "avatarUrl": null,
-  "bio": "프론트엔드에 관심 많은 개발자...",
-  "stats": { "completedMissions": 5, "teamProjects": 1, "blogPosts": 3 },
-  "teamProjects": [{ "projectId": 1, "name": "모꼬지", "roleLabel": "FE 담당" }],
-  "activities": [{ "activityId": 1, "date": "2026.05", "tag": "행사", "title": "4기 MT" }] }
+// 상세 — 여러 기수에 걸친 멤버 예시
+{ "id": 10, "login": "minseo-kang", "name": "강민서", "school": "세종대학교", "avatarUrl": null,
+  "memberships": [
+    { "cohort": 3, "track": "FE", "roles": ["멤버"] },
+    { "cohort": 4, "track": "FE", "roles": ["리드", "리뷰어", "메인테이너"] }
+  ],
+  "bio": null,
+  "stats": { "completedMissions": 0, "teamProjects": 0, "blogPosts": 0 },
+  "teamProjects": [], "activities": [] }
 ```
 
+- **한 사람이 여러 기수에 걸칠 수 있어 `memberships[]` 배열**로 관리한다(예: 3기 FE 멤버 → 4기 FE 리드로 승급). 트랙·기수·역할(roles)은 전부 membership 단위로 붙는다 — 멤버 전체에 붙는 단일 값이 아님.
+- 목록 카드처럼 "대표 소속" 하나만 필요한 화면은 프론트가 `memberships`에서 **가장 최근(cohort가 큰) 항목**을 골라 쓴다(레퍼런스: `src/features/members/primaryMembership.ts`). 백엔드는 굳이 "대표"를 계산해서 내려줄 필요 없음 — 배열 그대로 반환.
 - `roles`는 **한글 표시값 그대로** 저장·응답(`멤버 | 리뷰어 | 리드 | 메인테이너 | OB`). 코드값 매핑 없음.
 - `stats.completedMissions`/`blogPosts`는 미션·블로그 도메인이 아직 없어 값이 없으면 `0` — 프론트는 0이면 해당 통계를 숨긴다.
 
 ### MySQL
 ```sql
-member       id PK, login UNIQUE, name, school, avatar_url NULL, bio TEXT NULL,
-             withdrawn BOOL DEFAULT false, created_at
-membership   id PK, member_id FK, cohort TINYINT, track ENUM('FE','BE'), team VARCHAR NULL
+member       id PK, login UNIQUE, name, school, avatar_url NULL, bio TEXT NULL, created_at
+membership   id PK, member_id FK, cohort TINYINT, track ENUM('FE','BE')
 member_role  membership_id FK, role ENUM('멤버','리뷰어','리드','메인테이너','OB')
 ```
-목록의 `track`/`cohort`/`roles`는 "대표(최신) membership" 기준.
 
 ## 4. 프로젝트 (Projects)
 
@@ -159,7 +162,7 @@ activity_participant   activity_id FK, member_id FK NULL, name
 { "totalMembers": 50, "activeCohort": 4, "tracks": "FE · BE", "teamProjects": 12 }
 ```
 
-- 이 숫자들을 어떻게 산출할지(`member`/`project` 테이블 COUNT로 계산할지, 별도 관리 값으로 둘지)는 **API 계약에 안 드러나는 백엔드 내부 구현 선택** — 프론트는 응답으로 받는 숫자만 그대로 표시한다. 다만 참고: `GET /members`는 탈퇴자를 제외하고 반환하므로(§3), `totalMembers`를 그 개수로 그대로 쓰면 화면의 "누적 멤버" 문구(탈퇴자 포함 취지)와 안 맞을 수 있음 — 백엔드가 편한 방식으로 정하면 됨.
+- 이 숫자들을 어떻게 산출할지(`member`/`project` 테이블 COUNT로 계산할지, 별도 관리 값으로 둘지)는 **API 계약에 안 드러나는 백엔드 내부 구현 선택** — 프론트는 응답으로 받는 숫자만 그대로 표시한다.
 - 홈의 프로젝트 프리뷰 섹션은 `GET /projects` 응답 상위 N개를 그대로 재사용(전용 API 없음).
 
 ## 8. 스키마 전체 관계
