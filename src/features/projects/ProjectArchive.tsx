@@ -8,7 +8,10 @@ const FILTERS = ['전체', '4기', '3기', 'FE', 'BE'];
 
 export function ProjectArchive() {
   const [filter, setFilter] = useState('전체');
-  const { data: projects = [], isLoading, isError } = useProjectsQuery(filter);
+  const { data: projects = [], isLoading, isError } = useProjectsQuery();
+
+  const visible =
+    filter === '전체' ? projects : projects.filter((p) => p.cohortLabel === filter || p.trackLabel === filter);
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10">
@@ -38,7 +41,7 @@ export function ProjectArchive() {
         <p className="mt-10 text-sm text-red-500 text-center py-10">프로젝트 목록을 가져오지 못했습니다.</p>
       ) : (
         <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-5">
-          {projects.map((p) => (
+          {visible.map((p) => (
             <Link
               key={p.id}
               href={`/projects/${p.id}`}

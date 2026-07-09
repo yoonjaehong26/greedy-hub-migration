@@ -2,29 +2,21 @@ import { http, HttpResponse } from 'msw';
 import { MEMBERS } from '../data/members';
 
 export const memberHandlers = [
-  http.get('*/api/v1/members', ({ request }) => {
-    const url = new URL(request.url);
-    const track = url.searchParams.get('track');
-    const cohort = url.searchParams.get('cohort');
-
-    let filtered = MEMBERS;
-    if (track) filtered = filtered.filter((m) => m.track === track);
-    if (cohort) filtered = filtered.filter((m) => m.cohort === Number(cohort));
-
+  http.get('*/api/members', () => {
     return HttpResponse.json({
-      items: filtered.map(({ id, login, name, track: t, cohort: c, roles, avatarUrl }) => ({
+      items: MEMBERS.map(({ id, login, name, track, cohort, roles, avatarUrl }) => ({
         id,
         login,
         name,
-        track: t,
-        cohort: c,
+        track,
+        cohort,
         roles,
         avatarUrl,
       })),
     });
   }),
 
-  http.get('*/api/v1/members/:id', ({ params }) => {
+  http.get('*/api/members/:id', ({ params }) => {
     const { id } = params;
     const member = MEMBERS.find((m) => String(m.id) === id || m.login === id);
 

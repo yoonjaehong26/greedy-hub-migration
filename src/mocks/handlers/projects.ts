@@ -2,17 +2,9 @@ import { http, HttpResponse } from 'msw';
 import { PROJECTS } from '../data/projects';
 
 export const projectHandlers = [
-  http.get('*/api/v1/projects', ({ request }) => {
-    const url = new URL(request.url);
-    const filter = url.searchParams.get('filter');
-
-    let filtered = PROJECTS;
-    if (filter && filter !== '전체') {
-      filtered = filtered.filter((p) => p.cohortLabel === filter || p.trackLabel === filter);
-    }
-
+  http.get('*/api/projects', () => {
     return HttpResponse.json({
-      items: filtered.map(({ id, name, cohortLabel, trackLabel, description, teamSize, thumbnailUrl, thumbnailColor }) => ({
+      items: PROJECTS.map(({ id, name, cohortLabel, trackLabel, description, teamSize, thumbnailUrl, thumbnailColor }) => ({
         id,
         name,
         cohortLabel,
@@ -25,7 +17,7 @@ export const projectHandlers = [
     });
   }),
 
-  http.get('*/api/v1/projects/:id', ({ params }) => {
+  http.get('*/api/projects/:id', ({ params }) => {
     const { id } = params;
     const project = PROJECTS.find((p) => String(p.id) === id);
 

@@ -1,14 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { getActivities, getActivity } from '@/shared/core/api/activityApi';
 
-export function activitiesQueryKey(category?: string) {
-  return ['activities', category ?? '전체'] as const;
-}
+export const ACTIVITIES_QUERY_KEY = ['activities'] as const;
 
-export function useActivitiesQuery(category?: string) {
+export function useActivitiesQuery() {
   return useQuery({
-    queryKey: activitiesQueryKey(category),
-    queryFn: () => getActivities(category),
+    queryKey: ACTIVITIES_QUERY_KEY,
+    queryFn: getActivities,
   });
 }
 

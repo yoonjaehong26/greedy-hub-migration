@@ -3,23 +3,26 @@
  *
  * 브라우저 서비스워커 없이 msw/node로 각 GET 엔드포인트가 docs/backend-api-spec.md와
  * 합의한 응답 형태를 그대로 반환하는지 확인한다.
+ * 필터링(track·category 등)은 서버가 아닌 프론트에서 클라이언트 사이드로 처리 —
+ * 이 목서버는 항상 전체 목록을 반환한다.
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { server } from '../server';
 
-const BASE = 'http://localhost/api/v1';
+const BASE = 'http://localhost/api';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('GET /members', () => {
-  it('목록을 반환한다', async () => {
+  it('필터 없이 전체 목록을 반환한다', async () => {
     const res = await fetch(`${BASE}/members`);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(Array.isArray(body.items)).toBe(true);
-    expect(body.items.length).toBeGreaterThan(0);
+    expect(body.items.some((m: { track: string }) => m.track === 'FE')).toBe(true);
+    expect(body.items.some((m: { track: string }) => m.track === 'BE')).toBe(true);
     expect(body.items[0]).toMatchObject({
       id: expect.any(Number),
       login: expect.any(String),
@@ -28,12 +31,6 @@ describe('GET /members', () => {
       cohort: expect.any(Number),
       roles: expect.any(Array),
     });
-  });
-
-  it('track 필터가 동작한다', async () => {
-    const res = await fetch(`${BASE}/members?track=BE`);
-    const body = await res.json();
-    expect(body.items.every((m: { track: string }) => m.track === 'BE')).toBe(true);
   });
 });
 
@@ -54,7 +51,7 @@ describe('GET /members/:id', () => {
 });
 
 describe('GET /projects', () => {
-  it('목록을 반환한다', async () => {
+  it('필터 없이 전체 목록을 반환한다', async () => {
     const res = await fetch(`${BASE}/projects`);
     const body = await res.json();
     expect(body.items.length).toBe(6);
@@ -69,26 +66,29 @@ describe('GET /projects', () => {
   });
 });
 
-describe('GET /study/curriculum', () => {
-  it('트랙별 주차를 weekNo 순으로 반환한다', async () => {
-    const res = await fetch(`${BASE}/study/curriculum?track=FE`);
+describe('GET /curriculum', () => {
+  it('필터 없이 두 트랙 전체 주차를 반환한다', async () => {
+    const res = await fetch(`${BASE}/curriculum`);
     const body = await res.json();
-    expect(body.track).toBe('FE');
-    const weekNos = body.weeks.map((w: { weekNo: number }) => w.weekNo);
-    expect(weekNos).toEqual([...weekNos].sort((a, b) => a - b));
+    expect(body.items.some((w: { track: string }) => w.track === 'FE')).toBe(true);
+    expect(body.items.some((w: { track: string }) => w.track === 'BE')).toBe(true);
+  });
+
+  it('트랙별로 weekNo 오름차순이다', async () => {
+    const res = await fetch(`${BASE}/curriculum`);
+    const body = await res.json();
+    const feWeekNos = body.items
+      .filter((w: { track: string }) => w.track === 'FE')
+      .map((w: { weekNo: number }) => w.weekNo);
+    expect(feWeekNos).toEqual([...feWeekNos].sort((a, b) => a - b));
   });
 });
 
 describe('GET /activities', () => {
-  it('전체 목록을 반환한다', async () => {
+  it('필터 없이 전체 목록을 반환한다 (축제·창립 포함)', async () => {
     const res = await fetch(`${BASE}/activities`);
     const body = await res.json();
     expect(body.items.length).toBe(6);
-  });
-
-  it('category=행사 필터에 축제·창립도 포함된다', async () => {
-    const res = await fetch(`${BASE}/activities?category=행사`);
-    const body = await res.json();
     const titles = body.items.map((a: { title: string }) => a.title);
     expect(titles).toContain('세종대 축제 부스 운영');
     expect(titles).toContain('그리디 시작');

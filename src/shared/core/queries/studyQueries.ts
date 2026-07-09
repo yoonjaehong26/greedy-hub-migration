@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { getCurriculum } from '@/shared/core/api/studyApi';
-import type { Track } from '@/shared/core/types/study';
 
-export function useCurriculumQuery(track: Track) {
+export const CURRICULUM_QUERY_KEY = ['curriculum'] as const;
+
+export function useCurriculumQuery() {
   return useQuery({
-    queryKey: ['study', 'curriculum', track] as const,
-    queryFn: () => getCurriculum(track),
+    queryKey: CURRICULUM_QUERY_KEY,
+    queryFn: getCurriculum,
   });
 }
