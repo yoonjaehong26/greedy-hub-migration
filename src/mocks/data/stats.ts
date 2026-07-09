@@ -1,8 +1,8 @@
 /**
  * stats.ts — 홈 통계 목 데이터
  *
- * 출처: src/app/page.tsx의 STATS. member/project 집계와 별개로 마케팅 문구성 전체 통계라
- * 실제 백엔드에서도 누적치(현재 명부 수와 무관)로 별도 관리될 값.
+ * 출처: src/app/page.tsx의 STATS. 값 산출 방식(집계 vs 별도 관리)은 백엔드 구현 재량 —
+ * 프론트는 이 숫자를 그대로 받아 표시할 뿐이다.
  */
 
 export interface MockStats {
