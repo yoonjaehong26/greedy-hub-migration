@@ -94,10 +94,39 @@ describe('GET /activities', () => {
     expect(titles).toContain('그리디 시작');
   });
 
-  it('상세는 images·participants를 포함한다', async () => {
+  it('date 내림차순으로 정렬된다', async () => {
+    const res = await fetch(`${BASE}/activities`);
+    const body = await res.json();
+    const dates = body.items.map((a: { date: string }) => a.date);
+    expect(dates).toEqual([...dates].sort().reverse());
+  });
+
+  it('thumbnailUrls는 항상 imageCount 이하·최대 3장이다', async () => {
+    const res = await fetch(`${BASE}/activities`);
+    const body = await res.json();
+    body.items.forEach((a: { imageCount: number; thumbnailUrls: string[] }) => {
+      expect(a.thumbnailUrls.length).toBeLessThanOrEqual(3);
+      expect(a.thumbnailUrls.length).toBeLessThanOrEqual(a.imageCount);
+    });
+  });
+
+  it('사진이 3장보다 많으면 3장으로 잘리고 sortOrder 순으로 온다', async () => {
+    const res = await fetch(`${BASE}/activities`);
+    const body = await res.json();
+    // id=1(4기 MT)은 실제 이미지 5장 — 목록엔 앞 3장만
+    const mt = body.items.find((a: { id: number }) => a.id === 1);
+    expect(mt.imageCount).toBe(5);
+    expect(mt.thumbnailUrls).toHaveLength(3);
+    expect(mt.thumbnailUrls[0]).toContain('greedy-activity-1-0');
+    expect(mt.thumbnailUrls[2]).toContain('greedy-activity-1-2');
+  });
+
+  it('상세는 images·participants를 포함하고 images는 sortOrder 순이다', async () => {
     const res = await fetch(`${BASE}/activities/1`);
     const body = await res.json();
-    expect(body.images.length).toBe(3);
+    expect(body.images.length).toBe(5);
+    const orders = body.images.map((img: { sortOrder: number }) => img.sortOrder);
+    expect(orders).toEqual([...orders].sort((a, b) => a - b));
     expect(body.participants).toEqual(
       expect.arrayContaining([expect.objectContaining({ name: '박지호' })]),
     );

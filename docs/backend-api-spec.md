@@ -15,7 +15,7 @@
 | 멤버 (`/members`) | ✅ | ❌ | 반년(기수) | 학기 전환 시 SQL 시드 |
 | 스터디 (`/study`) | ✅ | ❌ | 반년(기수) | 〃 |
 | 프로젝트 (`/projects`) | ✅ | ❌ | 반년(데모데이) | 〃 |
-| 홈 통계 (`/`) | ✅ | — | 실시간 집계 | 위 테이블 COUNT |
+| 홈 통계 (`/`) | ✅ | — | 실시간 집계 | 산출 방식은 백엔드 재량(§7) |
 
 DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프론트가 읽을 수 있다(브라우저는 MySQL에 직접 접속 불가). 쓰기 API·관리자 CRUD는 실제로 콘텐츠가 계속 쌓이는 **활동 타임라인 한 곳으로만 한정**한다.
 
@@ -26,12 +26,12 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 - **서버 사이드 필터링 없음 — 목록 엔드포인트는 항상 전체를 반환한다.** 멤버 ~50·프로젝트 수십 개·활동 수십 건 수준이라 쿼리 파라미터로 필터링할 이유가 없고, 화면의 트랙·기수·카테고리 필터는 전부 **프론트에서 이미 받은 전체 목록을 클라이언트 사이드로 필터링**한다. (부수 효과: "잘못된 필터값이면 400인지 빈 배열인지" 같은 애매함이 애초에 발생하지 않음 — 서버가 필터를 아예 안 받으니까.)
 - 페이지네이션 불필요 (위와 같은 이유).
 - 에러: `{ "error": { "code": "NOT_FOUND", "message": "..." } }` + 4xx/5xx status. 목록 엔드포인트는 파라미터가 없어 이 에러 케이스도 없음 — 404는 상세(`/{id}`) 조회에서만 발생.
-- 이미지 필드는 항상 완성된 URL 문자열(`thumbnailUrl`, `coverImageUrl`, `images[].url`). 저장 방식(Vercel Blob·S3 등)은 이후 결정, 프론트는 URL만 소비.
+- 이미지 필드는 항상 완성된 URL 문자열(`thumbnailUrl`, `thumbnailUrls[]`, `images[].url`). 저장 방식(Vercel Blob·S3 등)은 이후 결정, 프론트는 URL만 소비.
 - 인증 없음 — 이 문서의 모든 엔드포인트는 공개 GET, Phase 1에서 인증 미들웨어 불필요.
 
 ## 3. 멤버 (Members)
 
-- `GET /members` — 파라미터 없음, 전체 멤버 반환. 트랙·기수 필터는 프론트가 클라이언트에서 처리
+- `GET /members` — 파라미터 없음, **탈퇴자(`withdrawn=true`) 제외한** 전체 멤버 반환. 트랙·기수 필터는 프론트가 클라이언트에서 처리. (이건 "필터 파라미터"가 아니라 이 엔드포인트가 반환하는 리소스 자체의 정의 — 탈퇴자는 애초에 멤버 디렉토리 대상이 아님)
 - `GET /members/{id}` — `id`는 숫자 PK 또는 GitHub 로그인 슬러그 둘 다 허용(레퍼런스 구현: `String(m.id) === id || m.login === id`)
 
 ```json
@@ -115,32 +115,36 @@ curriculum_week  id PK, track ENUM('FE','BE'), week_no INT, week_label, title,
 
 읽기는 MVP, 쓰기는 Phase 2(인증 붙은 뒤).
 
-- `GET /activities` — 파라미터 없음, 전체 반환
-- `GET /activities/{id}`
+- `GET /activities` — 파라미터 없음, 전체 반환. **정렬: `date` 내림차순(최신순)** — 잠정 확정(디스코드 게시글을 그대로 DB화해서 가져올 예정이라 우선 날짜순으로 충분, 추후 바뀔 수 있음)
+- `GET /activities/{id}` — 상세의 `images`는 **`sortOrder` 오름차순** 보장
 
 ```json
 // 목록 item
 { "id": 1, "date": "2026.05", "tag": "행사", "title": "4기 MT — 1박 2일",
-  "summary": "4기가 처음으로 함께한 엠티...", "imageCount": 3, "thumbnailUrl": null }
+  "summary": "4기가 처음으로 함께한 엠티...", "imageCount": 5,
+  "thumbnailUrls": ["https://../0.jpg", "https://../1.jpg", "https://../2.jpg"] }
 
 // 상세
 { "id": 1, "date": "2026.05", "tag": "행사", "title": "4기 MT — 1박 2일",
   "body": "4기가 처음으로 다 같이...\n\n처음 만난 멤버들도...",
-  "coverImageUrl": null,
   "images": [{ "id": 10, "url": "https://..", "sortOrder": 0 }],
   "participants": [{ "memberId": 12, "name": "박지호" }] }
 ```
 
 - `tag`: `행사 | 세션 | 데모데이 | 축제 | 창립`. 카테고리 필터 버킷(전체/행사/세션/데모데이 — `행사` 버킷은 `축제`·`창립`도 포함)은 **백엔드 계약이 아니라 프론트 전용 로직**이다(레퍼런스: `src/features/activities/categoryFilter.ts`의 `CATEGORY_TO_TAGS`). 백엔드는 `tag` 필드만 그대로 반환하면 됨.
 - `date`는 MySQL `DATE`로 저장, 응답은 화면 표기(`2026.05`)로 포맷.
+- `thumbnailUrls`는 **목록 화면에서 사진을 최대 3장까지 그리드로 보여주기 위한 필드** — `images`를 `sortOrder` 오름차순으로 정렬한 뒤 앞 3장의 URL만 뽑음(별도 "대표사진 지정" 개념 없음, 콘텐츠가 큐레이션으로 수작업 입력되니 입력자가 사진 순서로 통제). 사진이 없으면 빈 배열. `imageCount`(전체 장수)가 3보다 많아도 `thumbnailUrls`는 항상 3장까지만 — 나머지 장수는 프론트가 `imageCount - thumbnailUrls.length`로 "+N" 뱃지 표시.
+- `body`의 문단 구분은 **빈 줄 두 번(`\n\n`)** 컨벤션 — 마크다운 아님, 프론트가 `split('\n\n')`로 문단을 나눠 렌더링. 데이터 입력 시(디스코드 글 옮겨 적을 때) 이 규칙을 지켜야 함.
+- **⏳ 공개/비공개 분리 + 멤버 인증**: 활동별로 공개 여부가 갈릴 예정이나, 로그인 기능이 약 2주 뒤에 붙을 예정이라 그때 인증 방식(토큰 종류)이 정해지면 같이 설계한다. 지금 스키마엔 반영 안 함(추측 설계 방지). 그 전까지 `GET /activities`는 전체 공개로 취급.
 
 **Phase 2 (인증 필요, 이번 구현 범위 아님)**
 - `POST /activities`, `PATCH /activities/{id}`, `POST /activities/{id}/images`(multipart)
+- 공개/비공개 필터링 + 멤버 토큰 미들웨어 (로그인 기능과 함께 설계 예정)
 
 ### MySQL
 ```sql
 activity              id PK, activity_date DATE, tag ENUM('행사','세션','데모데이','축제','창립'),
-                       title, summary, body TEXT, cover_image_id NULL, created_at
+                       title, summary, body TEXT, created_at
 activity_image         id PK, activity_id FK, url, sort_order INT
 activity_participant   activity_id FK, member_id FK NULL, name
 ```
@@ -155,7 +159,7 @@ activity_participant   activity_id FK, member_id FK NULL, name
 { "totalMembers": 50, "activeCohort": 4, "tracks": "FE · BE", "teamProjects": 12 }
 ```
 
-- 전용 테이블 없이 `member`/`project` 테이블 집계(`COUNT`, `MAX(membership.cohort)`)로 계산.
+- 이 숫자들을 어떻게 산출할지(`member`/`project` 테이블 COUNT로 계산할지, 별도 관리 값으로 둘지)는 **API 계약에 안 드러나는 백엔드 내부 구현 선택** — 프론트는 응답으로 받는 숫자만 그대로 표시한다. 다만 참고: `GET /members`는 탈퇴자를 제외하고 반환하므로(§3), `totalMembers`를 그 개수로 그대로 쓰면 화면의 "누적 멤버" 문구(탈퇴자 포함 취지)와 안 맞을 수 있음 — 백엔드가 편한 방식으로 정하면 됨.
 - 홈의 프로젝트 프리뷰 섹션은 `GET /projects` 응답 상위 N개를 그대로 재사용(전용 API 없음).
 
 ## 8. 스키마 전체 관계

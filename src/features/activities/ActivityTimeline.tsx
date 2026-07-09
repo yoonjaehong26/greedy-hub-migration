@@ -76,17 +76,27 @@ export function ActivityTimeline() {
               >
                 <h3 className="font-semibold">{a.title}</h3>
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{a.summary}</p>
-                {a.thumbnailUrl && (
-                  <div className="mt-3 relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={a.thumbnailUrl}
-                      alt=""
-                      className="aspect-[16/6] rounded-lg object-cover w-full"
-                    />
-                    <span className="absolute bottom-2 right-2 text-xs px-2 py-0.5 rounded-full bg-black/50 text-white">
-                      사진 {a.imageCount}장
-                    </span>
+                {a.thumbnailUrls.length > 0 && (
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {a.thumbnailUrls.map((url, i) => {
+                      const isLast = i === a.thumbnailUrls.length - 1;
+                      const remaining = a.imageCount - a.thumbnailUrls.length;
+                      return (
+                        <div key={url} className="relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={url}
+                            alt=""
+                            className="aspect-[4/3] rounded-lg object-cover w-full"
+                          />
+                          {isLast && remaining > 0 && (
+                            <span className="absolute inset-0 rounded-lg bg-black/50 text-white text-sm font-semibold grid place-items-center">
+                              +{remaining}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </Link>

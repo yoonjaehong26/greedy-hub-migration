@@ -3,15 +3,20 @@ import { ACTIVITIES } from '../data/activities';
 
 export const activityHandlers = [
   http.get('*/api/activities', () => {
+    const sorted = [...ACTIVITIES].sort((a, b) => b.date.localeCompare(a.date));
+
     return HttpResponse.json({
-      items: ACTIVITIES.map(({ id, date, tag, title, summary, images, coverImageUrl }) => ({
+      items: sorted.map(({ id, date, tag, title, summary, images }) => ({
         id,
         date,
         tag,
         title,
         summary,
         imageCount: images.length,
-        thumbnailUrl: coverImageUrl ?? images[0]?.url ?? null,
+        thumbnailUrls: [...images]
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .slice(0, 3)
+          .map((img) => img.url),
       })),
     });
   }),
@@ -27,6 +32,9 @@ export const activityHandlers = [
       );
     }
 
-    return HttpResponse.json(activity);
+    return HttpResponse.json({
+      ...activity,
+      images: [...activity.images].sort((a, b) => a.sortOrder - b.sortOrder),
+    });
   }),
 ];
