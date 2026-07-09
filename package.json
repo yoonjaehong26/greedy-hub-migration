@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:mock": "NEXT_PUBLIC_API_MOCK=true next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
@@ -19,6 +20,7 @@
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "swagger-ui-dist": "^5.32.8",
     "tailwindcss": "^4.3.1",
     "zustand": "^5.0.1"
   },
@@ -26,6 +28,7 @@
     "@types/node": "^22.9.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/swagger-ui-dist": "^3.30.6",
     "@vitejs/plugin-react": "^4.3.3",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.1.0",
@@ -33,6 +36,7 @@
     "eslint-plugin-import": "^2.31.0",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
+    "msw": "^2.14.6",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "vitest": "^2.1.5"
@@ -40,6 +44,11 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix"
+    ]
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
     ]
   }
 }
