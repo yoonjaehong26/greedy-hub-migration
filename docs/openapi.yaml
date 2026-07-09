@@ -1,0 +1,335 @@
+openapi: 3.0.3
+info:
+  title: 그리디 허브 백엔드 API
+  version: "0.1.0-draft"
+  description: |
+    Spring Boot + MySQL로 신규 구현할 백엔드의 계약. 원본 논의·근거는 `docs/backend-api-spec.md` 참고.
+    이 파일은 그 문서의 형식적 표현(OpenAPI)이며, 두 문서가 어긋나면 `backend-api-spec.md`가 우선한다.
+
+    **⚠️ 프로젝트(Projects)·스터디(Study) 도메인은 백엔드 자체 필요 여부가 아직 팀 논의 중** (backend-api-spec.md §1·§4·§5·§11-1).
+    ROI상 백엔드 없이 프론트 상수로 관리하는 안이 유력하다. 이 두 도메인의 스키마는 팀 결정 전까지의 **잠정안(draft)**이며,
+    스터디는 화면 피벗(주차별 → 전체 커리큘럼)으로 필드 자체도 재설계 대기 중이다(§5·§11-2). Spring 구현에 바로 착수하지 말 것.
+
+servers:
+  - url: /api
+
+tags:
+  - name: members
+    description: "확정 (Phase 1)"
+  - name: activities
+    description: "확정 (Phase 1) — 쓰기는 Phase 2"
+  - name: stats
+    description: "확정 (Phase 1)"
+  - name: projects
+    description: "⚠️ draft — 백엔드 필요 여부 미확정"
+  - name: study
+    description: "⚠️ draft — 백엔드 필요 여부 미확정 + 필드 재설계 필요"
+
+paths:
+  /members:
+    get:
+      tags: [members]
+      summary: 전체 멤버 목록 (필터 파라미터 없음 — 프론트에서 클라이언트 사이드 필터링)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/MemberSummary" }
+
+  /members/{id}:
+    get:
+      tags: [members]
+      summary: 멤버 상세 (숫자 PK 또는 GitHub 로그인 슬러그 둘 다 허용)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MemberDetail" }
+        "404":
+          description: 존재하지 않는 멤버
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /activities:
+    get:
+      tags: [activities]
+      summary: 전체 활동 목록. 정렬은 date 내림차순(잠정 확정)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/ActivitySummary" }
+
+  /activities/{id}:
+    get:
+      tags: [activities]
+      summary: 활동 상세. images는 sortOrder 오름차순 보장
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ActivityDetail" }
+        "404":
+          description: 존재하지 않는 활동
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /stats:
+    get:
+      tags: [stats]
+      summary: 홈 통계 (산출 방식은 백엔드 내부 재량, 계약에 안 드러남)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Stats" }
+
+  /projects:
+    get:
+      tags: [projects]
+      summary: "⚠️ draft — 전체 프로젝트 목록"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/ProjectSummary" }
+
+  /projects/{id}:
+    get:
+      tags: [projects]
+      summary: "⚠️ draft — 프로젝트 상세"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectDetail" }
+        "404":
+          description: 존재하지 않는 프로젝트
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /curriculum:
+    get:
+      tags: [study]
+      summary: "⚠️ draft — 옛 버전(주차 전제). 재설계 대기 (backend-api-spec.md §5·§11-2)"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/CurriculumWeek" }
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, example: "NOT_FOUND" }
+            message: { type: string }
+
+    Membership:
+      type: object
+      properties:
+        cohort: { type: integer, example: 4 }
+        track: { type: string, enum: [FE, BE] }
+        roles:
+          type: array
+          items: { type: string, enum: ["멤버", "리뷰어", "리드", "메인테이너", "OB"] }
+
+    MemberSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        login: { type: string }
+        name: { type: string }
+        avatarUrl: { type: string, nullable: true }
+        memberships:
+          type: array
+          items: { $ref: "#/components/schemas/Membership" }
+
+    MemberStats:
+      type: object
+      description: "teamProjects는 teamProjects[].length와 중복 — 제거 논의 중(§11-3)"
+      properties:
+        completedMissions: { type: integer }
+        teamProjects: { type: integer }
+        blogPosts: { type: integer }
+
+    MemberProjectRef:
+      type: object
+      properties:
+        projectId: { type: integer }
+        name: { type: string }
+        roleLabel: { type: string }
+
+    MemberActivityRef:
+      type: object
+      properties:
+        activityId: { type: integer }
+        date: { type: string, example: "2026.05" }
+        tag: { type: string }
+        title: { type: string }
+
+    MemberDetail:
+      allOf:
+        - $ref: "#/components/schemas/MemberSummary"
+        - type: object
+          properties:
+            school: { type: string }
+            bio: { type: string, nullable: true }
+            stats: { $ref: "#/components/schemas/MemberStats" }
+            teamProjects:
+              type: array
+              items: { $ref: "#/components/schemas/MemberProjectRef" }
+            activities:
+              type: array
+              items: { $ref: "#/components/schemas/MemberActivityRef" }
+
+    ActivitySummary:
+      type: object
+      properties:
+        id: { type: integer }
+        date: { type: string, example: "2026.05" }
+        tag: { type: string, enum: ["행사", "세션", "데모데이", "축제", "창립"] }
+        title: { type: string }
+        summary: { type: string }
+        imageCount: { type: integer }
+        thumbnailUrls:
+          type: array
+          maxItems: 3
+          items: { type: string }
+          description: "images를 sortOrder 오름차순 정렬 후 앞 3장만"
+
+    ActivityImage:
+      type: object
+      properties:
+        id: { type: integer }
+        url: { type: string }
+        sortOrder: { type: integer }
+
+    ActivityParticipant:
+      type: object
+      properties:
+        memberId: { type: integer, nullable: true }
+        name: { type: string }
+
+    ActivityDetail:
+      type: object
+      properties:
+        id: { type: integer }
+        date: { type: string }
+        tag: { type: string }
+        title: { type: string }
+        body:
+          type: string
+          description: "문단 구분은 \\n\\n (마크다운 아님)"
+        images:
+          type: array
+          items: { $ref: "#/components/schemas/ActivityImage" }
+        participants:
+          type: array
+          items: { $ref: "#/components/schemas/ActivityParticipant" }
+
+    Stats:
+      type: object
+      properties:
+        totalMembers: { type: integer }
+        activeCohort: { type: integer }
+        tracks: { type: string, example: "FE · BE" }
+        teamProjects: { type: integer }
+
+    ProjectSummary:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        cohortLabel: { type: string, example: "4기" }
+        trackLabel: { type: string, example: "공통" }
+        description: { type: string }
+        teamSize: { type: integer }
+        thumbnailUrl: { type: string, nullable: true }
+        thumbnailColor: { type: string, nullable: true }
+
+    ProjectMemberRef:
+      type: object
+      properties:
+        memberId: { type: integer, nullable: true }
+        name: { type: string }
+        roleLabel: { type: string }
+
+    ProjectDetail:
+      allOf:
+        - $ref: "#/components/schemas/ProjectSummary"
+        - type: object
+          properties:
+            subtitle: { type: string, nullable: true }
+            githubUrl: { type: string, nullable: true }
+            liveUrl: { type: string, nullable: true }
+            team:
+              type: array
+              items: { $ref: "#/components/schemas/ProjectMemberRef" }
+            stack:
+              type: array
+              items: { type: string }
+
+    CurriculumWeek:
+      type: object
+      description: "⚠️ 옛 버전 — 재설계 대기"
+      properties:
+        id: { type: integer }
+        track: { type: string, enum: [FE, BE] }
+        weekNo: { type: integer }
+        weekLabel: { type: string, example: "1주차" }
+        title: { type: string }
+        status: { type: string, enum: [DONE, ACTIVE, BREAK] }
+        noteUrl: { type: string, nullable: true }
+        notionUrl: { type: string, nullable: true }
+        linkedMissionId: { type: integer, nullable: true }

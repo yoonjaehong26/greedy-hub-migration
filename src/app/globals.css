@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* dark: 변형이 .dark 클래스 기반으로 동작하도록 override */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── 폰트 ──────────────────────────────────────────────────── */
+@theme {
+  --font-family-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ── 브랜드 컬러 (CSS 변수 → Tailwind 토큰) ──────────────── */
+@theme inline {
+  --color-brand:      var(--c-brand);
+  --color-brand-soft: var(--c-brand-soft);
+  --color-brand-deep: var(--c-brand-deep);
+}
+
+/* ── 런타임 테마 변수 (data-theme 으로 전환) ──────────────── */
+:root,
+[data-theme='light'] {
+  --c-brand:      #017356;
+  --c-brand-soft: #02916c;
+  --c-brand-deep: #014c39;
+  --c-bg:         #f8fafc;
+  --c-surface:    #ffffff;
+  --c-text:       #0f172a;
+  --c-text-sub:   #64748b;
+  --c-border:     rgb(15 23 42 / 0.1);
+}
+
+[data-theme='dark'] {
+  --c-brand:      #02916c;
+  --c-brand-soft: #017356;
+  --c-brand-deep: #34d399;
+  --c-bg:         #0f172a;
+  --c-surface:    #1e293b;
+  --c-text:       #f8fafc;
+  --c-text-sub:   #94a3b8;
+  --c-border:     rgb(248 250 252 / 0.1);
+}
+
+/* ── 베이스 스타일 ──────────────────────────────────────────
+   ⚠️ 반드시 @layer base 안에 둘 것.
+   레이어 밖(unlayered) 규칙은 Tailwind의 @layer utilities(mx-auto·
+   px-5·p-6·py-14 등)보다 우선순위가 높아(명시도와 무관) 모든 여백
+   유틸리티를 덮어써 레이아웃이 통째로 깨진다.
+──────────────────────────────────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* ── Tailwind v4 호환 ─────────────────────────────────────────
+   v3에서 text-* 유틸리티는 font-size와 line-height를 함께 설정했으나
+   v4는 font-size만 설정함. @layer base에 복원해야 leading-* 유틸리티로
+   여전히 오버라이드 가능.
+──────────────────────────────────────────────────────────────── */
+@layer base {
+  .text-xs   { line-height: 1rem; }
+  .text-sm   { line-height: 1.25rem; }
+  .text-base { line-height: 1.5rem; }
+  .text-lg   { line-height: 1.75rem; }
+  .text-xl   { line-height: 1.75rem; }
+  .text-2xl  { line-height: 2rem; }
+  .text-3xl  { line-height: 2.25rem; }
+  .text-4xl  { line-height: 2.5rem; }
+  .text-5xl  { line-height: 1; }
+  .text-6xl  { line-height: 1; }
+  .text-7xl  { line-height: 1; }
+  .text-8xl  { line-height: 1; }
+  .text-9xl  { line-height: 1; }
+}

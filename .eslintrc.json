@@ -1,0 +1,36 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "plugins": ["import"],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": "./tsconfig.json"
+      }
+    }
+  },
+  "rules": {
+    "import/no-restricted-paths": ["error", {
+      "zones": [
+        {
+          "target": "./src/shared",
+          "from": "./src/features",
+          "except": ["./src/shared/reader"],
+          "message": "레이어 위반: shared는 features를 import할 수 없습니다."
+        },
+        {
+          "target": "./src/shared/core",
+          "from": "./src/shared/components",
+          "message": "레이어 위반: core는 components를 import할 수 없습니다."
+        },
+        {
+          "target": "./src/shared/lib",
+          "from": "./src/shared/components",
+          "message": "레이어 위반: lib은 components를 import할 수 없습니다."
+        }
+      ]
+    }],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": ["warn", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }]
+  }
+}
