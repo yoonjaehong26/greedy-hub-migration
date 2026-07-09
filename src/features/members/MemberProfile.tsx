@@ -40,9 +40,16 @@ export function MemberProfile({ id }: { id: string }) {
             </div>
             <div className="text-slate-500 mt-0.5">@{member.login} · {member.school}</div>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 font-medium">
-                {member.track} {member.cohort}기 · {member.roles[0]}
-              </span>
+              {[...member.memberships]
+                .sort((a, b) => a.cohort - b.cohort)
+                .map((ms) => (
+                  <span
+                    key={`${ms.cohort}-${ms.track}`}
+                    className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300 font-medium"
+                  >
+                    {ms.track} {ms.cohort}기 · {ms.roles.join('·')}
+                  </span>
+                ))}
             </div>
           </div>
           <div className="flex flex-col items-end gap-3 text-sm">

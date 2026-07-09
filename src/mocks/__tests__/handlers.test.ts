@@ -16,21 +16,31 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('GET /members', () => {
-  it('필터 없이 전체 목록을 반환한다', async () => {
+  it('필터 없이 전체 목록을 반환하고 memberships[]로 소속을 담는다', async () => {
     const res = await fetch(`${BASE}/members`);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(Array.isArray(body.items)).toBe(true);
-    expect(body.items.some((m: { track: string }) => m.track === 'FE')).toBe(true);
-    expect(body.items.some((m: { track: string }) => m.track === 'BE')).toBe(true);
+    const hasTrack = (track: string) =>
+      body.items.some((m: { memberships: { track: string }[] }) =>
+        m.memberships.some((ms) => ms.track === track),
+      );
+    expect(hasTrack('FE')).toBe(true);
+    expect(hasTrack('BE')).toBe(true);
     expect(body.items[0]).toMatchObject({
       id: expect.any(Number),
       login: expect.any(String),
       name: expect.any(String),
-      track: expect.stringMatching(/^(FE|BE)$/),
-      cohort: expect.any(Number),
-      roles: expect.any(Array),
+      memberships: expect.any(Array),
     });
+  });
+
+  it('여러 기수에 걸친 멤버는 memberships에 여러 항목을 갖는다', async () => {
+    const res = await fetch(`${BASE}/members`);
+    const body = await res.json();
+    const kang = body.items.find((m: { login: string }) => m.login === 'minseo-kang');
+    expect(kang.memberships).toHaveLength(2);
+    expect(kang.memberships.map((ms: { cohort: number }) => ms.cohort)).toEqual([3, 4]);
   });
 });
 
