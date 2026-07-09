@@ -12,8 +12,3 @@ export interface CurriculumWeek {
   notionUrl: string | null;
   linkedMissionId: number | null;
 }
-
-export interface CurriculumResponse {
-  track: Track;
-  weeks: CurriculumWeek[];
-}

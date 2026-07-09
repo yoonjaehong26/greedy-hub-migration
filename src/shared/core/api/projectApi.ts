@@ -1,10 +1,9 @@
 import type { ProjectDetail, ProjectSummary } from '@/shared/core/types/project';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 
-export async function getProjects(filter?: string): Promise<ProjectSummary[]> {
-  const qs = filter && filter !== '전체' ? `?filter=${encodeURIComponent(filter)}` : '';
-  const res = await fetch(`${API_BASE}/projects${qs}`);
+export async function getProjects(): Promise<ProjectSummary[]> {
+  const res = await fetch(`${API_BASE}/projects`);
   if (!res.ok) throw new Error(`GET /projects failed: ${res.status}`);
   const body = (await res.json()) as { items: ProjectSummary[] };
   return body.items;

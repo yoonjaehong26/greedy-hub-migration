@@ -1,14 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { getMember, getMembers, type GetMembersParams } from '@/shared/core/api/memberApi';
+import { getMember, getMembers } from '@/shared/core/api/memberApi';
 
-export function membersQueryKey(params: GetMembersParams = {}) {
-  return ['members', params] as const;
-}
+export const MEMBERS_QUERY_KEY = ['members'] as const;
 
-export function useMembersQuery(params: GetMembersParams = {}) {
+export function useMembersQuery() {
   return useQuery({
-    queryKey: membersQueryKey(params),
-    queryFn: () => getMembers(params),
+    queryKey: MEMBERS_QUERY_KEY,
+    queryFn: getMembers,
   });
 }
 

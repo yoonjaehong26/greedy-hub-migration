@@ -13,7 +13,9 @@ const STATUS: Record<WeekStatus, { label: string; cls: string }> = {
 
 export function StudyCurriculum() {
   const [track, setTrack] = useState<Track>('FE');
-  const { data, isLoading, isError } = useCurriculumQuery(track);
+  const { data: weeks = [], isLoading, isError } = useCurriculumQuery();
+
+  const visible = weeks.filter((w) => w.track === track).sort((a, b) => a.weekNo - b.weekNo);
 
   return (
     <main className="mx-auto max-w-5xl px-5 py-10">
@@ -42,11 +44,11 @@ export function StudyCurriculum() {
 
       {isLoading ? (
         <p className="mt-10 text-sm text-slate-500 text-center py-10">불러오는 중…</p>
-      ) : isError || !data ? (
+      ) : isError ? (
         <p className="mt-10 text-sm text-red-500 text-center py-10">커리큘럼을 가져오지 못했습니다.</p>
       ) : (
         <ol className="mt-8 space-y-3">
-          {data.weeks.map((w) => {
+          {visible.map((w) => {
             const s = STATUS[w.status];
             return (
               <li

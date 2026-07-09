@@ -1,19 +1,10 @@
 import { http, HttpResponse } from 'msw';
-import { ACTIVITIES, CATEGORY_TO_TAGS } from '../data/activities';
+import { ACTIVITIES } from '../data/activities';
 
 export const activityHandlers = [
-  http.get('*/api/v1/activities', ({ request }) => {
-    const url = new URL(request.url);
-    const category = url.searchParams.get('category');
-
-    let filtered = ACTIVITIES;
-    if (category && category !== '전체') {
-      const tags = CATEGORY_TO_TAGS[category] ?? [category];
-      filtered = filtered.filter((a) => tags.includes(a.tag));
-    }
-
+  http.get('*/api/activities', () => {
     return HttpResponse.json({
-      items: filtered.map(({ id, date, tag, title, summary, images, coverImageUrl }) => ({
+      items: ACTIVITIES.map(({ id, date, tag, title, summary, images, coverImageUrl }) => ({
         id,
         date,
         tag,
@@ -25,7 +16,7 @@ export const activityHandlers = [
     });
   }),
 
-  http.get('*/api/v1/activities/:id', ({ params }) => {
+  http.get('*/api/activities/:id', ({ params }) => {
     const { id } = params;
     const activity = ACTIVITIES.find((a) => String(a.id) === id);
 

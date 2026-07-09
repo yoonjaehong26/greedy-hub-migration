@@ -1,14 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { getProject, getProjects } from '@/shared/core/api/projectApi';
 
-export function projectsQueryKey(filter?: string) {
-  return ['projects', filter ?? '전체'] as const;
-}
+export const PROJECTS_QUERY_KEY = ['projects'] as const;
 
-export function useProjectsQuery(filter?: string) {
+export function useProjectsQuery() {
   return useQuery({
-    queryKey: projectsQueryKey(filter),
-    queryFn: () => getProjects(filter),
+    queryKey: PROJECTS_QUERY_KEY,
+    queryFn: getProjects,
   });
 }
 

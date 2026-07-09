@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { STATS } from '../data/stats';
 
 export const statsHandlers = [
-  http.get('*/api/v1/stats', () => {
+  http.get('*/api/stats', () => {
     return HttpResponse.json(STATS);
   }),
 ];

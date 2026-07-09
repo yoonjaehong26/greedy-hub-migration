@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 import { useActivitiesQuery } from '@/shared/core/queries/activityQueries';
+import { CATEGORY_TO_TAGS } from './categoryFilter';
 
 const TAG_CLS: Record<string, string> = {
   행사: 'bg-brand/10 text-brand',
@@ -17,7 +18,12 @@ type Category = '전체' | '행사' | '세션' | '데모데이';
 
 export function ActivityTimeline() {
   const [category, setCategory] = useState<Category>('전체');
-  const { data: activities = [], isLoading, isError } = useActivitiesQuery(category);
+  const { data: activities = [], isLoading, isError } = useActivitiesQuery();
+
+  const visible =
+    category === '전체'
+      ? activities
+      : activities.filter((a) => (CATEGORY_TO_TAGS[category] ?? [category]).includes(a.tag));
 
   return (
     <main className="mx-auto max-w-4xl px-5 py-10">
@@ -57,7 +63,7 @@ export function ActivityTimeline() {
         <p className="mt-10 text-sm text-red-500 text-center py-10">활동 목록을 가져오지 못했습니다.</p>
       ) : (
         <ol className="mt-8 relative border-s-2 border-slate-200 dark:border-white/10 ml-2 space-y-8">
-          {activities.map((a) => (
+          {visible.map((a) => (
             <li key={a.id} className="ms-6">
               <span className="absolute -start-[9px] w-4 h-4 rounded-full bg-brand ring-4 ring-slate-50 dark:ring-slate-900" />
               <div className="flex items-center gap-2 mb-2">
