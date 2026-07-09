@@ -52,10 +52,10 @@ export function ActivityDetail({ id }: { id: string }) {
         <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300">공개 화면</span>
       </div>
 
-      {activity.coverImageUrl && (
+      {activity.images[0] && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={activity.coverImageUrl}
+          src={activity.images[0].url}
           alt=""
           className="mt-5 aspect-[16/7] rounded-2xl object-cover w-full"
         />
@@ -84,11 +84,11 @@ export function ActivityDetail({ id }: { id: string }) {
         </>
       )}
 
-      {activity.images.length > 0 && (
+      {activity.images.length > 1 && (
         <>
           <h2 className="mt-8 mb-3 font-bold">사진</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {activity.images.map((img) => (
+            {activity.images.slice(1).map((img) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={img.id}

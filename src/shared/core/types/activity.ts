@@ -7,7 +7,8 @@ export interface ActivitySummary {
   title: string;
   summary: string;
   imageCount: number;
-  thumbnailUrl: string | null;
+  /** sortOrder 순으로 최대 3장. imageCount가 더 많아도 목록에선 3장까지만. */
+  thumbnailUrls: string[];
 }
 
 export interface ActivityImage {
@@ -27,7 +28,6 @@ export interface ActivityDetail {
   tag: ActivityTag;
   title: string;
   body: string;
-  coverImageUrl: string | null;
   images: ActivityImage[];
   participants: ActivityParticipant[];
 }
