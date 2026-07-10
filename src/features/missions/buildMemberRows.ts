@@ -63,7 +63,6 @@ function memberFlags(member: Member, cohort: CohortId): string[] {
     const others = member.memberships.filter((m) => m.cohort !== cohort).map((m) => `${m.cohort}기 ${m.track}`);
     if (others.length) flags.push(`중복기수(${others.join('·')})`);
   }
-  if (member.note) flags.push(member.note);
   return flags;
 }
 

@@ -25,7 +25,7 @@
 
 ```
 ① Member (명부, 큐레이션)          src/shared/core/constants/members.ts
-     login · name · withdrawn? · memberships[]{cohort,track,role,team} · note?
+     login · name · withdrawn? · memberships[]{cohort,track,role,team}
      └ 한 사람이 여러 기수 = memberships 배열로 자연 해결
 
 ② MissionCatalog (기수·트랙별)      src/shared/core/constants/missionCatalog.ts

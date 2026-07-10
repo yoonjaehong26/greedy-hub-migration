@@ -34,8 +34,6 @@ export interface Member {
   name: string;
   withdrawn?: boolean;
   memberships: Membership[];
-  /** QA용 사전 메모 (예: 이름 확정, 대소문자 주의). */
-  note?: string;
 }
 
 /** 미션 안의 단계/페이즈 하나 (예: 로또 '3단계', 방탈출 'JPA(4-6)'). PR 하나가 여러 유닛을 커버할 수 있음. */

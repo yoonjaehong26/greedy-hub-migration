@@ -31,7 +31,7 @@ export function MemberDirectory() {
         <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300">공개 화면</span>
       </div>
       <p className="mt-1 text-slate-600 dark:text-slate-400">
-        4기 구성원 · 카드를 누르면 개인 이력서로 이동합니다.
+        1~4기 전체 구성원 · 카드를 누르면 개인 이력서로 이동합니다.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-2 text-sm">
@@ -68,7 +68,9 @@ export function MemberDirectory() {
                   <div className="font-semibold">{m.name}</div>
                   {primary && (
                     <>
-                      <div className="text-xs text-slate-500">{primary.track} · {primary.cohort}기</div>
+                      <div className="text-xs text-slate-500">
+                        {primary.track} · {primary.cohort}기
+                      </div>
                       <div className="mt-1 flex flex-wrap gap-1">
                         {primary.roles.map((r) => (
                           <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full ${CHIP_CLS[r]}`}>
@@ -86,7 +88,7 @@ export function MemberDirectory() {
       )}
 
       <p className="mt-4 text-xs text-slate-400">
-        실제 4기 명단 기준 — FE 멤버 4·리뷰어 6 / BE 멤버 6·리뷰어 9
+        미션 대시보드 로스터 기준 — 1~4기 스터디원 {members.length}명(역할은 리드·리뷰어·메인테이너 구분 없이 전부 &quot;멤버&quot;로 표시 — 미션 대시보드 범위 밖)
       </p>
     </main>
   );

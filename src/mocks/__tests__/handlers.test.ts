@@ -38,20 +38,20 @@ describe('GET /members', () => {
   it('여러 기수에 걸친 멤버는 memberships에 여러 항목을 갖는다', async () => {
     const res = await fetch(`${BASE}/members`);
     const body = await res.json();
-    const kang = body.items.find((m: { login: string }) => m.login === 'minseo-kang');
+    const kang = body.items.find((m: { login: string }) => m.login === 'mintcoke123');
     expect(kang.memberships).toHaveLength(2);
-    expect(kang.memberships.map((ms: { cohort: number }) => ms.cohort)).toEqual([3, 4]);
+    expect(kang.memberships.map((ms: { cohort: number }) => ms.cohort)).toEqual([2, 3]);
   });
 });
 
 describe('GET /members/:id', () => {
   it('로그인 슬러그로 상세를 반환한다', async () => {
-    const res = await fetch(`${BASE}/members/jiho-park`);
+    const res = await fetch(`${BASE}/members/yoonjaehong26`);
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.name).toBe('박지호');
-    expect(body.stats.completedMissions).toBe(5);
-    expect(body.teamProjects).toHaveLength(1);
+    expect(body.name).toBe('윤재홍');
+    expect(body.stats).toEqual({ completedMissions: 0, teamProjects: 0, blogPosts: 0 });
+    expect(body.teamProjects).toEqual([]);
   });
 
   it('없는 id면 404를 반환한다', async () => {

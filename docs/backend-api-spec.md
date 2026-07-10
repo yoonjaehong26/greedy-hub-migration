@@ -39,35 +39,49 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 
 ```json
 // 목록 item
-{ "id": 12, "login": "jiho-park", "name": "박지호", "avatarUrl": null,
-  "memberships": [{ "cohort": 4, "track": "FE", "roles": ["멤버"] }] }
+{ "id": 1, "login": "yoonjaehong26", "name": "윤재홍", "avatarUrl": null,
+  "missionDashboardUrl": "/missions?cohort=3&track=FE",
+  "memberships": [{ "cohort": 3, "track": "FE", "roles": ["멤버"], "team": "두구두구" }] }
 
-// 상세 — 여러 기수에 걸친 멤버 예시
-{ "id": 10, "login": "minseo-kang", "name": "강민서", "school": "세종대학교", "avatarUrl": null,
+// 상세 — 여러 기수에 걸친 멤버 예시(2기 FE → 3기 BE 트랙 전환)
+{ "id": 5, "login": "mintcoke123", "name": "강동현", "school": "세종대학교", "avatarUrl": null,
+  "missionDashboardUrl": "/missions?cohort=3&track=BE",
   "memberships": [
-    { "cohort": 3, "track": "FE", "roles": ["멤버"] },
-    { "cohort": 4, "track": "FE", "roles": ["리드", "리뷰어", "메인테이너"] }
+    { "cohort": 2, "track": "FE", "roles": ["멤버"], "team": "줍줍" },
+    { "cohort": 3, "track": "BE", "roles": ["멤버"], "team": "두구두구" }
   ],
   "bio": null,
+  "isPublic": true,
   "stats": { "completedMissions": 0, "teamProjects": 0, "blogPosts": 0 },
+  "completedMissions": [], "blogPosts": [],
   "teamProjects": [], "activities": [] }
 ```
 
 - **한 사람이 여러 기수에 걸칠 수 있어 `memberships[]` 배열**로 관리한다(예: 3기 FE 멤버 → 4기 FE 리드로 승급). 트랙·기수·역할(roles)은 전부 membership 단위로 붙는다 — 멤버 전체에 붙는 단일 값이 아님.
 - 목록 카드처럼 "대표 소속" 하나만 필요한 화면은 프론트가 `memberships`에서 **가장 최근(cohort가 큰) 항목**을 골라 쓴다(레퍼런스: `src/features/members/primaryMembership.ts`). 백엔드는 굳이 "대표"를 계산해서 내려줄 필요 없음 — 배열 그대로 반환.
+- **`memberships[].team`**(선택, 데모데이 팀명 — 예: "두구두구")과 **`missionDashboardUrl`**(선택, `/missions` 링크)은 목업 실데이터 작업(2026-07-06)에서 추가된 필드 — 이전 버전 스펙엔 없었음. `team`은 노션 데모데이 명부에서만 확인 가능(1~3기; 4기는 미기재라 값 없음). `missionDashboardUrl`은 미션 데이터가 별도 Mongo 시스템 소관이라 **URL 문자열만** 넘기며, 이 백엔드가 미션 진행 데이터를 직접 갖거나 조인하지 않는다.
 - `roles`는 **한글 표시값 그대로** 저장·응답(`멤버 | 리뷰어 | 리드 | 메인테이너 | OB`). 코드값 매핑 없음.
 - `stats.completedMissions`/`blogPosts`는 미션·블로그 도메인이 아직 없어 값이 없으면 `0` — 프론트는 0이면 해당 통계를 숨긴다.
-- **미결**: `stats.teamProjects`(숫자)가 `teamProjects[]`(배열) 길이랑 중복 — 백엔드가 이 필드를 아예 빼고 프론트가 `teamProjects.length`로 계산하게 할지 논의 필요(같은 정보를 두 군데서 따로 계산하면 어긋날 위험).
+- `completedMissions[]`는 `{ missionId, title, cohortLabel, weekLabel }` 형태의 완료 미션 리스트(성취만 노출, 진행중/미완료 제외), `blogPosts[]`는 `{ postId, title, category, relativeDate }` 형태의 글 리스트 — 둘 다 **지금은 MSW 목데이터로만 채워짐**(§9), 실제 조회 계약(미션 백엔드 필터·블로그 도메인)은 여전히 미결(§11-6·§11-7). 목록이 비면 빈 배열.
+- **미결**: `stats.teamProjects`(숫자)가 `teamProjects[]`(배열) 길이랑 중복 — 백엔드가 이 필드를 아예 빼고 프론트가 `teamProjects.length`로 계산하게 할지 논의 필요(같은 정보를 두 군데서 따로 계산하면 어긋날 위험). 같은 논리로 `stats.completedMissions`/`blogPosts`도 `completedMissions.length`/`blogPosts.length`와 중복될 수 있음 — 함께 정리 필요.
 - **완료 미션 중 "진행 중인 미션은 본인에게만, 완료된 것만 공개" 같은 미션 단위 가시성은 이 백엔드 소관이 아님** — 미션 데이터는 별도 Mongo 시스템(`/api/missions`) 소관이라, 그쪽에서 처리할 문제.
 
+**✅ Phase 1.5 — 프론트 프로토타입 목업 (인증 없음, 실제 Spring 계약 아님)**
+목업 화면 검증을 위해 `PATCH /members/{id}`와 `isPublic` 토글을 **인증 없이** MSW로 먼저 붙였다(레퍼런스: `src/mocks/handlers/members.ts`). 로그인이 없어 "본인 확인" 없이 누구나 아무 멤버의 bio·공개여부를 바꿀 수 있는 상태 — **Spring 실서버로 갈 때는 반드시 아래 Phase 2 인증이 붙어야 한다.** 지금 계약을 그대로 옮기면:
+```json
+// PATCH /members/{id} 요청
+{ "bio": "마크다운 텍스트", "isPublic": true }
+```
+둘 다 optional — 보낸 필드만 갱신. 응답은 갱신된 멤버 상세 전체.
+
 **⏳ Phase 2 (인증 필요, 이번 구현 범위 아님)** — 활동타임라인과 같은 시점(로그인 기능, ~2주 후)에 같이 설계:
-- `PATCH /members/{id}` — 로그인한 본인이 `bio`(마크다운 텍스트) 편집. **저장은 원본 마크다운 그대로, 렌더링 시 반드시 이스케이프/새니타이징** — 사용자 입력을 그대로 HTML로 그리면 저장형 XSS 위험.
-- 프로필 공개/비공개 토글 — 활동타임라임과 동일한 인증 방식(멤버 토큰 미들웨어)에 얹어서 설계. 지금 스키마엔 반영 안 함(추측 설계 방지).
+- 위 `PATCH /members/{id}`에 **로그인한 본인만** 호출 가능하도록 멤버 토큰 미들웨어 추가. **저장은 원본 마크다운 그대로, 렌더링 시 반드시 이스케이프/새니타이징** — 사용자 입력을 그대로 HTML로 그리면 저장형 XSS 위험.
+- `isPublic`이 `false`인 멤버는 비로그인 사용자에게 `GET /members/{id}`에서 제외/마스킹하는 규칙 — 지금은 `isPublic` 필드만 있고 실제 가시성 필터링은 없음(누구나 값과 무관하게 전체 조회 가능).
 
 ### MySQL
 ```sql
-member       id PK, login UNIQUE, name, school, avatar_url NULL, bio TEXT NULL, created_at
-membership   id PK, member_id FK, cohort TINYINT, track ENUM('FE','BE')
+member       id PK, login UNIQUE, name, school, avatar_url NULL, bio TEXT NULL, is_public BOOLEAN DEFAULT TRUE, mission_dashboard_url NULL, created_at
+membership   id PK, member_id FK, cohort TINYINT, track ENUM('FE','BE'), team NULL
 member_role  membership_id FK, role ENUM('멤버','리뷰어','리드','메인테이너','OB')
 ```
 
@@ -212,8 +226,9 @@ curriculum_week (독립)
 ## 10. Phase 구분
 
 - **Phase 1 (완료)**: 멤버·활동타임라인·홈통계 3개 GET 계약(확정) + 프로젝트·스터디 GET 계약(잠정, §4·§5 미확정) + MSW 목서버 + 프론트 데이터 레이어·페이지 연동. 로그인 없음.
-- **Phase 2 (~2주 후, 로그인 도입 시)**: `PATCH /members/{id}`(bio 편집) + 활동 쓰기(업로드) + 멤버 토큰 인증 미들웨어 + 활동·멤버 프로필 공개/비공개 필터링.
-- **Phase 3+ (미정)**: 블로그·지원·미션리뷰 도메인, Spring 실서버 전환.
+- **Phase 1.5 (완료, 프론트 프로토타입)**: member-detail 화면 검증용으로 `PATCH /members/{id}`(bio·isPublic) + 완료미션/기술블로그 리스트를 **인증 없이 MSW 목데이터로만** 먼저 붙임(§3). 실제 백엔드 계약이 아니라 화면 목업 — Spring 전환 시 Phase 2 인증과 §11-6·§11-7 결정을 반드시 거쳐야 함.
+- **Phase 2 (~2주 후, 로그인 도입 시)**: 위 `PATCH /members/{id}`에 인증 추가 + 활동 쓰기(업로드) + 멤버 토큰 인증 미들웨어 + 활동·멤버 프로필 공개/비공개 필터링(`isPublic` 기반 실제 마스킹).
+- **Phase 3+ (미정)**: 블로그·지원·미션리뷰 도메인 백엔드, Spring 실서버 전환.
 
 ## 11. 미결 이슈 (팀 논의 필요 — 체크리스트)
 
@@ -222,3 +237,5 @@ curriculum_week (독립)
 3. **`stats.teamProjects` 중복** (§3): `teamProjects[].length`와 겹치는 필드 — 제거하고 프론트 계산으로 넘길지 결정.
 4. **활동 디스코드 대량 임포트 방식** (§6): 자동 동기화 vs 수작업 큐레이션. 미션 로스터 선례(하이브리드) 참고 예정, 미결정.
 5. **로그인 도입 시 함께 설계할 것** (§3·§6, ~2주 후): 멤버 토큰 미들웨어 방식(토큰 종류), 활동·멤버 프로필 공개/비공개 가시성 규칙, bio 마크다운 XSS 새니타이징.
+6. **완료 미션 리스트 — 실제 조회 계약 아직 없음** (§3): `completedMissions[]`는 지금 MSW 목데이터로만 채워져 있고, 실서버에서 이 리스트를 어떻게 채울지 결정 안 됨. `GET /api/missions`(별도 Mongo 미션 백엔드)는 멤버 필터가 없고, PR↔멤버 매칭도 미션 대시보드 전용 로직(`src/features/missions/buildMemberRows.ts`)이라 재사용 불가. (a) 미션 백엔드에 `/api/missions?author=` 필터 추가 vs (b) 멤버 쪽에 `completedMissions[]`를 직접 저장 중 결정 필요.
+7. **기술블로그 — 도메인 자체가 없음** (§3·§10): `blogPosts[]`도 지금은 MSW 목데이터. `src/app/blog/*`에 UI 스텁(하드코딩 목데이터, API·DB 없음)은 이미 존재하나 백엔드 도메인은 Phase 3+로 미확정. Phase 3 착수 시 이 스텁을 재사용할지 새로 설계할지 확인 필요.

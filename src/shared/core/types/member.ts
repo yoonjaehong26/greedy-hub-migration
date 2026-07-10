@@ -6,6 +6,8 @@ export interface Membership {
   cohort: number;
   track: Track;
   roles: MemberRoleLabel[];
+  /** 데모데이 팀명(예: "두구두구"). 팀 미상이면 없음. */
+  team?: string;
 }
 
 export interface MemberSummary {
@@ -14,6 +16,8 @@ export interface MemberSummary {
   name: string;
   avatarUrl: string | null;
   memberships: Membership[];
+  /** 미션 대시보드(`/missions`) 링크. 미션 데이터는 별도 시스템 소관이라 URL만 참조. */
+  missionDashboardUrl?: string;
 }
 
 export interface MemberStats {
@@ -35,10 +39,32 @@ export interface MemberActivityRef {
   title: string;
 }
 
+export interface MemberMissionRef {
+  missionId: string;
+  title: string;
+  cohortLabel: string;
+  weekLabel: string;
+}
+
+export interface MemberBlogPostRef {
+  postId: number;
+  title: string;
+  category: string;
+  relativeDate: string;
+}
+
 export interface MemberDetail extends MemberSummary {
   school: string;
   bio: string | null;
+  isPublic: boolean;
   stats: MemberStats;
+  completedMissions: MemberMissionRef[];
+  blogPosts: MemberBlogPostRef[];
   teamProjects: MemberProjectRef[];
   activities: MemberActivityRef[];
+}
+
+export interface UpdateMemberPayload {
+  bio?: string;
+  isPublic?: boolean;
 }
