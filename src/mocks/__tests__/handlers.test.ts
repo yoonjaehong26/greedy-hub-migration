@@ -42,6 +42,14 @@ describe('GET /members', () => {
     expect(kang.memberships).toHaveLength(2);
     expect(kang.memberships.map((ms: { cohort: number }) => ms.cohort)).toEqual([2, 3]);
   });
+
+  it('노션 SOT 기준 그리디 전체 46명(창립 5·영입리드 2 포함)을 반환한다', async () => {
+    const res = await fetch(`${BASE}/members`);
+    const body = await res.json();
+    expect(body.items).toHaveLength(46);
+    const kokodak = body.items.find((m: { login: string }) => m.login === 'kokodak');
+    expect(kokodak.memberships.some((ms: { roles: string[] }) => ms.roles.includes('동아리장'))).toBe(true);
+  });
 });
 
 describe('GET /members/:id', () => {
@@ -50,8 +58,18 @@ describe('GET /members/:id', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.name).toBe('윤재홍');
+    expect(body.stats).toEqual({ completedMissions: 4, teamProjects: 1, blogPosts: 3 });
+    expect(body.teamProjects).toEqual([{ projectId: 1, name: '두구두구', roleLabel: 'FE 담당' }]);
+  });
+
+  it('detail 필드가 없는 멤버는 stats·리스트가 빈 값으로 채워진다', async () => {
+    const res = await fetch(`${BASE}/members/johncakes`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
     expect(body.stats).toEqual({ completedMissions: 0, teamProjects: 0, blogPosts: 0 });
     expect(body.teamProjects).toEqual([]);
+    expect(body.completedMissions).toEqual([]);
+    expect(body.blogPosts).toEqual([]);
   });
 
   it('없는 id면 404를 반환한다', async () => {
