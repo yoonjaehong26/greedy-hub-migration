@@ -56,7 +56,7 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
   ],
   "bio": null,
   "isPublic": true,
-  "stats": { "completedMissions": 0, "teamProjects": 0, "blogPosts": 0 },
+  "summaryCounts": { "completedMissions": 0, "teamProjects": 0, "blogPosts": 0 },
   "completedMissions": [], "blogPosts": [],
   "teamProjects": [], "activities": [] }
 
@@ -79,9 +79,9 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
   - **`department`**(학과, 복수 전공 가능해 배열)·**`admissionYear`**(학번/입학년도, 2자리)는 이번에 스키마에 추가된 필드 — **아직 프론트 UI엔 노출하지 않는다**(승인됨, 스키마 선반영만).
   - **`joinType`**(선택, `창립 | 영입리드`)은 정규 기수 스터디원이 아닌 예외 합류 경로만 표기한다. 창립멤버·영입리드도 실제 활동 기수·트랙·역할은 다른 멤버와 동일하게 `memberships[]`에 정상적으로 들어있음(예: 이승용은 1~3기 내내 BE 동아리장/메인테이너) — `joinType`은 "합류 경위"만 부가하는 뱃지고, 별도 기수 없는 가상 멤버십을 만들지 않는다.
   - **외부 리뷰어 10명**(비회원, 기수별 트랙 PR 리뷰만 담당 — 그리디 동아리원이 아님)은 이 API의 스코프 밖으로 **명시적으로 제외**한다(승인됨). 원본 데이터는 참고용으로 `src/mocks/data/externalReviewers.ts`에 정리해뒀지만 어떤 핸들러·엔드포인트에도 연결돼 있지 않음 — 필요해지면 별도 엔드포인트로 다룰 문제.
-- `stats.completedMissions`/`blogPosts`는 미션·블로그 도메인이 아직 없어 값이 없으면 `0` — 프론트는 0이면 해당 통계를 숨긴다.
+- `summaryCounts.completedMissions`/`blogPosts`는 미션·블로그 도메인이 아직 없어 값이 없으면 `0` — 프론트는 0이면 해당 통계를 숨긴다.
 - `completedMissions[]`는 `{ missionId, title, cohortLabel, weekLabel }` 형태의 완료 미션 리스트(성취만 노출, 진행중/미완료 제외), `blogPosts[]`는 `{ postId, title, category, relativeDate }` 형태의 글 리스트 — 둘 다 **지금은 MSW 목데이터로만 채워짐**(§9), 실제 조회 계약(미션 백엔드 필터·블로그 도메인)은 여전히 미결(§11-6·§11-7). 목록이 비면 빈 배열.
-- **미결**: `stats.teamProjects`(숫자)가 `teamProjects[]`(배열) 길이랑 중복 — 백엔드가 이 필드를 아예 빼고 프론트가 `teamProjects.length`로 계산하게 할지 논의 필요(같은 정보를 두 군데서 따로 계산하면 어긋날 위험). 같은 논리로 `stats.completedMissions`/`blogPosts`도 `completedMissions.length`/`blogPosts.length`와 중복될 수 있음 — 함께 정리 필요.
+- **미결**: `summaryCounts.teamProjects`(숫자)가 `teamProjects[]`(배열) 길이랑 중복 — 백엔드가 이 필드를 아예 빼고 프론트가 `teamProjects.length`로 계산하게 할지 논의 필요(같은 정보를 두 군데서 따로 계산하면 어긋날 위험). 같은 논리로 `summaryCounts.completedMissions`/`blogPosts`도 `completedMissions.length`/`blogPosts.length`와 중복될 수 있음 — 함께 정리 필요.
 - **완료 미션 중 "진행 중인 미션은 본인에게만, 완료된 것만 공개" 같은 미션 단위 가시성은 이 백엔드 소관이 아님** — 미션 데이터는 별도 Mongo 시스템(`/api/missions`) 소관이라, 그쪽에서 처리할 문제.
 
 **✅ Phase 1.5 — 프론트 프로토타입 목업 (인증 없음, 실제 Spring 계약 아님)**
@@ -254,7 +254,7 @@ curriculum_week (독립)
 
 1. **스터디·프로젝트 — 백엔드 자체가 필요한가** (§1·§4·§5): ROI상 프론트 상수 관리가 유력하나 팀 최종 결정 필요.
 2. **스터디 필드 재설계** (§5): 화면이 주차별 → 전체 커리큘럼 소개로 피벗됨. 백엔드로 가기로 하면 `weekNo` 기반에서 단계/모듈 기반으로 새로 설계해야 함.
-3. **`stats.teamProjects` 중복** (§3): `teamProjects[].length`와 겹치는 필드 — 제거하고 프론트 계산으로 넘길지 결정.
+3. **`summaryCounts.teamProjects` 중복** (§3): `teamProjects[].length`와 겹치는 필드 — 제거하고 프론트 계산으로 넘길지 결정.
 4. **활동 디스코드 대량 임포트 방식** (§6): 자동 동기화 vs 수작업 큐레이션. 미션 로스터 선례(하이브리드) 참고 예정, 미결정.
 5. **로그인 도입 시 함께 설계할 것** (§3·§6, ~2주 후): 멤버 토큰 미들웨어 방식(토큰 종류), 활동·멤버 프로필 공개/비공개 가시성 규칙, bio 마크다운 XSS 새니타이징.
 6. **완료 미션 리스트 — 실제 조회 계약 아직 없음** (§3): `completedMissions[]`는 지금 MSW 목데이터로만 채워져 있고, 실서버에서 이 리스트를 어떻게 채울지 결정 안 됨. `GET /api/missions`(별도 Mongo 미션 백엔드)는 멤버 필터가 없고, PR↔멤버 매칭도 미션 대시보드 전용 로직(`src/features/missions/buildMemberRows.ts`)이라 재사용 불가. (a) 미션 백엔드에 `/api/missions?author=` 필터 추가 vs (b) 멤버 쪽에 `completedMissions[]`를 직접 저장 중 결정 필요.

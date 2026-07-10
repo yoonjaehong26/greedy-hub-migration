@@ -14,77 +14,23 @@
  * `team`(데모데이팀)은 1~3기만 노션에 기재돼 있어 4기·창립·영입리드는 값 없음.
  * cross-cohort 트랙 전환자: 신지훈(1기 BE→2기 FE→3기 BE), 강동현(2기 FE→3기 BE) 등 memberships[] 배열로 표현.
  * `missionDashboardUrl`·`team`은 이전 목업 작업(2026-07-06)에서 추가된 필드로 backend-api-spec.md §3에 반영됨.
+ *
+ * 타입은 `shared/core/types/member.ts`(실제 API 계약)에서 파생 — 목업 전용으로 별도 정의하지 않는다.
+ * 예전엔 Track·MemberRoleLabel·MockMember 등을 여기서 손으로 다시 선언해 실계약과 두 벌로 관리됐는데
+ * (리네이밍할 때마다 양쪽을 매번 손으로 맞춰야 했음), `MemberDetail`을 그대로 가져와 필수 필드만 남기고
+ * 나머지를 Partial로 완화하는 방식으로 통일(2026-07-10) — 실계약에 필드가 추가·변경되면 여기도 자동 반영.
  */
 
-export type Track = 'FE' | 'BE';
-export type MemberRoleLabel = '멤버' | '리뷰어' | '리드' | '메인테이너' | '동아리장' | 'OB';
-/** 어떻게 합류했는지 — 정규 기수 스터디원이 아닌 예외 케이스만 표기(그 외엔 없음). */
-export type MemberJoinType = '창립' | '영입리드';
+import type { MemberDetail } from '@/shared/core/types/member';
 
-export interface MockMembership {
-  cohort: number;
-  track: Track;
-  roles: MemberRoleLabel[];
-  /** 데모데이 팀명(예: "두구두구"). 팀 미상이면 없음. */
-  team?: string;
-}
-
-export interface MockActivityRef {
-  activityId: number;
-  date: string;
-  tag: string;
-  title: string;
-}
-
-export interface MockProjectRef {
-  projectId: number;
-  name: string;
-  roleLabel: string;
-}
-
-export interface MockMemberStats {
-  completedMissions: number;
-  teamProjects: number;
-  blogPosts: number;
-}
-
-export interface MockMissionRef {
-  missionId: string;
-  title: string;
-  cohortLabel: string;
-  weekLabel: string;
-}
-
-export interface MockBlogPostRef {
-  postId: number;
-  title: string;
-  category: string;
-  relativeDate: string;
-}
-
-export interface MockMember {
-  id: number;
-  login: string;
-  name: string;
-  school: string;
-  /** 학과(복수 전공 가능). 아직 UI에 노출하지 않음 — 스키마만 선반영. */
-  department?: string[];
-  /** 학번(입학년도, 2자리). 아직 UI에 노출하지 않음 — 스키마만 선반영. */
-  admissionYear?: number | null;
-  /** 창립멤버·영입리드처럼 정규 기수 합류 경로가 아닌 경우만 표기. 아직 UI에 노출하지 않음. */
-  joinType?: MemberJoinType;
-  avatarUrl: string | null;
-  memberships: MockMembership[];
-  /** 미션 대시보드(`/missions`) 링크. 미션 데이터는 별도 Mongo 시스템 소관이라 URL만 참조. */
-  missionDashboardUrl?: string;
-  bio?: string;
-  isPublic?: boolean;
-  stats?: MockMemberStats;
-  completedMissions?: MockMissionRef[];
-  blogPosts?: MockBlogPostRef[];
-  teamProjects?: MockProjectRef[];
-  activities?: MockActivityRef[];
-}
+/**
+ * id·login·name·school·avatarUrl·memberships는 모든 멤버가 실제로 갖고 있어 필수로 유지하고,
+ * 나머지(bio·isPublic·summaryCounts·완료미션/블로그/팀프로젝트/활동 목록 등)는 목업 항목마다
+ * 풀 프로필을 채우지 않아도 되도록 전부 선택으로 완화한다. 응답 시점엔 핸들러(`mocks/handlers/members.ts`)가
+ * `?? 기본값`으로 채워 넣어 실제 응답은 항상 `MemberDetail` 전체를 만족한다.
+ */
+export type MockMember = Pick<MemberDetail, 'id' | 'login' | 'name' | 'school' | 'avatarUrl' | 'memberships'> &
+  Partial<Omit<MemberDetail, 'id' | 'login' | 'name' | 'school' | 'avatarUrl' | 'memberships'>>;
 
 export const MEMBERS: MockMember[] = [
   // ── 운영진(창립·영입리드) ──
@@ -106,7 +52,7 @@ export const MEMBERS: MockMember[] = [
     bio: '그리디를 만든 사람. 요즘은 코드보다 리뷰·운영에 시간을 더 씁니다.',
     isPublic: true,
     // 창립멤버는 리드·운영 중심이라 PR 미션 자체를 수행하지 않음 — completedMissions가 항상 빈 배열인 정상 케이스.
-    stats: { completedMissions: 0, teamProjects: 0, blogPosts: 1 },
+    summaryCounts: { completedMissions: 0, teamProjects: 0, blogPosts: 1 },
     completedMissions: [],
     blogPosts: [
       { postId: 5, title: '그리디 1기를 시작하며', category: '회고', relativeDate: '1년 전' },
@@ -146,7 +92,7 @@ export const MEMBERS: MockMember[] = [
     bio: '1기 BE → 2기 FE → 3기 BE. 트랙을 두 번 바꿔봤습니다.',
     // 비공개 프로필 케이스 — isPublic: false. 로그인 없이 조회해도 지금은 마스킹되지 않고 그대로 노출됨(§11-5 미결).
     isPublic: false,
-    stats: { completedMissions: 3, teamProjects: 1, blogPosts: 0 },
+    summaryCounts: { completedMissions: 3, teamProjects: 1, blogPosts: 0 },
     completedMissions: [
       { missionId: 'spring-security', title: 'Spring Security 인증 구현', cohortLabel: 'BE 3기', weekLabel: '6주차' },
       { missionId: 'react-hooks', title: '커스텀 훅으로 로직 분리', cohortLabel: 'FE 2기', weekLabel: '3주차' },
@@ -178,7 +124,7 @@ export const MEMBERS: MockMember[] = [
     bio: '2기 FE로 시작해서 3기에 BE로 트랙을 바꿨습니다. 둘 다 해보니 서버 쪽이 더 재밌더라고요.',
     isPublic: true,
     // 기수마다 소속 팀이 달라 팀 프로젝트도 두 건 — memberships[]와 별개 배열이라 개수가 안 맞을 수 있음(§11-3 참고).
-    stats: { completedMissions: 2, teamProjects: 2, blogPosts: 1 },
+    summaryCounts: { completedMissions: 2, teamProjects: 2, blogPosts: 1 },
     completedMissions: [
       { missionId: 'spring-api-basic', title: '[3기] Spring 기본 API 구축', cohortLabel: 'BE 3기', weekLabel: '4주차' },
       { missionId: 'react-component', title: '컴포넌트 분리 연습', cohortLabel: 'FE 2기', weekLabel: '2주차' },
@@ -215,7 +161,7 @@ export const MEMBERS: MockMember[] = [
     memberships: [{ cohort: 3, track: 'FE', roles: ['멤버'], team: '두구두구' }, { cohort: 4, track: 'FE', roles: ['메인테이너', '리드'] }],
     bio: '프론트엔드에 관심 많은 개발자. 그리디에서 미션·리뷰로 성장 중.',
     isPublic: true,
-    stats: { completedMissions: 4, teamProjects: 1, blogPosts: 3 },
+    summaryCounts: { completedMissions: 4, teamProjects: 1, blogPosts: 3 },
     completedMissions: [
       { missionId: 'routing-spa', title: '[3기] 라우팅 기반 SPA 구현', cohortLabel: 'FE 3기', weekLabel: '5주차' },
       { missionId: 'react-todo-optimize', title: 'TodoList 렌더링 최적화', cohortLabel: 'FE 3기', weekLabel: '4주차' },
@@ -271,7 +217,7 @@ export const MEMBERS: MockMember[] = [
     memberships: [{ cohort: 4, track: 'BE', roles: ['멤버'] }],
     bio: '개인 사정으로 4기 미션은 중도에 그만뒀습니다.',
     isPublic: true,
-    stats: { completedMissions: 0, teamProjects: 0, blogPosts: 0 },
+    summaryCounts: { completedMissions: 0, teamProjects: 0, blogPosts: 0 },
     completedMissions: [],
     blogPosts: [],
     teamProjects: [],

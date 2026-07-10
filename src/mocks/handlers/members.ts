@@ -1,5 +1,20 @@
 import { http, HttpResponse } from 'msw';
-import { MEMBERS } from '../data/members';
+import { MEMBERS, type MockMember } from '../data/members';
+import type { MemberDetail, UpdateMemberPayload } from '@/shared/core/types/member';
+
+/** MockMember의 선택 필드를 실계약(MemberDetail)이 보장하는 기본값으로 채운다. */
+function toMemberDetail(member: MockMember): MemberDetail {
+  return {
+    ...member,
+    bio: member.bio ?? null,
+    isPublic: member.isPublic ?? true,
+    summaryCounts: member.summaryCounts ?? { completedMissions: 0, teamProjects: 0, blogPosts: 0 },
+    completedMissions: member.completedMissions ?? [],
+    blogPosts: member.blogPosts ?? [],
+    teamProjects: member.teamProjects ?? [],
+    activities: member.activities ?? [],
+  };
+}
 
 export const memberHandlers = [
   http.get('*/api/members', () => {
@@ -27,16 +42,7 @@ export const memberHandlers = [
       );
     }
 
-    return HttpResponse.json({
-      ...member,
-      bio: member.bio ?? null,
-      isPublic: member.isPublic ?? true,
-      stats: member.stats ?? { completedMissions: 0, teamProjects: 0, blogPosts: 0 },
-      completedMissions: member.completedMissions ?? [],
-      blogPosts: member.blogPosts ?? [],
-      teamProjects: member.teamProjects ?? [],
-      activities: member.activities ?? [],
-    });
+    return HttpResponse.json(toMemberDetail(member));
   }),
 
   http.patch('*/api/members/:id', async ({ params, request }) => {
@@ -50,19 +56,10 @@ export const memberHandlers = [
       );
     }
 
-    const payload = (await request.json()) as { bio?: string; isPublic?: boolean };
+    const payload = (await request.json()) as UpdateMemberPayload;
     if (payload.bio !== undefined) member.bio = payload.bio;
     if (payload.isPublic !== undefined) member.isPublic = payload.isPublic;
 
-    return HttpResponse.json({
-      ...member,
-      bio: member.bio ?? null,
-      isPublic: member.isPublic ?? true,
-      stats: member.stats ?? { completedMissions: 0, teamProjects: 0, blogPosts: 0 },
-      completedMissions: member.completedMissions ?? [],
-      blogPosts: member.blogPosts ?? [],
-      teamProjects: member.teamProjects ?? [],
-      activities: member.activities ?? [],
-    });
+    return HttpResponse.json(toMemberDetail(member));
   }),
 ];

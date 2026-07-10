@@ -58,15 +58,15 @@ describe('GET /members/:id', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.name).toBe('윤재홍');
-    expect(body.stats).toEqual({ completedMissions: 4, teamProjects: 1, blogPosts: 3 });
+    expect(body.summaryCounts).toEqual({ completedMissions: 4, teamProjects: 1, blogPosts: 3 });
     expect(body.teamProjects).toEqual([{ projectId: 1, name: '두구두구', roleLabel: 'FE 담당' }]);
   });
 
-  it('detail 필드가 없는 멤버는 stats·리스트가 빈 값으로 채워진다', async () => {
+  it('detail 필드가 없는 멤버는 summaryCounts·리스트가 빈 값으로 채워진다', async () => {
     const res = await fetch(`${BASE}/members/johncakes`);
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.stats).toEqual({ completedMissions: 0, teamProjects: 0, blogPosts: 0 });
+    expect(body.summaryCounts).toEqual({ completedMissions: 0, teamProjects: 0, blogPosts: 0 });
     expect(body.teamProjects).toEqual([]);
     expect(body.completedMissions).toEqual([]);
     expect(body.blogPosts).toEqual([]);

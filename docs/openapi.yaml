@@ -63,6 +63,33 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
+    patch:
+      tags: [members]
+      summary: "⚠️ Phase 1.5 프론트 프로토타입 목업 — 인증 없이 bio·isPublic 갱신 (실제 Spring 계약 아님, backend-api-spec.md §3 Phase 1.5/Phase 2 참고)"
+      description: |
+        Spring 실서버 전환 시 반드시 로그인한 본인만 호출 가능하도록 인증 미들웨어를 추가해야 한다(Phase 2, 이번 구현 범위 아님).
+        bio는 원본 마크다운 그대로 저장하고, 렌더링 시 이스케이프/새니타이징 필수(저장형 XSS 방지).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateMemberPayload" }
+      responses:
+        "200":
+          description: 갱신된 멤버 상세 전체
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MemberDetail" }
+        "404":
+          description: 존재하지 않는 멤버
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
   /activities:
     get:
       tags: [activities]
@@ -177,12 +204,17 @@ components:
 
     Membership:
       type: object
+      description: "한 사람이 여러 기수에 걸칠 수 있어 배열로 관리(예: 2기 FE 멤버 → 3기 BE 리드)"
       properties:
         cohort: { type: integer, example: 4 }
         track: { type: string, enum: [FE, BE] }
         roles:
           type: array
-          items: { type: string, enum: ["멤버", "리뷰어", "리드", "메인테이너", "OB"] }
+          items: { type: string, enum: ["멤버", "리뷰어", "리드", "메인테이너", "동아리장", "OB"] }
+        team:
+          type: string
+          nullable: true
+          description: "데모데이 팀명(예: '두구두구'). 1~3기만 노션에 기재돼 있어 4기·창립·영입리드는 없음."
 
     MemberSummary:
       type: object
@@ -194,10 +226,19 @@ components:
         memberships:
           type: array
           items: { $ref: "#/components/schemas/Membership" }
+        missionDashboardUrl:
+          type: string
+          nullable: true
+          description: "미션 대시보드(/missions) 링크. 미션 데이터는 별도 Mongo 시스템 소관이라 URL만 참조."
+        joinType:
+          type: string
+          nullable: true
+          enum: ["창립", "영입리드"]
+          description: "정규 기수 '멤버'였던 적이 없는 창립멤버·영입리드만 표기. 그 외엔 없음."
 
-    MemberStats:
+    MemberSummaryCounts:
       type: object
-      description: "teamProjects는 teamProjects[].length와 중복 — 제거 논의 중(§11-3)"
+      description: "teamProjects는 teamProjects[].length와, completedMissions/blogPosts도 각 배열 길이와 중복될 수 있음 — 제거 논의 중(§11-3)"
       properties:
         completedMissions: { type: integer }
         teamProjects: { type: integer }
@@ -218,14 +259,54 @@ components:
         tag: { type: string }
         title: { type: string }
 
+    MemberMissionRef:
+      type: object
+      description: "완료된 미션만 노출(진행중/미완료 제외). 실제 조회 계약은 미결(§11-6)."
+      properties:
+        missionId: { type: string }
+        title: { type: string }
+        cohortLabel: { type: string, example: "BE 3기" }
+        weekLabel: { type: string, example: "6주차" }
+
+    MemberBlogPostRef:
+      type: object
+      description: "지금은 MSW 목데이터로만 채워짐. 블로그 도메인 자체가 미확정(§11-7)."
+      properties:
+        postId: { type: integer }
+        title: { type: string }
+        category: { type: string }
+        relativeDate: { type: string, example: "3일 전" }
+
+    UpdateMemberPayload:
+      type: object
+      description: "Phase 1.5 프론트 프로토타입 목업 계약 — 둘 다 optional, 보낸 필드만 갱신"
+      properties:
+        bio: { type: string }
+        isPublic: { type: boolean }
+
     MemberDetail:
       allOf:
         - $ref: "#/components/schemas/MemberSummary"
         - type: object
           properties:
             school: { type: string }
+            department:
+              type: array
+              items: { type: string }
+              description: "복수 전공 가능. 아직 UI에 노출하지 않음 — 스키마만 선반영."
+            admissionYear:
+              type: integer
+              nullable: true
+              description: "학번(입학년도, 2자리). 아직 UI에 노출하지 않음 — 스키마만 선반영."
             bio: { type: string, nullable: true }
-            stats: { $ref: "#/components/schemas/MemberStats" }
+            isPublic: { type: boolean }
+            summaryCounts: { $ref: "#/components/schemas/MemberSummaryCounts" }
+            completedMissions:
+              type: array
+              items: { $ref: "#/components/schemas/MemberMissionRef" }
+            blogPosts:
+              type: array
+              items: { $ref: "#/components/schemas/MemberBlogPostRef" }
             teamProjects:
               type: array
               items: { $ref: "#/components/schemas/MemberProjectRef" }

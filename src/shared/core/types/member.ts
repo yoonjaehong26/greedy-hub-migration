@@ -24,7 +24,7 @@ export interface MemberSummary {
   joinType?: MemberJoinType;
 }
 
-export interface MemberStats {
+export interface MemberSummaryCounts {
   completedMissions: number;
   teamProjects: number;
   blogPosts: number;
@@ -65,7 +65,7 @@ export interface MemberDetail extends MemberSummary {
   admissionYear?: number | null;
   bio: string | null;
   isPublic: boolean;
-  stats: MemberStats;
+  summaryCounts: MemberSummaryCounts;
   completedMissions: MemberMissionRef[];
   blogPosts: MemberBlogPostRef[];
   teamProjects: MemberProjectRef[];

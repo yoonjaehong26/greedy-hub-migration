@@ -139,9 +139,9 @@ export function MemberProfile({ id }: { id: string }) {
       {/* 통계 */}
       <div className="mt-6 grid grid-cols-3 gap-4">
         {[
-          { value: member.stats.completedMissions, label: '완료 미션', cls: 'text-brand' },
-          { value: member.stats.teamProjects, label: '팀 프로젝트', cls: '' },
-          { value: member.stats.blogPosts, label: '기술 글', cls: '' },
+          { value: member.summaryCounts.completedMissions, label: '완료 미션', cls: 'text-brand' },
+          { value: member.summaryCounts.teamProjects, label: '팀 프로젝트', cls: '' },
+          { value: member.summaryCounts.blogPosts, label: '기술 글', cls: '' },
         ].map((s) => (
           <div
             key={s.label}
