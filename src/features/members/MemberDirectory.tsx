@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useMembersQuery } from '@/shared/core/queries/memberQueries';
 import type { MemberRoleLabel, Track } from '@/shared/core/types/member';
 import { primaryMembership } from './primaryMembership';
+import { memberCohortLabels } from './memberCohortLabels';
 
 type Filter = 'all' | Track;
 
@@ -13,6 +14,7 @@ const CHIP_CLS: Record<MemberRoleLabel, string> = {
   리뷰어: 'bg-brand/10 text-brand',
   리드: 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
   메인테이너: 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
+  동아리장: 'bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300',
   OB: 'bg-slate-200 text-slate-500 dark:bg-white/10',
 };
 
@@ -54,6 +56,7 @@ export function MemberDirectory() {
         <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
           {visible.map((m) => {
             const primary = primaryMembership(m.memberships);
+            const cohortLabels = memberCohortLabels(m.memberships, m.origin);
             return (
               <Link
                 key={m.id}
@@ -69,7 +72,7 @@ export function MemberDirectory() {
                   {primary && (
                     <>
                       <div className="text-xs text-slate-500">
-                        {primary.track} · {primary.cohort}기
+                        {cohortLabels.join(', ')}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-1">
                         {primary.roles.map((r) => (
