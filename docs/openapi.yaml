@@ -372,8 +372,8 @@ components:
       properties:
         id: { type: integer }
         name: { type: string }
-        cohortLabel: { type: string, example: "4기" }
-        trackLabel: { type: string, example: "공통" }
+        cohortLabel: { type: string, example: "1기" }
+        trackLabel: { type: string, example: "FE/BE" }
         description: { type: string }
         teamSize: { type: integer }
         thumbnailUrl: { type: string, nullable: true }

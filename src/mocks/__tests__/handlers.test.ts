@@ -88,9 +88,25 @@ describe('GET /projects', () => {
   it('상세는 team·stack을 포함한다', async () => {
     const res = await fetch(`${BASE}/projects/1`);
     const body = await res.json();
-    expect(body.name).toBe('모꼬지');
+    expect(body.name).toBe('따라행');
     expect(body.team.length).toBeGreaterThan(0);
-    expect(body.stack).toContain('Next.js');
+    expect(Array.isArray(body.stack)).toBe(true);
+  });
+
+  it('그리디 동아리원이 아닌 외부 참여자는 memberId 없이 이름만 담는다', async () => {
+    const res = await fetch(`${BASE}/projects/2`);
+    const body = await res.json();
+    expect(body.name).toBe('모꼬지');
+    const external = body.team.find((t: { name: string }) => t.name === '방재경');
+    expect(external.memberId).toBeNull();
+  });
+
+  it('githubUrl·liveUrl·stack은 실제 레포 조사 결과를 담는다', async () => {
+    const res = await fetch(`${BASE}/projects/2`);
+    const body = await res.json();
+    expect(body.githubUrl).toBe('https://github.com/greedy-team/mokkoji-fe-next');
+    expect(body.liveUrl).toBe('https://www.mokkoji.site/');
+    expect(body.stack).toContain('Spring Boot');
   });
 });
 
