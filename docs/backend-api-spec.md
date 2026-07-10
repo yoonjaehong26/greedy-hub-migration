@@ -31,6 +31,7 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 - 페이지네이션 불필요 (위와 같은 이유).
 - 에러: `{ "error": { "code": "NOT_FOUND", "message": "..." } }` + 4xx/5xx status. 목록 엔드포인트는 파라미터가 없어 이 에러 케이스도 없음 — 404는 상세(`/{id}`) 조회에서만 발생.
 - 이미지 필드는 항상 완성된 URL 문자열(`thumbnailUrl`, `thumbnailUrls[]`, `images[].url`). 저장 방식(Vercel Blob·S3 등)은 이후 결정, 프론트는 URL만 소비.
+  - **디스코드 원본 사진을 그대로 쓰면 안 됨**: 디스코드 메시지 permalink(`discord.com/channels/...`)는 이미지 URL이 아니라 채널로 이동하는 링크라 `<img>`에 못 씀. `cdn.discordapp.com/attachments/...` 형태는 실제 이미지 파일이지만 `?ex=&is=&hm=` 서명이 붙어 일정 시간 후 만료된다 — 활동을 큐레이션할 때(§6) 디스코드에서 사진을 다운로드해 영구 저장소(Vercel Blob 등)에 재업로드한 뒤, 그 영구 URL을 저장해야 한다(레퍼런스: `src/mocks/data/activities.ts`의 만료 경고 주석 — id:2·17에 실제 디스코드 CDN URL을 임시로 넣어둔 예시).
 - 인증 없음 — 이 문서의 모든 엔드포인트는 공개 GET, Phase 1에서 인증 미들웨어 불필요.
 
 ## 3. 멤버 (Members)

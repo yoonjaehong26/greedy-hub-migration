@@ -60,7 +60,7 @@ export const MEMBERS: MockMember[] = [
     ],
     teamProjects: [],
     activities: [
-      { activityId: 5, date: '2024.09', tag: '창립', title: '그리디 창립' },
+      { activityId: 1, date: '2024.09', tag: '창립', title: '그리디 창립' },
     ],
   },
   { id: 2, login: 'TaeyeonRoyce', name: '원태연', school: '세종대학교', department: ['에너지자원공학과'], admissionYear: 18, joinType: '창립', avatarUrl: null, memberships: [{ cohort: 1, track: 'BE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 2, track: 'BE', roles: ['메인테이너', '리뷰어'] }] },
@@ -136,7 +136,7 @@ export const MEMBERS: MockMember[] = [
       { projectId: 1, name: '두구두구', roleLabel: 'BE 담당' },
     ],
     activities: [
-      { activityId: 4, date: '2026.05', tag: '데모데이', title: '3기 데모데이' },
+      { activityId: 14, date: '2025.11', tag: '데모데이', title: '그리디콘' },
     ],
   },
   { id: 19, login: 'INSANE-P', name: '박찬빈', school: '세종대학교', department: ['컴퓨터공학과'], admissionYear: 21, avatarUrl: null, memberships: [{ cohort: 2, track: 'FE', roles: ['멤버'], team: '줍줍' }, { cohort: 3, track: 'FE', roles: ['리드'] }, { cohort: 4, track: 'FE', roles: ['메인테이너', '리드', '리뷰어'] }] },
@@ -173,9 +173,9 @@ export const MEMBERS: MockMember[] = [
     ],
     teamProjects: [{ projectId: 1, name: '두구두구', roleLabel: 'FE 담당' }],
     activities: [
-      { activityId: 1, date: '2026.05', tag: '행사', title: '3기 MT — 1박 2일' },
-      { activityId: 2, date: '2026.04', tag: '세션', title: 'React 심화 세션' },
-      { activityId: 3, date: '2026.03', tag: '행사', title: '3기 OT & 아이스브레이킹' },
+      { activityId: 15, date: '2026.03', tag: '행사', title: '그리디 엠티' },
+      { activityId: 17, date: '2026.05', tag: '세션', title: '코수타' },
+      { activityId: 16, date: '2026.05', tag: '축제', title: '모두 함께한 2026 축제 부스 운영 끝~' },
     ],
   },
   { id: 27, login: 'johncakes', name: '심혁', school: '세종대학교', department: ['소프트웨어학과'], admissionYear: 21, avatarUrl: null, memberships: [{ cohort: 3, track: 'FE', roles: ['멤버'], team: '두구두구' }, { cohort: 4, track: 'FE', roles: ['메인테이너', '리드'] }] },
@@ -219,7 +219,7 @@ export const MEMBERS: MockMember[] = [
     blogPosts: [],
     teamProjects: [],
     activities: [
-      { activityId: 6, date: '2026.03', tag: '행사', title: '4기 OT & 아이스브레이킹' },
+      { activityId: 15, date: '2026.03', tag: '행사', title: '그리디 엠티' },
     ],
   },
 ];
