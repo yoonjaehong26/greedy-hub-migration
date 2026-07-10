@@ -218,6 +218,10 @@ components:
 
     MemberSummary:
       type: object
+      description: |
+        missionDashboardUrl은 의도적으로 계약에서 제외했다(결정, 2026-07-10) — memberships[]의 가장 최근 항목(cohort 최대)만으로
+        `/missions?cohort={cohort}&track={track}`을 100% 파생 가능해 백엔드가 저장·응답할 필요가 없다.
+        backend-api-spec.md §3 참고.
       properties:
         id: { type: integer }
         login: { type: string }
@@ -226,10 +230,6 @@ components:
         memberships:
           type: array
           items: { $ref: "#/components/schemas/Membership" }
-        missionDashboardUrl:
-          type: string
-          nullable: true
-          description: "미션 대시보드(/missions) 링크. 미션 데이터는 별도 Mongo 시스템 소관이라 URL만 참조."
         joinType:
           type: string
           nullable: true

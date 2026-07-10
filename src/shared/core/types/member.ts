@@ -18,8 +18,6 @@ export interface MemberSummary {
   name: string;
   avatarUrl: string | null;
   memberships: Membership[];
-  /** 미션 대시보드(`/missions`) 링크. 미션 데이터는 별도 시스템 소관이라 URL만 참조. */
-  missionDashboardUrl?: string;
   /** 창립멤버·영입리드처럼 정규 기수 '멤버'였던 적이 없는 경우만 표기. */
   joinType?: MemberJoinType;
 }

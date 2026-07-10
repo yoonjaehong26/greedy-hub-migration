@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useMemberQuery, useUpdateMemberMutation } from '@/shared/core/queries/memberQueries';
+import { primaryMembership } from '@/features/members/primaryMembership';
 
 export function MemberProfile({ id }: { id: string }) {
   const { data: member, isLoading, isError } = useMemberQuery(id);
   const updateMember = useUpdateMemberMutation(id);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioDraft, setBioDraft] = useState('');
+  const primary = member ? primaryMembership(member.memberships) : null;
 
   if (isLoading) {
     return <main className="mx-auto max-w-5xl px-5 py-10 text-sm text-slate-500 text-center">불러오는 중…</main>;
@@ -60,9 +62,9 @@ export function MemberProfile({ id }: { id: string }) {
             </div>
           </div>
           <div className="flex flex-col items-end gap-3 text-sm">
-            {member.missionDashboardUrl && (
+            {primary && (
               <Link
-                href={member.missionDashboardUrl}
+                href={`/missions?cohort=${primary.cohort}&track=${primary.track}`}
                 className="px-3 py-2 rounded-lg bg-brand/10 text-brand font-semibold whitespace-nowrap"
               >
                 미션 대시보드 →

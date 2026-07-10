@@ -19,13 +19,12 @@ function toMemberDetail(member: MockMember): MemberDetail {
 export const memberHandlers = [
   http.get('*/api/members', () => {
     return HttpResponse.json({
-      items: MEMBERS.map(({ id, login, name, memberships, avatarUrl, missionDashboardUrl, joinType }) => ({
+      items: MEMBERS.map(({ id, login, name, memberships, avatarUrl, joinType }) => ({
         id,
         login,
         name,
         memberships,
         avatarUrl,
-        missionDashboardUrl,
         joinType,
       })),
     });
