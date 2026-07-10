@@ -56,7 +56,7 @@ export function MemberDirectory() {
         <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
           {visible.map((m) => {
             const primary = primaryMembership(m.memberships);
-            const cohortLabels = memberCohortLabels(m.memberships, m.origin);
+            const cohortLabels = memberCohortLabels(m.memberships, m.joinType);
             return (
               <Link
                 key={m.id}

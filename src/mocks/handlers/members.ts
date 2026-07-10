@@ -4,14 +4,14 @@ import { MEMBERS } from '../data/members';
 export const memberHandlers = [
   http.get('*/api/members', () => {
     return HttpResponse.json({
-      items: MEMBERS.map(({ id, login, name, memberships, avatarUrl, missionDashboardUrl, origin }) => ({
+      items: MEMBERS.map(({ id, login, name, memberships, avatarUrl, missionDashboardUrl, joinType }) => ({
         id,
         login,
         name,
         memberships,
         avatarUrl,
         missionDashboardUrl,
-        origin,
+        joinType,
       })),
     });
   }),

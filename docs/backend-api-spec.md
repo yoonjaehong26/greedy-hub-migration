@@ -45,7 +45,7 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
     { "cohort": 3, "track": "FE", "roles": ["멤버"], "team": "두구두구" },
     { "cohort": 4, "track": "FE", "roles": ["메인테이너", "리드"] }
   ] }
-// origin이 있는 멤버는 목록에도 포함(창립·영입리드 예시는 아래 상세 예시 참고)
+// joinType이 있는 멤버는 목록에도 포함(창립·영입리드 예시는 아래 상세 예시 참고)
 
 // 상세 — 여러 기수에 걸친 멤버 예시(2기 FE → 3기 BE 트랙 전환)
 { "id": 18, "login": "mintcoke123", "name": "강동현", "school": "세종대학교", "avatarUrl": null,
@@ -60,9 +60,9 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
   "completedMissions": [], "blogPosts": [],
   "teamProjects": [], "activities": [] }
 
-// 상세 — 창립멤버 예시(기수/트랙은 정상 보유, department·admissionYear·origin만 추가)
+// 상세 — 창립멤버 예시(기수/트랙은 정상 보유, department·admissionYear·joinType만 추가)
 { "id": 1, "login": "kokodak", "name": "이승용", "school": "세종대학교",
-  "department": ["컴퓨터공학과"], "admissionYear": 20, "origin": "창립", "avatarUrl": null,
+  "department": ["컴퓨터공학과"], "admissionYear": 20, "joinType": "창립", "avatarUrl": null,
   "missionDashboardUrl": "/missions?cohort=3&track=BE",
   "memberships": [
     { "cohort": 1, "track": "BE", "roles": ["동아리장", "메인테이너", "리드", "리뷰어"] },
@@ -72,12 +72,12 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 ```
 
 - **한 사람이 여러 기수에 걸칠 수 있어 `memberships[]` 배열**로 관리한다(예: 3기 FE 멤버 → 4기 FE 리드로 승급). 트랙·기수·역할(roles)은 전부 membership 단위로 붙는다 — 멤버 전체에 붙는 단일 값이 아님.
-- 목록 카드처럼 "대표 소속" 하나만 필요한 화면은 프론트가 `memberships`에서 **가장 최근(cohort가 큰) 항목**을 골라 쓴다(레퍼런스: `src/features/members/primaryMembership.ts`, 역할 배지 표시에 사용). 반면 카드 상단의 "언제 스터디원이었는지" 텍스트는 role에 `멤버`가 포함된 기수만 오름차순으로 나열하고, 그런 기수가 아예 없는 창립·영입리드는 `origin`으로 대체한다(레퍼런스: `src/features/members/memberCohortLabels.ts`) — 메인테이너·리드 등 승격 이후 역할과 "원래 몇 기 스터디원이었는지"를 혼동하지 않기 위한 의도적 구분. 백엔드는 굳이 "대표"를 계산해서 내려줄 필요 없음 — 배열 그대로 반환.
+- 목록 카드처럼 "대표 소속" 하나만 필요한 화면은 프론트가 `memberships`에서 **가장 최근(cohort가 큰) 항목**을 골라 쓴다(레퍼런스: `src/features/members/primaryMembership.ts`, 역할 배지 표시에 사용). 반면 카드 상단의 "언제 스터디원이었는지" 텍스트는 role에 `멤버`가 포함된 기수만 오름차순으로 나열하고, 그런 기수가 아예 없는 창립·영입리드는 `joinType`으로 대체한다(레퍼런스: `src/features/members/memberCohortLabels.ts`) — 메인테이너·리드 등 승격 이후 역할과 "원래 몇 기 스터디원이었는지"를 혼동하지 않기 위한 의도적 구분. 백엔드는 굳이 "대표"를 계산해서 내려줄 필요 없음 — 배열 그대로 반환.
 - **`memberships[].team`**(선택, 데모데이 팀명 — 예: "두구두구")과 **`missionDashboardUrl`**(선택, `/missions` 링크)은 목업 실데이터 작업(2026-07-06)에서 추가된 필드 — 이전 버전 스펙엔 없었음. `team`은 노션 데모데이 명부에서만 확인 가능(1~3기; 4기·창립·영입리드는 미기재라 값 없음). `missionDashboardUrl`은 미션 데이터가 별도 Mongo 시스템 소관이라 **URL 문자열만** 넘기며, 이 백엔드가 미션 진행 데이터를 직접 갖거나 조인하지 않는다.
 - `roles`는 **한글 표시값 그대로** 저장·응답(`멤버 | 리뷰어 | 리드 | 메인테이너 | 동아리장 | OB`). 코드값 매핑 없음.
 - **멤버 목록의 SOT는 노션 "그리디 멤버 최종 정리(혜빈님 정리본)" 페이지**(그리디 전체 46명 + 1~4기 개별 DB)로 교체됐다(2026-07-06 목업 작업, 승인됨). 이전엔 미션 대시보드 로스터(PR 미션을 실제로 수행한 39명)만 반영해 **창립멤버 5명과 영입리드 2명이 누락**돼 있었다 — 이 둘은 PR 미션 없이 리드·메인테이너로만 활동해 미션 로스터엔 애초에 안 잡힘. 총 46명이 정식 스펙.
   - **`department`**(학과, 복수 전공 가능해 배열)·**`admissionYear`**(학번/입학년도, 2자리)는 이번에 스키마에 추가된 필드 — **아직 프론트 UI엔 노출하지 않는다**(승인됨, 스키마 선반영만).
-  - **`origin`**(선택, `창립 | 영입리드`)은 정규 기수 스터디원이 아닌 예외 합류 경로만 표기한다. 창립멤버·영입리드도 실제 활동 기수·트랙·역할은 다른 멤버와 동일하게 `memberships[]`에 정상적으로 들어있음(예: 이승용은 1~3기 내내 BE 동아리장/메인테이너) — `origin`은 "합류 경위"만 부가하는 뱃지고, 별도 기수 없는 가상 멤버십을 만들지 않는다.
+  - **`joinType`**(선택, `창립 | 영입리드`)은 정규 기수 스터디원이 아닌 예외 합류 경로만 표기한다. 창립멤버·영입리드도 실제 활동 기수·트랙·역할은 다른 멤버와 동일하게 `memberships[]`에 정상적으로 들어있음(예: 이승용은 1~3기 내내 BE 동아리장/메인테이너) — `joinType`은 "합류 경위"만 부가하는 뱃지고, 별도 기수 없는 가상 멤버십을 만들지 않는다.
   - **외부 리뷰어 10명**(비회원, 기수별 트랙 PR 리뷰만 담당 — 그리디 동아리원이 아님)은 이 API의 스코프 밖으로 **명시적으로 제외**한다(승인됨). 원본 데이터는 참고용으로 `src/mocks/data/externalReviewers.ts`에 정리해뒀지만 어떤 핸들러·엔드포인트에도 연결돼 있지 않음 — 필요해지면 별도 엔드포인트로 다룰 문제.
 - `stats.completedMissions`/`blogPosts`는 미션·블로그 도메인이 아직 없어 값이 없으면 `0` — 프론트는 0이면 해당 통계를 숨긴다.
 - `completedMissions[]`는 `{ missionId, title, cohortLabel, weekLabel }` 형태의 완료 미션 리스트(성취만 노출, 진행중/미완료 제외), `blogPosts[]`는 `{ postId, title, category, relativeDate }` 형태의 글 리스트 — 둘 다 **지금은 MSW 목데이터로만 채워짐**(§9), 실제 조회 계약(미션 백엔드 필터·블로그 도메인)은 여전히 미결(§11-6·§11-7). 목록이 비면 빈 배열.
@@ -99,7 +99,7 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 ### MySQL
 ```sql
 member       id PK, login UNIQUE, name, school, department JSON NULL, admission_year TINYINT NULL,
-             origin ENUM('창립','영입리드') NULL, avatar_url NULL, bio TEXT NULL,
+             join_type ENUM('창립','영입리드') NULL, avatar_url NULL, bio TEXT NULL,
              is_public BOOLEAN DEFAULT TRUE, mission_dashboard_url NULL, created_at
 membership   id PK, member_id FK, cohort TINYINT, track ENUM('FE','BE'), team NULL
 member_role  membership_id FK, role ENUM('멤버','리뷰어','리드','메인테이너','동아리장','OB')

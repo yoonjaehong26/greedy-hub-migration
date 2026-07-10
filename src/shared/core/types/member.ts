@@ -1,7 +1,7 @@
 export type Track = 'FE' | 'BE';
 export type MemberRoleLabel = '멤버' | '리뷰어' | '리드' | '메인테이너' | '동아리장' | 'OB';
 /** 어떻게 합류했는지 — 정규 기수 스터디원이 아닌 예외 케이스만 표기(그 외엔 없음). */
-export type MemberOrigin = '창립' | '영입리드';
+export type MemberJoinType = '창립' | '영입리드';
 
 /** 한 사람이 여러 기수에 걸칠 수 있어 배열로 관리한다(예: 2기 FE 멤버 → 3기 BE 리뷰어). */
 export interface Membership {
@@ -21,7 +21,7 @@ export interface MemberSummary {
   /** 미션 대시보드(`/missions`) 링크. 미션 데이터는 별도 시스템 소관이라 URL만 참조. */
   missionDashboardUrl?: string;
   /** 창립멤버·영입리드처럼 정규 기수 '멤버'였던 적이 없는 경우만 표기. */
-  origin?: MemberOrigin;
+  joinType?: MemberJoinType;
 }
 
 export interface MemberStats {

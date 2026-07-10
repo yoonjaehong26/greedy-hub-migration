@@ -9,7 +9,7 @@
  * 동아리장 이력이 들어있다.
  * 외부 리뷰어 10명(비회원, 트랙별 PR 리뷰만 담당 — 김의천·송은우·백경환·정다빈·조승현·신동훈·최혜령·정수영·
  * 김민석·조상준)은 그리디 동아리원이 아니라서 이 목록에서 제외(승인됨) — 필요해지면 별도 자료구조로.
- * `department`(학과)·`admissionYear`(학번)·`origin`(창립/영입리드 — 정규 기수 합류가 아닌 예외만 표기)은
+ * `department`(학과)·`admissionYear`(학번)·`joinType`(창립/영입리드 — 정규 기수 합류가 아닌 예외만 표기)은
  * 이번 작업에서 스키마에 추가됐지만 아직 UI에는 노출하지 않음(승인됨, 추후 필요시 사용).
  * `team`(데모데이팀)은 1~3기만 노션에 기재돼 있어 4기·창립·영입리드는 값 없음.
  * cross-cohort 트랙 전환자: 신지훈(1기 BE→2기 FE→3기 BE), 강동현(2기 FE→3기 BE) 등 memberships[] 배열로 표현.
@@ -19,7 +19,7 @@
 export type Track = 'FE' | 'BE';
 export type MemberRoleLabel = '멤버' | '리뷰어' | '리드' | '메인테이너' | '동아리장' | 'OB';
 /** 어떻게 합류했는지 — 정규 기수 스터디원이 아닌 예외 케이스만 표기(그 외엔 없음). */
-export type MemberOrigin = '창립' | '영입리드';
+export type MemberJoinType = '창립' | '영입리드';
 
 export interface MockMembership {
   cohort: number;
@@ -72,7 +72,7 @@ export interface MockMember {
   /** 학번(입학년도, 2자리). 아직 UI에 노출하지 않음 — 스키마만 선반영. */
   admissionYear?: number | null;
   /** 창립멤버·영입리드처럼 정규 기수 합류 경로가 아닌 경우만 표기. 아직 UI에 노출하지 않음. */
-  origin?: MemberOrigin;
+  joinType?: MemberJoinType;
   avatarUrl: string | null;
   memberships: MockMembership[];
   /** 미션 대시보드(`/missions`) 링크. 미션 데이터는 별도 Mongo 시스템 소관이라 URL만 참조. */
@@ -95,7 +95,7 @@ export const MEMBERS: MockMember[] = [
     school: '세종대학교',
     department: ['컴퓨터공학과'],
     admissionYear: 20,
-    origin: '창립',
+    joinType: '창립',
     avatarUrl: null,
     missionDashboardUrl: '/missions?cohort=3&track=BE',
     memberships: [
@@ -116,10 +116,10 @@ export const MEMBERS: MockMember[] = [
       { activityId: 5, date: '2024.09', tag: '창립', title: '그리디 창립' },
     ],
   },
-  { id: 2, login: 'TaeyeonRoyce', name: '원태연', school: '세종대학교', department: ['에너지자원공학과'], admissionYear: 18, origin: '창립', avatarUrl: null, missionDashboardUrl: '/missions?cohort=2&track=BE', memberships: [{ cohort: 1, track: 'BE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 2, track: 'BE', roles: ['메인테이너', '리뷰어'] }] },
-  { id: 3, login: 'boyekim', name: '김수민', school: '세종대학교', department: ['컴퓨터공학과'], admissionYear: 21, origin: '창립', avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=BE', memberships: [{ cohort: 1, track: 'BE', roles: ['메인테이너'] }, { cohort: 2, track: 'BE', roles: ['메인테이너'] }, { cohort: 3, track: 'BE', roles: ['메인테이너'] }, { cohort: 4, track: 'BE', roles: ['리뷰어'] }] },
-  { id: 4, login: 'Indigochi1d', name: '김범수', school: '세종대학교', department: ['컴퓨터공학과'], admissionYear: 19, origin: '창립', avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=FE', memberships: [{ cohort: 1, track: 'FE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 2, track: 'FE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 3, track: 'FE', roles: ['리뷰어'] }, { cohort: 4, track: 'FE', roles: ['메인테이너', '리드', '리뷰어'] }] },
-  { id: 5, login: '3Juhwan', name: '김주환', school: '세종대학교', department: ['컴퓨터공학과'], admissionYear: 20, origin: '창립', avatarUrl: null, missionDashboardUrl: '/missions?cohort=2&track=BE', memberships: [{ cohort: 1, track: 'BE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 2, track: 'BE', roles: ['메인테이너', '리드'] }] },
+  { id: 2, login: 'TaeyeonRoyce', name: '원태연', school: '세종대학교', department: ['에너지자원공학과'], admissionYear: 18, joinType: '창립', avatarUrl: null, missionDashboardUrl: '/missions?cohort=2&track=BE', memberships: [{ cohort: 1, track: 'BE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 2, track: 'BE', roles: ['메인테이너', '리뷰어'] }] },
+  { id: 3, login: 'boyekim', name: '김수민', school: '세종대학교', department: ['컴퓨터공학과'], admissionYear: 21, joinType: '창립', avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=BE', memberships: [{ cohort: 1, track: 'BE', roles: ['메인테이너'] }, { cohort: 2, track: 'BE', roles: ['메인테이너'] }, { cohort: 3, track: 'BE', roles: ['메인테이너'] }, { cohort: 4, track: 'BE', roles: ['리뷰어'] }] },
+  { id: 4, login: 'Indigochi1d', name: '김범수', school: '세종대학교', department: ['컴퓨터공학과'], admissionYear: 19, joinType: '창립', avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=FE', memberships: [{ cohort: 1, track: 'FE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 2, track: 'FE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 3, track: 'FE', roles: ['리뷰어'] }, { cohort: 4, track: 'FE', roles: ['메인테이너', '리드', '리뷰어'] }] },
+  { id: 5, login: '3Juhwan', name: '김주환', school: '세종대학교', department: ['컴퓨터공학과'], admissionYear: 20, joinType: '창립', avatarUrl: null, missionDashboardUrl: '/missions?cohort=2&track=BE', memberships: [{ cohort: 1, track: 'BE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 2, track: 'BE', roles: ['메인테이너', '리드'] }] },
 
   // ── 1기 (2024-2) ──
   { id: 6, login: 'Songhyejeong', name: '송혜정', school: '세종대학교', department: ['지능기전공학부'], admissionYear: 21, avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=FE', memberships: [{ cohort: 1, track: 'FE', roles: ['멤버'], team: '따라행' }, { cohort: 2, track: 'FE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 3, track: 'FE', roles: ['메인테이너', '리드', '리뷰어'] }, { cohort: 4, track: 'FE', roles: ['리뷰어'] }] },
@@ -244,8 +244,8 @@ export const MEMBERS: MockMember[] = [
   { id: 34, login: 'kimsky247-coder', name: '김하늘', school: '세종대학교', department: ['전자정보통신공학과'], admissionYear: 24, avatarUrl: null, missionDashboardUrl: '/missions?cohort=3&track=BE', memberships: [{ cohort: 3, track: 'BE', roles: ['멤버'], team: '밋링크' }] },
 
   // ── 영입리드(4기 합류, 실질 역할은 메인테이너·리뷰어) ──
-  { id: 35, login: 'supernovaMK', name: '김민기', school: '세종대학교', department: ['소프트웨어학과'], admissionYear: 21, origin: '영입리드', avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=BE', memberships: [{ cohort: 4, track: 'BE', roles: ['메인테이너', '리뷰어'] }] },
-  { id: 36, login: '2Jin1031', name: '이진', school: '세종대학교', department: ['양자원자력공학과', '컴퓨터공학과'], admissionYear: 22, origin: '영입리드', avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=BE', memberships: [{ cohort: 4, track: 'BE', roles: ['메인테이너', '리뷰어'] }] },
+  { id: 35, login: 'supernovaMK', name: '김민기', school: '세종대학교', department: ['소프트웨어학과'], admissionYear: 21, joinType: '영입리드', avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=BE', memberships: [{ cohort: 4, track: 'BE', roles: ['메인테이너', '리뷰어'] }] },
+  { id: 36, login: '2Jin1031', name: '이진', school: '세종대학교', department: ['양자원자력공학과', '컴퓨터공학과'], admissionYear: 22, joinType: '영입리드', avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=BE', memberships: [{ cohort: 4, track: 'BE', roles: ['메인테이너', '리뷰어'] }] },
 
   // ── 4기 (2026-1, 진행 중 — 데모데이팀 노션 미기재) ──
   { id: 37, login: 'EM-H20', name: '홍의민', school: '세종대학교', department: ['컴퓨터공학과'], admissionYear: 20, avatarUrl: null, missionDashboardUrl: '/missions?cohort=4&track=FE', memberships: [{ cohort: 4, track: 'FE', roles: ['멤버'] }] },
