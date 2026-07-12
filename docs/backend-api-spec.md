@@ -148,29 +148,50 @@ project_member  project_id FK, member_id FK NULL, name, role_label
 project_stack   project_id FK, tech VARCHAR
 ```
 
-## 5. 스터디 (Study) — ⚠️ 백엔드 필요 여부 미확정 + 필드 재설계 필요
+## 5. 스터디 (Study) — ⚠️ 백엔드 필요 여부 미확정 · 필드는 재설계 완료(2026-07-13)
 
-> **페이지 자체가 피벗됨**: 최근 기수부터 `/study`가 "주차별 진행 상황"이 아니라 "최근 기수의 미션 커리큘럼 전체 소개"로 화면이 바뀔 예정(기존 미션 대시보드 스타일 UI는 폐기). 그래도 트랙별로 갈리는 데이터(단계/모듈 목록)라는 본질은 같아서 백엔드 필요성 자체는 유효하지만, **데이터 변경 주기가 기수 단위 + 개발자 직접 수정 + 프론트 배포 주기(반년)와 일치**한다는 ROI 논리로 "백엔드 없이 프론트 상수로 관리"하는 안도 논의 중 — 팀 결정 필요.
+> **페이지 자체가 피벗됨**: `/study`가 "주차별 진행 상황"이 아니라 "트랙 소개 + 한 주의 리듬 + 단계별(여러 주차 묶음) 커리큘럼 타임라인"으로 화면이 바뀌었다(기존 미션 대시보드 스타일 UI는 폐기, Figma 프레임 `69:1194`(FE)·`69:1642`(BE)·`69:1331`(모바일) 기준). 그래도 트랙별로 갈리는 데이터(단계 목록)라는 본질은 같아서 백엔드 필요성 자체는 유효하지만, **데이터 변경 주기가 기수 단위 + 개발자 직접 수정 + 프론트 배포 주기(반년)와 일치**한다는 ROI 논리로 "백엔드 없이 프론트 상수로 관리"하는 안도 논의 중 — 팀 결정 필요.
 >
-> 결정과 무관하게, 아래 계약은 **주차(`weekNo`) 전제로 설계된 옛 버전**이라 피벗된 화면(전체 틀 소개)엔 안 맞음. 백엔드로 가기로 하면 `weekNo`/`weekLabel`/`status(DONE·ACTIVE·BREAK)` 대신 "단계/모듈" 기반 필드로 재설계 필요(예: `order`, `label`, 진행상태 개념 자체가 필요한지부터 재검토).
+> 필드 형태는 위 디자인을 반영해 재설계했다: `weekNo` 단위 플랫 리스트 → **`CurriculumStage`(단계, 여러 주차를 묶음) + `CurriculumTrackIntro`(트랙 소개)**. "한 주의 리듬"(미션받기→구현→티키타카 리뷰→머지) 4단계는 두 트랙에 동일하게 고정된 정적 설명이라 API 계약에 넣지 않고 프론트 상수로 둔다(`RHYTHM_STEPS`, `StudyCurriculum.tsx`).
 
-- `GET /curriculum` — 파라미터 없음, **FE·BE 두 트랙 전체 주차를 한 배열로 반환**. 트랙 탭 전환은 프론트가 `track` 필드로 클라이언트에서 필터링(`/study` 아래 다른 하위 리소스가 없어서 `study/` 네임스페이스도 함께 뺐다 — 프론트 페이지 경로(`/study`)와 백엔드 엔드포인트 경로를 굳이 맞출 필요는 없다고 판단)
+- `GET /curriculum` — 파라미터 없음, **FE·BE 두 트랙 전체 단계 + 트랙 소개를 함께 반환**. 트랙 탭 전환은 프론트가 `track` 필드로 클라이언트에서 필터링(`/study` 아래 다른 하위 리소스가 없어서 `study/` 네임스페이스도 함께 뺐다 — 프론트 페이지 경로(`/study`)와 백엔드 엔드포인트 경로를 굳이 맞출 필요는 없다고 판단)
 
 ```json
-// ⚠️ 옛 버전(주차 전제) — 재설계 대기
-{ "items": [
-  { "id": 1, "track": "FE", "weekNo": 1, "weekLabel": "1주차", "title": "JSX & 컴포넌트 기초",
-    "status": "DONE", "noteUrl": null, "notionUrl": null, "linkedMissionId": null } ]}
+{
+  "trackIntros": [
+    { "track": "FE", "title": "프론트엔드 트랙",
+      "description": "사용자가 보고 만지는 화면을 만들어요. ...\n...\n...",
+      "techTags": ["HTML/CSS", "JavaScript", "React", "TypeScript", "협업과 Git"] }
+  ],
+  "items": [
+    { "id": 1, "track": "FE", "order": 1, "title": "자바스크립트 기초", "weekRangeLabel": "1~3주차",
+      "description": "프레임워크 없이 자바스크립트만으로 게임을 만들며 기본기를 다져요.",
+      "missionName": "숫자 야구, 탐욕의 룰렛, 좀비 게임",
+      "techTags": [], "externalLinks": [],
+      "weeks": [
+        { "id": 1, "track": "FE", "weekNo": 1, "weekLabel": "1주차", "title": "",
+          "status": "DONE", "noteUrl": null, "notionUrl": null, "linkedMissionId": 1 }
+      ] }
+  ]
+}
 ```
 
-- `status`: `DONE | ACTIVE | BREAK`. 정렬 보장: `track` 다음 `weekNo` 오름차순.
-- `linkedMissionId`는 미션 도메인(별도 Mongo 백엔드)의 id를 참조하는 느슨한 링크 — 없으면 `null`.
+- `CurriculumTrackIntro`: 트랙당 1개, `description`은 `\n`으로 문단 구분(활동의 `\n\n` 컨벤션과 다름 — 프론트가 `split('\n')`으로 렌더링).
+- `CurriculumStage`: `order` 오름차순 정렬 보장. `techTags`/`externalLinks`는 이번 디자인엔 단계별로 노출되는 값이 없어 빈 배열이지만, 추후 단계별 배지·참고 링크가 생길 걸 대비해 타입에 유지(설계 여지).
+- `CurriculumStage.weeks[]`: 상태(`DONE|ACTIVE|UPCOMING|BREAK`) 등 옛 주차 단위 개념을 그대로 보존해 단계 카드 안 칩으로 노출. `linkedMissionId`는 미션 도메인(별도 Mongo 백엔드)의 id를 참조하는 느슨한 링크 — 없으면 `null`.
+- `missionName`은 자유 텍스트(미션명 나열 또는 외부 자료 스텝 표기 등 케이스가 섞여 있어 URL이 있는 링크가 아님) — `externalLinks`와 별개 필드.
 
 ### MySQL
 ```sql
-curriculum_week  id PK, track ENUM('FE','BE'), week_no INT, week_label, title,
-                 status ENUM('DONE','ACTIVE','BREAK'),
-                 note_url NULL, notion_url NULL, linked_mission_id NULL, sort_order INT
+curriculum_track_intro  track ENUM('FE','BE') PK, title, description TEXT
+curriculum_track_tag    track ENUM('FE','BE') FK, tag VARCHAR
+curriculum_stage        id PK, track ENUM('FE','BE'), sort_order INT, title, week_range_label,
+                        description TEXT, mission_name
+curriculum_stage_tag    stage_id FK, tag VARCHAR
+curriculum_stage_link   stage_id FK, label, url
+curriculum_week         id PK, stage_id FK, track ENUM('FE','BE'), week_no INT, week_label,
+                        status ENUM('DONE','ACTIVE','UPCOMING','BREAK'),
+                        note_url NULL, notion_url NULL, linked_mission_id NULL
 ```
 
 ## 6. 활동 타임라인 (Activities)
@@ -231,7 +252,8 @@ activity_participant   activity_id FK, member_id FK NULL, name
 member ─1:N─ membership ─1:N─ member_role
 member ─1:N─ project_member ─N:1─ project ─1:N─ project_stack
 member ─1:N─ activity_participant ─N:1─ activity ─1:N─ activity_image
-curriculum_week (독립)
+curriculum_track_intro ─1:N─ curriculum_track_tag
+curriculum_stage ─1:N─ curriculum_stage_tag / curriculum_stage_link / curriculum_week
 ```
 
 ## 9. 레퍼런스 구현 (MSW 목서버)
@@ -256,7 +278,7 @@ curriculum_week (독립)
 
 ## 10. Phase 구분
 
-- **Phase 1 (완료)**: 멤버·활동타임라인·홈통계 3개 GET 계약(확정) + 프로젝트·스터디 GET 계약(잠정, §4·§5 미확정) + MSW 목서버 + 프론트 데이터 레이어·페이지 연동. 로그인 없음.
+- **Phase 1 (완료)**: 멤버·활동타임라인·홈통계 3개 GET 계약(확정) + 프로젝트·스터디 GET 계약(잠정, 백엔드 필요 여부는 §4·§5 미확정이나 스터디는 필드 형태 재설계 완료) + MSW 목서버 + 프론트 데이터 레이어·페이지 연동. 로그인 없음.
 - **Phase 1.5 (완료, 프론트 프로토타입)**: member-detail 화면 검증용으로 `PATCH /members/{id}`(bio·isPublic) + 완료미션/기술블로그 리스트를 **인증 없이 MSW 목데이터로만** 먼저 붙임(§3). 실제 백엔드 계약이 아니라 화면 목업 — Spring 전환 시 Phase 2 인증과 §11-5·§11-6 결정을 반드시 거쳐야 함.
 - **Phase 2 (~2주 후, 로그인 도입 시)**: 위 `PATCH /members/{id}`에 인증 추가 + 활동 쓰기(업로드) + 멤버 토큰 인증 미들웨어 + 활동·멤버 프로필 공개/비공개 필터링(`isPublic` 기반 실제 마스킹).
 - **Phase 3+ (미정)**: 블로그·지원·미션리뷰 도메인 백엔드, Spring 실서버 전환.
@@ -264,7 +286,7 @@ curriculum_week (독립)
 ## 11. 미결 이슈 (팀 논의 필요 — 체크리스트)
 
 1. **스터디·프로젝트 — 백엔드 자체가 필요한가** (§1·§4·§5): ROI상 프론트 상수 관리가 유력하나 팀 최종 결정 필요.
-2. **스터디 필드 재설계** (§5): 화면이 주차별 → 전체 커리큘럼 소개로 피벗됨. 백엔드로 가기로 하면 `weekNo` 기반에서 단계/모듈 기반으로 새로 설계해야 함 — **단, 구체적인 필드 형태는 아직 확정 안 된 화면 디자인에 따라 달라지므로, 디자인이 나온 뒤에 재설계한다.**
+2. **스터디 필드 재설계** (§5): 🟢 **완료(2026-07-13)** — 화면이 주차별 → 단계(여러 주차 묶음) 커리큘럼 타임라인 + 트랙 소개로 피벗됨(Figma 확정). `weekNo` 플랫 리스트에서 `CurriculumStage`(+ `CurriculumTrackIntro`)로 재설계, `src/shared/core/types/study.ts`·`studyApi.ts`·`studyQueries.ts`·MSW 목서버 모두 갱신됨. 남은 건 여전히 "백엔드 자체가 필요한가"(위 1번)뿐.
 3. **활동 디스코드 대량 임포트 방식** (§6): 자동 동기화 vs 수작업 큐레이션. 미션 로스터 선례(하이브리드) 참고 예정, 미결정.
 4. **로그인 도입 시 함께 설계할 것** (§3·§6, ~2주 후): 멤버 토큰 미들웨어 방식(토큰 종류), 활동·멤버 프로필 공개/비공개 가시성 규칙, bio 마크다운 XSS 새니타이징.
 5. **완료 미션 리스트 — 실제 조회 계약 아직 없음** (§3): `completedMissions[]`는 지금 MSW 목데이터로만 채워져 있고, 실서버에서 이 리스트를 어떻게 채울지 결정 안 됨. `GET /api/missions`(별도 Mongo 미션 백엔드)는 멤버 필터가 없고, PR↔멤버 매칭도 미션 대시보드 전용 로직(`src/features/missions/buildMemberRows.ts`)이라 재사용 불가. (a) 미션 백엔드에 `/api/missions?author=` 필터 추가 vs (b) 멤버 쪽에 `completedMissions[]`를 직접 저장 중 결정 필요.

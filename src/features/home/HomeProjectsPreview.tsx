@@ -1,40 +1,84 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useProjectsQuery } from '@/shared/core/queries/projectQueries';
+import { ImagePlaceholder } from '@/shared/components/ui/ImagePlaceholder';
+import { Badge } from '@/shared/components/ui/Badge';
+
+const PAGE_SIZE = 3;
 
 export function HomeProjectsPreview() {
   const { data: projects = [], isLoading } = useProjectsQuery();
-  const preview = projects.slice(0, 3);
+  const [page, setPage] = useState(0);
+  const pageCount = Math.max(1, Math.ceil(projects.length / PAGE_SIZE));
+  const visible = projects.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   return (
-    <section className="mx-auto max-w-6xl px-5 py-14">
-      <div className="flex items-end justify-between">
-        <h2 className="text-2xl md:text-3xl font-bold leading-snug">기수별 팀 프로젝트</h2>
-        <Link href="/projects" className="text-sm font-semibold text-brand hover:underline">
-          아카이브 →
+    <section className="mx-auto max-w-6xl px-5 py-12">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-semibold text-neutral-900 dark:text-slate-100">프로젝트</h2>
+        <Link href="/projects" className="text-sm font-semibold text-brand">
+          더보기
         </Link>
       </div>
+
       {isLoading ? (
-        <p className="mt-8 text-sm text-slate-500">불러오는 중…</p>
+        <p className="text-sm text-neutral-500">불러오는 중…</p>
       ) : (
-        <div className="mt-8 grid md:grid-cols-3 gap-5">
-          {preview.map((p) => (
-            <Link
-              key={p.id}
-              href="/projects"
-              className="rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 overflow-hidden hover:-translate-y-0.5 transition"
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex w-full items-center gap-4">
+            <button
+              type="button"
+              aria-label="이전"
+              disabled={page === 0}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              className="hidden size-10 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 disabled:opacity-30 sm:flex"
             >
-              <div
-                className="h-32"
-                style={{ background: `linear-gradient(135deg, ${p.thumbnailColor}cc, ${p.thumbnailColor}33)` }}
-              />
-              <div className="p-5">
-                <div className="text-xs text-slate-500">{p.cohortLabel} · {p.trackLabel}</div>
-                <h3 className="mt-1 font-semibold">{p.name}</h3>
-              </div>
-            </Link>
-          ))}
+              ←
+            </button>
+
+            <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-3">
+              {visible.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/projects/${p.id}`}
+                  className="flex flex-col gap-3 rounded-[20px] border border-neutral-200 p-4 transition hover:-translate-y-0.5 dark:border-white/10"
+                >
+                  <ImagePlaceholder src={p.thumbnailUrl} alt={p.name} />
+                  <Badge variant="brand" className="w-fit">
+                    {p.cohortLabel}
+                  </Badge>
+                  <p className="text-lg font-semibold text-neutral-900 dark:text-slate-100">{p.name}</p>
+                  <p className="text-sm text-neutral-500 dark:text-slate-400">{p.description}</p>
+                </Link>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              aria-label="다음"
+              disabled={page >= pageCount - 1}
+              onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+              className="hidden size-10 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-700 disabled:opacity-30 sm:flex"
+            >
+              →
+            </button>
+          </div>
+
+          {pageCount > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              {Array.from({ length: pageCount }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  aria-label={`${i + 1}번째 페이지`}
+                  onClick={() => setPage(i)}
+                  className={`size-2 rounded-full ${i === page ? 'bg-brand' : 'bg-neutral-300'}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </section>

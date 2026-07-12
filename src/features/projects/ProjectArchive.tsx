@@ -1,65 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useProjectsQuery } from '@/shared/core/queries/projectQueries';
+import { ImagePlaceholder } from '@/shared/components/ui/ImagePlaceholder';
+import { Badge } from '@/shared/components/ui/Badge';
+import { Tab } from '@/shared/components/ui/Tab';
 
-const FILTERS = ['전체', '4기', '3기', 'FE', 'BE'];
+const ALL_COHORT = '전체';
+
+function cohortSortKey(label: string) {
+  const match = label.match(/\d+/);
+  return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
+}
 
 export function ProjectArchive() {
-  const [filter, setFilter] = useState('전체');
   const { data: projects = [], isLoading, isError } = useProjectsQuery();
+  const [cohort, setCohort] = useState(ALL_COHORT);
 
-  const visible =
-    filter === '전체' ? projects : projects.filter((p) => p.cohortLabel === filter || p.trackLabel === filter);
+  const cohortTabs = useMemo(() => {
+    const unique = Array.from(new Set(projects.map((p) => p.cohortLabel)));
+    unique.sort((a, b) => cohortSortKey(a) - cohortSortKey(b));
+    return [ALL_COHORT, ...unique];
+  }, [projects]);
+
+  const visible = cohort === ALL_COHORT ? projects : projects.filter((p) => p.cohortLabel === cohort);
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10">
-      <div className="flex items-center gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold">팀 프로젝트 아카이브</h1>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300">공개 화면</span>
+    <main className="mx-auto max-w-6xl px-5 py-10 md:py-16">
+      <div className="flex flex-col gap-3">
+        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">프로젝트</h1>
+        <p className="text-base text-neutral-500">매 기수, 팀을 꾸려 실제로 만든 것들이에요.</p>
       </div>
-      <p className="mt-1 text-slate-600 dark:text-slate-400">
-        스터디 이후 팀을 꾸려 만든 결과물 · 데모데이 발표작.
-      </p>
 
-      <div className="mt-6 flex flex-wrap gap-2 text-sm">
-        {FILTERS.map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-full ${filter === f ? 'bg-brand text-white' : 'bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10'}`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
+      <Tab
+        items={cohortTabs.map((c) => ({ value: c, label: c }))}
+        value={cohort}
+        onChange={setCohort}
+        className="mt-8"
+      />
 
       {isLoading ? (
-        <p className="mt-10 text-sm text-slate-500 text-center py-10">불러오는 중…</p>
+        <p className="mt-10 py-10 text-center text-sm text-neutral-500">불러오는 중…</p>
       ) : isError ? (
-        <p className="mt-10 text-sm text-red-500 text-center py-10">프로젝트 목록을 가져오지 못했습니다.</p>
+        <p className="mt-10 py-10 text-center text-sm text-red-500">프로젝트 목록을 가져오지 못했습니다.</p>
       ) : (
-        <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-5">
+        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((p) => (
             <Link
               key={p.id}
               href={`/projects/${p.id}`}
-              className="block rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 overflow-hidden hover:-translate-y-0.5 transition"
+              className="flex flex-col gap-3 rounded-[20px] border border-neutral-200 p-6 transition hover:-translate-y-0.5 dark:border-white/10"
             >
-              <div
-                className="h-32"
-                style={{ background: `linear-gradient(135deg, ${p.thumbnailColor}cc, ${p.thumbnailColor}33)` }}
-              />
-              <div className="p-5">
-                <div className="text-xs text-slate-500">{p.cohortLabel} · {p.trackLabel}</div>
-                <h3 className="mt-1 font-semibold">{p.name}</h3>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{p.description}</p>
-                <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                  <span>👥 {p.teamSize}명</span>
-                  <span className="text-brand font-medium">상세 →</span>
-                </div>
-              </div>
+              <ImagePlaceholder src={p.thumbnailUrl} alt={p.name} />
+              <Badge variant="brand" className="w-fit">
+                {p.cohortLabel}
+              </Badge>
+              <p className="text-lg font-semibold text-neutral-900 dark:text-slate-100">{p.name}</p>
+              <p className="text-sm text-neutral-500 dark:text-slate-400">{p.description}</p>
             </Link>
           ))}
         </div>

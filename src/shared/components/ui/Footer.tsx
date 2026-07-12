@@ -1,21 +1,27 @@
 export function Footer() {
   return (
-    <footer className="border-t border-slate-900/5 dark:border-white/10 mt-16">
-      <div className="mx-auto max-w-6xl px-5 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-        <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
+    <footer className="border-t border-neutral-200 bg-neutral-50 dark:bg-slate-900 dark:border-white/10 mt-16">
+      <div className="mx-auto max-w-6xl px-5 py-12 flex flex-col gap-3.5">
+        <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-slate-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="그리디" className="w-7 h-7 rounded-full object-cover" />
-          그리디 허브
+          <img src="/logo.png" alt="그리디" className="w-6 h-6 rounded-full object-cover" />
+          그리디
         </div>
-        <div className="flex gap-5">
+        <p className="text-[13px] text-neutral-500 dark:text-slate-400">
+          세종대학교 개발 동아리 그리디예요. 스터디와 프로젝트로 함께 성장해요.
+        </p>
+        <div className="flex items-center gap-5 text-[13px] font-semibold text-neutral-700 dark:text-slate-300">
           <a href="#" className="hover:text-brand">
             GitHub
           </a>
           <a href="#" className="hover:text-brand">
-            Discord
+            Instagram
+          </a>
+          <a href="#" className="hover:text-brand">
+            문의하기
           </a>
         </div>
-        <div>© 2026 GREEDY · 세종대학교</div>
+        <p className="text-xs text-neutral-500 dark:text-slate-400">© 2026 Greedy</p>
       </div>
     </footer>
   );

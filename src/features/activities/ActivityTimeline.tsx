@@ -4,17 +4,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 import { useActivitiesQuery } from '@/shared/core/queries/activityQueries';
+import { Chip } from '@/shared/components/ui/Chip';
+import { Badge } from '@/shared/components/ui/Badge';
+import { Card } from '@/shared/components/ui/Card';
+import { Button } from '@/shared/components/ui/Button';
+import { ImagePlaceholder } from '@/shared/components/ui/ImagePlaceholder';
 import { CATEGORY_TO_TAGS } from './categoryFilter';
 
-const TAG_CLS: Record<string, string> = {
-  행사: 'bg-brand/10 text-brand',
-  세션: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300',
-  데모데이: 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
-  축제: 'bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300',
-  창립: 'bg-slate-200 text-slate-600 dark:bg-white/10',
-};
-
 type Category = '전체' | '행사' | '세션' | '데모데이';
+
+const CATEGORIES: Category[] = ['전체', '행사', '세션', '데모데이'];
 
 export function ActivityTimeline() {
   const [category, setCategory] = useState<Category>('전체');
@@ -26,82 +25,82 @@ export function ActivityTimeline() {
       : activities.filter((a) => (CATEGORY_TO_TAGS[category] ?? [category]).includes(a.tag));
 
   return (
-    <main className="mx-auto max-w-4xl px-5 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold">활동 타임라인</h1>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300">공개 화면</span>
-          </div>
-          <p className="mt-1 text-slate-600 dark:text-slate-400">
-            그리디가 함께한 순간들 — 사진과 한 줄로 남기는 기록.
+    <main className="mx-auto max-w-6xl px-5 py-10 md:py-16">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-3">
+          <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">활동</h1>
+          <p className="text-base text-neutral-500">
+            행사, 엠티, 데모데이까지 함께한 순간을 기록해요.
           </p>
         </div>
-        <Link
-          href="/gallery/edit"
-          className="px-4 py-2 rounded-lg bg-brand text-white font-semibold text-sm"
-        >
+        <Button href="/gallery/edit" variant="outline" size="sm">
           + 활동 올리기
-        </Link>
+        </Button>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2 text-sm">
-        {(['전체', '행사', '세션', '데모데이'] as Category[]).map((f) => (
-          <button
-            key={f}
-            onClick={() => setCategory(f)}
-            className={`px-3 py-1.5 rounded-full ${category === f ? 'bg-brand text-white' : 'bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10'}`}
-          >
-            {f}
-          </button>
+      <div className="mt-6 flex flex-wrap gap-2">
+        {CATEGORIES.map((c) => (
+          <Chip key={c} selected={category === c} onClick={() => setCategory(c)}>
+            {c}
+          </Chip>
         ))}
       </div>
 
       {isLoading ? (
-        <p className="mt-10 text-sm text-slate-500 text-center py-10">불러오는 중…</p>
+        <p className="mt-12 py-10 text-center text-sm text-neutral-500">불러오는 중…</p>
       ) : isError ? (
-        <p className="mt-10 text-sm text-red-500 text-center py-10">활동 목록을 가져오지 못했습니다.</p>
+        <p className="mt-12 py-10 text-center text-sm text-red-500">
+          활동 목록을 가져오지 못했습니다.
+        </p>
+      ) : visible.length === 0 ? (
+        <p className="mt-12 py-10 text-center text-sm text-neutral-500">
+          해당 카테고리의 활동이 없어요.
+        </p>
       ) : (
-        <ol className="mt-8 relative border-s-2 border-slate-200 dark:border-white/10 ml-2 space-y-8">
-          {visible.map((a) => (
-            <li key={a.id} className="ms-6">
-              <span className="absolute -start-[9px] w-4 h-4 rounded-full bg-brand ring-4 ring-slate-50 dark:ring-slate-900" />
-              <div className="flex items-center gap-2 mb-2">
-                <time className="text-sm font-semibold text-slate-500">{a.date}</time>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${TAG_CLS[a.tag] ?? ''}`}>{a.tag}</span>
-              </div>
-              <Link
-                href={`/gallery/${a.id}`}
-                className="block rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:-translate-y-0.5 transition"
-              >
-                <h3 className="font-semibold">{a.title}</h3>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{a.summary}</p>
-                {a.thumbnailUrls.length > 0 && (
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {a.thumbnailUrls.map((url, i) => {
-                      const isLast = i === a.thumbnailUrls.length - 1;
-                      const remaining = a.imageCount - a.thumbnailUrls.length;
-                      return (
-                        <div key={url} className="relative">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={url}
-                            alt=""
-                            className="aspect-[4/3] rounded-lg object-cover w-full"
-                          />
-                          {isLast && remaining > 0 && (
-                            <span className="absolute inset-0 rounded-lg bg-black/50 text-white text-sm font-semibold grid place-items-center">
-                              +{remaining}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </Link>
-            </li>
-          ))}
+        <ol className="mt-10 flex flex-col gap-6">
+          {visible.map((a, i) => {
+            const isLastItem = i === visible.length - 1;
+            const remaining = a.imageCount - a.thumbnailUrls.length;
+
+            return (
+              <li key={a.id} className="flex gap-4 sm:gap-6">
+                <div className="flex w-16 shrink-0 justify-end pt-1 sm:w-[90px]">
+                  <time className="text-sm text-neutral-500">{a.date}</time>
+                </div>
+                <div className="flex shrink-0 flex-col items-center">
+                  <span className="size-3 shrink-0 rounded-full bg-brand" />
+                  {!isLastItem && <span className="mt-1 w-0.5 flex-1 bg-neutral-200" />}
+                </div>
+                <Link href={`/gallery/${a.id}`} className="min-w-0 flex-1 pb-6">
+                  <Card className="transition hover:border-brand/40">
+                    <Badge variant="outline">{a.tag}</Badge>
+                    <h3 className="mt-2.5 text-lg font-semibold text-neutral-900">{a.title}</h3>
+                    <p className="mt-1 text-sm text-neutral-500">{a.summary}</p>
+                    {a.thumbnailUrls.length > 0 && (
+                      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                        {a.thumbnailUrls.map((url, idx) => {
+                          const isLastThumb = idx === a.thumbnailUrls.length - 1;
+                          return (
+                            <div
+                              key={url}
+                              className={`relative ${idx > 0 ? 'hidden sm:block' : ''}`}
+                            >
+                              <ImagePlaceholder src={url} alt={a.title} />
+                              {isLastThumb && remaining > 0 && (
+                                <span className="absolute inset-0 hidden items-center justify-center rounded-xl bg-black/50 text-sm font-semibold text-white sm:grid">
+                                  +{remaining}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </Card>
+                </Link>
+              </li>
+            );
+          })}
         </ol>
       )}
     </main>

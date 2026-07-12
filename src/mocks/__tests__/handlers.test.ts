@@ -111,20 +111,27 @@ describe('GET /projects', () => {
 });
 
 describe('GET /curriculum', () => {
-  it('필터 없이 두 트랙 전체 주차를 반환한다', async () => {
+  it('필터 없이 두 트랙 전체 단계를 반환한다', async () => {
     const res = await fetch(`${BASE}/curriculum`);
     const body = await res.json();
-    expect(body.items.some((w: { track: string }) => w.track === 'FE')).toBe(true);
-    expect(body.items.some((w: { track: string }) => w.track === 'BE')).toBe(true);
+    expect(body.items.some((s: { track: string }) => s.track === 'FE')).toBe(true);
+    expect(body.items.some((s: { track: string }) => s.track === 'BE')).toBe(true);
   });
 
-  it('트랙별로 weekNo 오름차순이다', async () => {
+  it('트랙별로 단계 순서(order) 오름차순이다', async () => {
     const res = await fetch(`${BASE}/curriculum`);
     const body = await res.json();
-    const feWeekNos = body.items
-      .filter((w: { track: string }) => w.track === 'FE')
-      .map((w: { weekNo: number }) => w.weekNo);
-    expect(feWeekNos).toEqual([...feWeekNos].sort((a, b) => a - b));
+    const feOrders = body.items
+      .filter((s: { track: string }) => s.track === 'FE')
+      .map((s: { order: number }) => s.order);
+    expect(feOrders).toEqual([...feOrders].sort((a, b) => a - b));
+  });
+
+  it('트랙별 소개(techTags 포함)를 함께 반환한다', async () => {
+    const res = await fetch(`${BASE}/curriculum`);
+    const body = await res.json();
+    const feIntro = body.trackIntros.find((t: { track: string }) => t.track === 'FE');
+    expect(feIntro.techTags).toContain('React');
   });
 });
 

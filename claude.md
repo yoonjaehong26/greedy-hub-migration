@@ -2,7 +2,7 @@
 > 그리디의 연혁·멤버·스터디·미션·게시판·지원·추억을 한곳에서 추적하는 세종대학교 개발 동아리 공식 허브
 
 ## 스택
-Next.js App Router · TypeScript · styled-components · Zustand · TanStack Query · MongoDB  
+Next.js App Router · TypeScript · Tailwind CSS · Zustand · TanStack Query · MongoDB  
 배포: Vercel + MongoDB Atlas
 
 ## 빠른 명령

@@ -1,98 +1,129 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMembersQuery } from '@/shared/core/queries/memberQueries';
-import type { MemberRoleLabel, Track } from '@/shared/core/types/member';
+import { Avatar } from '@/shared/components/ui/Avatar';
+import { Badge } from '@/shared/components/ui/Badge';
+import { Chip } from '@/shared/components/ui/Chip';
+import { Tab } from '@/shared/components/ui/Tab';
 import { primaryMembership } from './primaryMembership';
 import { memberCohortLabels } from './memberCohortLabels';
+import { ROLE_BADGE_VARIANT, STAFF_ROLES } from './roleBadge';
 
-type Filter = 'all' | Track;
+type RoleTrackFilter = 'all' | 'FE' | 'BE' | '운영진' | '리뷰어';
 
-const CHIP_CLS: Record<MemberRoleLabel, string> = {
-  멤버: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300',
-  리뷰어: 'bg-brand/10 text-brand',
-  리드: 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
-  메인테이너: 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300',
-  동아리장: 'bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300',
-  OB: 'bg-slate-200 text-slate-500 dark:bg-white/10',
-};
+const ROLE_TRACK_CHIPS: { value: RoleTrackFilter; label: string }[] = [
+  { value: 'all', label: '전체' },
+  { value: 'FE', label: 'FE' },
+  { value: 'BE', label: 'BE' },
+  { value: '운영진', label: '운영진' },
+  { value: '리뷰어', label: '리뷰어' },
+];
+
+function githubUrl(login: string) {
+  return `https://github.com/${login}`;
+}
 
 export function MemberDirectory() {
   const { data: members = [], isLoading, isError } = useMembersQuery();
-  const [filter, setFilter] = useState<Filter>('all');
+  const [cohortValue, setCohortValue] = useState('all');
+  const [roleTrackFilter, setRoleTrackFilter] = useState<RoleTrackFilter>('all');
 
-  const visible = members.filter(
-    (m) => filter === 'all' || m.memberships.some((ms) => ms.track === filter),
-  );
+  const cohortTabItems = useMemo(() => {
+    const cohorts = new Set<number>();
+    members.forEach((m) => m.memberships.forEach((ms) => cohorts.add(ms.cohort)));
+    return [
+      { value: 'all', label: '전체' },
+      ...[...cohorts].sort((a, b) => a - b).map((c) => ({ value: String(c), label: `${c}기` })),
+    ];
+  }, [members]);
+
+  const visible = members.filter((m) => {
+    const matchesCohort =
+      cohortValue === 'all' || m.memberships.some((ms) => ms.cohort === Number(cohortValue));
+
+    const matchesRoleTrack =
+      roleTrackFilter === 'all'
+        ? true
+        : roleTrackFilter === 'FE' || roleTrackFilter === 'BE'
+          ? m.memberships.some((ms) => ms.track === roleTrackFilter)
+          : roleTrackFilter === '운영진'
+            ? m.memberships.some((ms) => ms.roles.some((r) => STAFF_ROLES.includes(r)))
+            : m.memberships.some((ms) => ms.roles.includes('리뷰어'));
+
+    return matchesCohort && matchesRoleTrack;
+  });
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10">
-      <div className="flex items-center gap-3">
-        <h1 className="text-2xl md:text-3xl font-bold">멤버</h1>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300">공개 화면</span>
-      </div>
-      <p className="mt-1 text-slate-600 dark:text-slate-400">
-        1~4기 전체 구성원 · 카드를 누르면 개인 이력서로 이동합니다.
-      </p>
+      <h1 className="text-2xl md:text-3xl font-bold text-neutral-900">멤버</h1>
+      <p className="mt-1 text-neutral-500">그리디를 함께 만들어 온 사람들이에요.</p>
 
-      <div className="mt-6 flex flex-wrap gap-2 text-sm">
-        {(['all', 'FE', 'BE'] as Filter[]).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-full ${filter === f ? 'bg-brand text-white' : 'bg-white dark:bg-slate-800 ring-1 ring-slate-900/10 dark:ring-white/10'}`}
-          >
-            {f === 'all' ? '전체' : f}
-          </button>
-        ))}
+      <div className="mt-8 flex flex-col gap-4">
+        <Tab items={cohortTabItems} value={cohortValue} onChange={setCohortValue} />
+        <div className="flex flex-wrap gap-2">
+          {ROLE_TRACK_CHIPS.map((c) => (
+            <Chip
+              key={c.value}
+              selected={roleTrackFilter === c.value}
+              onClick={() => setRoleTrackFilter(c.value)}
+            >
+              {c.label}
+            </Chip>
+          ))}
+        </div>
       </div>
 
       {isLoading ? (
-        <p className="mt-10 text-sm text-slate-500 text-center py-10">불러오는 중…</p>
+        <p className="mt-10 text-sm text-neutral-500 text-center py-10">불러오는 중…</p>
       ) : isError ? (
         <p className="mt-10 text-sm text-red-500 text-center py-10">멤버 목록을 가져오지 못했습니다.</p>
       ) : (
-        <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {visible.map((m) => {
             const primary = primaryMembership(m.memberships);
             const cohortLabels = memberCohortLabels(m.memberships, m.joinType);
+            const roles = primary?.roles ?? [];
+
             return (
-              <Link
+              <div
                 key={m.id}
-                href={`/members/${m.login}`}
-                title={`${m.name} 이력서 보기`}
-                className="flex items-center gap-3 rounded-2xl bg-white dark:bg-slate-800/70 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 p-4 hover:-translate-y-0.5 transition"
+                className="flex flex-col items-center gap-2.5 rounded-[20px] border border-neutral-200 bg-white p-6 text-center transition hover:-translate-y-0.5 hover:shadow-sm"
               >
-                <div className="w-11 h-11 rounded-full bg-slate-300 dark:bg-white/20 grid place-items-center font-bold shrink-0">
-                  {m.name[0]}
-                </div>
-                <div className="min-w-0">
-                  <div className="font-semibold">{m.name}</div>
-                  {primary && (
-                    <>
-                      <div className="text-xs text-slate-500">
-                        {cohortLabels.join(', ')}
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {primary.roles.map((r) => (
-                          <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full ${CHIP_CLS[r]}`}>
-                            {r}
-                          </span>
-                        ))}
-                      </div>
-                    </>
+                <Link
+                  href={`/members/${m.login}`}
+                  title={`${m.name} 이력서 보기`}
+                  className="flex flex-col items-center gap-2.5"
+                >
+                  <Avatar src={m.avatarUrl} name={m.name} size={40} />
+                  <span className="text-base text-neutral-900">{m.name}</span>
+                  {cohortLabels.length > 0 && (
+                    <span className="text-sm text-neutral-500">{cohortLabels.join(', ')}</span>
                   )}
-                </div>
-              </Link>
+                  {roles.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {roles.map((r) => (
+                        <Badge key={r} variant={ROLE_BADGE_VARIANT[r]}>
+                          {r}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </Link>
+                <a
+                  href={githubUrl(m.login)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-semibold text-neutral-700 hover:text-brand"
+                >
+                  GitHub
+                </a>
+              </div>
             );
           })}
         </div>
       )}
-
-      <p className="mt-4 text-xs text-slate-400">
-        미션 대시보드 로스터 기준 — 1~4기 스터디원 {members.length}명(역할은 리드·리뷰어·메인테이너 구분 없이 전부 &quot;멤버&quot;로 표시 — 미션 대시보드 범위 밖)
-      </p>
     </main>
   );
 }
