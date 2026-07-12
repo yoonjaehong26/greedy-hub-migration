@@ -60,16 +60,22 @@ export function ActivityDetail({ id }: { id: string }) {
       {activity.participants.length > 0 && (
         <div className="mt-4 flex items-center gap-3">
           <div className="flex items-center">
-            {shownParticipants.map((p) => (
-              <Link
-                key={`${p.memberId}-${p.name}`}
-                href={`/members/${p.memberId ?? p.name}`}
-                title={p.name}
-                className="-mr-2 last:mr-0 hover:z-10"
-              >
-                <Avatar name={p.name} className="border-2 border-white" />
-              </Link>
-            ))}
+            {shownParticipants.map((p) =>
+              p.memberId ? (
+                <Link
+                  key={p.memberId}
+                  href={`/members/${p.memberId}`}
+                  title={p.name}
+                  className="-mr-2 last:mr-0 hover:z-10"
+                >
+                  <Avatar name={p.name} className="border-2 border-white" />
+                </Link>
+              ) : (
+                <div key={p.name} title={p.name} className="-mr-2 last:mr-0">
+                  <Avatar name={p.name} className="border-2 border-white" />
+                </div>
+              )
+            )}
           </div>
           {remainingParticipants > 0 && (
             <p className="text-[13px] text-neutral-500">

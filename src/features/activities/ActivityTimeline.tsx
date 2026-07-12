@@ -33,7 +33,7 @@ export function ActivityTimeline() {
             행사, 엠티, 데모데이까지 함께한 순간을 기록해요.
           </p>
         </div>
-        <Button href="/gallery/edit" variant="outline" size="sm">
+        <Button href="/gallery/new/edit" variant="outline" size="sm">
           + 활동 올리기
         </Button>
       </div>
@@ -79,6 +79,7 @@ export function ActivityTimeline() {
                     {a.thumbnailUrls.length > 0 && (
                       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
                         {a.thumbnailUrls.map((url, idx) => {
+                          const isFirstThumb = idx === 0;
                           const isLastThumb = idx === a.thumbnailUrls.length - 1;
                           return (
                             <div
@@ -86,6 +87,11 @@ export function ActivityTimeline() {
                               className={`relative ${idx > 0 ? 'hidden sm:block' : ''}`}
                             >
                               <ImagePlaceholder src={url} alt={a.title} />
+                              {isFirstThumb && remaining > 0 && (
+                                <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50 text-sm font-semibold text-white sm:hidden">
+                                  +{remaining}
+                                </span>
+                              )}
                               {isLastThumb && remaining > 0 && (
                                 <span className="absolute inset-0 hidden items-center justify-center rounded-xl bg-black/50 text-sm font-semibold text-white sm:grid">
                                   +{remaining}
