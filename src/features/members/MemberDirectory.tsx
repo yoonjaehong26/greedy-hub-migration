@@ -57,7 +57,7 @@ export function MemberDirectory() {
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10">
-      <h1 className="text-2xl md:text-3xl font-bold text-neutral-900">멤버</h1>
+      <h1 className="text-3xl md:text-[40px] font-bold text-neutral-900">멤버</h1>
       <p className="mt-1 text-neutral-500">그리디를 함께 만들어 온 사람들이에요.</p>
 
       <div className="mt-8 flex flex-col gap-4">
@@ -80,7 +80,7 @@ export function MemberDirectory() {
       ) : isError ? (
         <p className="mt-10 text-sm text-red-500 text-center py-10">멤버 목록을 가져오지 못했습니다.</p>
       ) : (
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {visible.map((m) => {
             const primary = primaryMembership(m.memberships);
             const cohortLabels = memberCohortLabels(m.memberships, m.joinType);

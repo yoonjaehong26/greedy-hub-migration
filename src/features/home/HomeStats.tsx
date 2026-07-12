@@ -13,10 +13,10 @@ export function HomeStats() {
   ];
 
   return (
-    <dl className="flex flex-wrap items-center justify-center gap-x-16 gap-y-6 bg-neutral-50 py-14 dark:bg-slate-800/40">
+    <dl className="flex flex-wrap items-center justify-center gap-x-[120px] gap-y-6 bg-neutral-50 py-14 dark:bg-slate-800/40">
       {items.map((s) => (
         <div key={s.label} className="flex flex-col items-center gap-1">
-          <dd className="text-3xl font-bold text-brand">{s.value}</dd>
+          <dd className="text-[32px] font-bold text-brand">{s.value}</dd>
           <dt className="text-sm text-neutral-500 dark:text-slate-400">{s.label}</dt>
         </div>
       ))}

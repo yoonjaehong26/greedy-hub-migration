@@ -11,7 +11,7 @@ export function Home() {
     <main>
       <section className="flex flex-col items-center gap-10 bg-brand px-5 py-16 md:flex-row md:justify-between md:px-[120px] md:py-24">
         <div className="flex max-w-xl flex-col items-start gap-5 text-center md:text-left">
-          <Badge variant="white">4기 모집 중</Badge>
+          <Badge variant="white">5기 모집 중</Badge>
           <h1 className="text-4xl font-bold leading-tight text-white md:text-[56px]">
             교내 개발 생태계의
             <br />
@@ -33,7 +33,7 @@ export function Home() {
           <p className="text-xs text-[#c0e4da]">서류 접수 안내는 지원 페이지를 확인해주세요</p>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="그리디 로고" className="size-40 shrink-0 object-contain md:size-[240px]" />
+        <img src="/logo.png" alt="그리디 로고" className="size-48 shrink-0 object-contain md:size-[360px]" />
       </section>
 
       <HomeStats />

@@ -6,10 +6,11 @@ export const activityHandlers = [
     const sorted = [...ACTIVITIES].sort((a, b) => b.date.localeCompare(a.date));
 
     return HttpResponse.json({
-      items: sorted.map(({ id, date, tag, title, summary, images }) => ({
+      items: sorted.map(({ id, date, tag, cohort, title, summary, images }) => ({
         id,
         date,
         tag,
+        cohort,
         title,
         summary,
         imageCount: images.length,

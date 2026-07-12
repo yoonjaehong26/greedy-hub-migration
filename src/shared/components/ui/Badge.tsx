@@ -1,12 +1,13 @@
 import type { HTMLAttributes } from 'react';
 
-export type BadgeVariant = 'solid' | 'white' | 'brand' | 'outline';
+export type BadgeVariant = 'solid' | 'white' | 'brand' | 'outline' | 'neutral';
 
 const VARIANT_CLASS: Record<BadgeVariant, string> = {
   solid: 'bg-brand text-white',
   white: 'bg-white text-brand-700',
   brand: 'bg-brand-50 text-brand-700',
   outline: 'bg-transparent text-neutral-600 border border-neutral-200',
+  neutral: 'bg-neutral-100 text-neutral-700',
 };
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {

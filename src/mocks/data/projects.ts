@@ -42,6 +42,16 @@ export const PROJECTS: MockProject[] = [
     liveUrl: null,
     thumbnailUrl: null,
     thumbnailColor: '#fb7185',
+    problem:
+      '여행 브이로그를 보고 "저 코스 그대로 가보고 싶다"는 생각은 들지만, 영상 속 장소와 동선을 일일이 찾아 정리하는 건 번거로웠어요.',
+    features:
+      '인기 여행 영상을 분석해 등장한 장소와 이동 순서를 뽑아내고, 지도 위에 일정별 코스로 묶어 보여줘요. 마음에 드는 코스는 그대로 저장해 내 여행 계획으로 가져갈 수 있어요.',
+    how:
+      '영상 자막·설명에서 장소를 추출하고 지도 API로 좌표를 매칭해 동선을 재구성했어요. 코스 추천 로직을 팀에서 직접 설계하며 데이터 파이프라인을 함께 만들었어요.',
+    screenshots: [
+      'https://picsum.photos/seed/greedy-project-1-0/640/480',
+      'https://picsum.photos/seed/greedy-project-1-1/640/480',
+    ],
     team: [
       { memberId: 6, name: '송혜정', roleLabel: 'FE' },
       { memberId: 7, name: '김준수', roleLabel: 'FE' },
@@ -64,6 +74,19 @@ export const PROJECTS: MockProject[] = [
     liveUrl: 'https://www.mokkoji.site/',
     thumbnailUrl: null,
     thumbnailColor: '#15803d',
+    problem:
+      '세종대에는 동아리가 많지만 모집 정보가 에브리타임·인스타·오픈채팅에 흩어져 있어, 어떤 동아리가 언제 뽑는지 한눈에 보기 어려웠어요.',
+    features:
+      '동아리를 카테고리로 검색하고, 실시간 모집 공고를 모아 봐요. 관심 동아리는 즐겨찾기·캘린더에 담고, 새 모집이 열리면 알림 메일로 놓치지 않게 해줘요.',
+    how:
+      'Next.js로 정보 탐색 흐름을 빠르게 만들고, Spring Boot·MySQL·Redis로 모집 공고와 알림을 처리했어요. FE·BE·디자인이 협업해 실제 배포까지 이어간 첫 규모 있는 프로젝트였어요.',
+    screenshots: [
+      'https://picsum.photos/seed/greedy-project-2-0/640/480',
+      'https://picsum.photos/seed/greedy-project-2-1/640/480',
+      'https://picsum.photos/seed/greedy-project-2-2/640/480',
+      'https://picsum.photos/seed/greedy-project-2-3/640/480',
+      'https://picsum.photos/seed/greedy-project-2-4/640/480',
+    ],
     team: [
       { memberId: null, name: '방재경', roleLabel: 'FE (외부)' },
       { memberId: null, name: '신혁수', roleLabel: 'FE (외부)' },
@@ -91,6 +114,17 @@ export const PROJECTS: MockProject[] = [
     liveUrl: 'https://sejong-life-fe.vercel.app',
     thumbnailUrl: null,
     thumbnailColor: '#fbbf24',
+    problem:
+      '세종대 근처 맛집·카페·공부 장소 정보는 흩어져 있고, 정작 세종대생에게 맞는 솔직한 후기는 찾기 어려웠어요.',
+    features:
+      '세종대 근처 장소를 카테고리로 둘러보고, 세종대생이 직접 남긴 리뷰를 확인해요. 장소 등록과 리뷰 작성은 세종대생만 할 수 있어 신뢰도 높은 정보가 쌓여요.',
+    how:
+      '학교 인증으로 기여 권한을 제한하고, 장소·리뷰 도메인을 설계했어요. Storybook으로 UI 컴포넌트를 문서화하며 FE·BE가 계약을 맞춰 개발했어요.',
+    screenshots: [
+      'https://picsum.photos/seed/greedy-project-3-0/640/480',
+      'https://picsum.photos/seed/greedy-project-3-1/640/480',
+      'https://picsum.photos/seed/greedy-project-3-2/640/480',
+    ],
     team: [
       { memberId: 13, name: '신지훈', roleLabel: 'FE' },
       { memberId: 16, name: '정창우', roleLabel: 'FE' },
@@ -114,6 +148,18 @@ export const PROJECTS: MockProject[] = [
     liveUrl: 'https://www.sejong-zupzup.kr',
     thumbnailUrl: null,
     thumbnailColor: '#a78bfa',
+    problem:
+      '캠퍼스에서 물건을 잃어버리면 어디에 습득물이 모이는지 알기 어렵고, 학교 커뮤니티 글은 금방 묻혀 주인을 찾기 힘들었어요.',
+    features:
+      '분실물을 주운 위치를 지도 위에 표시하고, 잃어버린 사람은 지도에서 바로 확인해요. 캠퍼스 지도 기반이라 "어디서 주웠는지"가 한눈에 보여 물건과 주인을 빠르게 이어줘요.',
+    how:
+      'Leaflet으로 캠퍼스 지도를 그리고 습득물 위치를 마커로 관리했어요. Zustand로 지도·목록 상태를 동기화하고, Spring Boot·MySQL로 습득물 데이터를 처리했어요.',
+    screenshots: [
+      'https://picsum.photos/seed/greedy-project-4-0/640/480',
+      'https://picsum.photos/seed/greedy-project-4-1/640/480',
+      'https://picsum.photos/seed/greedy-project-4-2/640/480',
+      'https://picsum.photos/seed/greedy-project-4-3/640/480',
+    ],
     team: [
       { memberId: 18, name: '강동현', roleLabel: 'FE' },
       { memberId: 17, name: '임규영', roleLabel: 'FE' },
@@ -137,6 +183,17 @@ export const PROJECTS: MockProject[] = [
     liveUrl: 'https://doogoodoogoo.kr/',
     thumbnailUrl: null,
     thumbnailColor: '#34d399',
+    problem:
+      '두드림 비교과 공지와 학사일정은 여러 페이지에 흩어져 있어, 관심 있는 프로그램과 일정을 놓치기 쉬웠어요.',
+    features:
+      '두드림 공지와 학사일정을 자동으로 모아, 학과·키워드·학년 조건으로 걸러줘요. 조건에 맞는 일정만 담은 나만의 캘린더 구독 링크를 발급해 구글·애플 캘린더에서 바로 받아봐요.',
+    how:
+      '공지·일정을 주기적으로 수집해 정규화하고, iCal 형식으로 구독 링크를 생성했어요. TanStack Query로 서버 상태를 관리하고 Spring Boot·PostgreSQL로 수집 파이프라인을 운영했어요.',
+    screenshots: [
+      'https://picsum.photos/seed/greedy-project-5-0/640/480',
+      'https://picsum.photos/seed/greedy-project-5-1/640/480',
+      'https://picsum.photos/seed/greedy-project-5-2/640/480',
+    ],
     team: [
       { memberId: 27, name: '심혁', roleLabel: 'FE' },
       { memberId: 26, name: '윤재홍', roleLabel: 'FE' },
@@ -159,6 +216,17 @@ export const PROJECTS: MockProject[] = [
     liveUrl: 'https://meetlink.now',
     thumbnailUrl: null,
     thumbnailColor: '#22d3ee',
+    problem:
+      '여러 명이 모일 때 서로 되는 시간과 출발지가 달라, 약속 시간과 장소를 정하는 데만 한참을 소모했어요.',
+    features:
+      '참여자들의 가능한 시간과 출발지를 모아, 모두에게 가장 알맞은 모임 시간과 이동이 공평한 중간 지점을 추천해줘요. 링크만 공유하면 각자 일정을 입력할 수 있어요.',
+    how:
+      '카카오 맵 API로 출발지 좌표와 이동 시간을 계산해 공평한 중간 지점을 도출했어요. Zustand·TanStack Query로 입력 흐름과 서버 상태를 나눠 관리하고 Spring Boot·PostgreSQL로 처리했어요.',
+    screenshots: [
+      'https://picsum.photos/seed/greedy-project-6-0/640/480',
+      'https://picsum.photos/seed/greedy-project-6-1/640/480',
+      'https://picsum.photos/seed/greedy-project-6-2/640/480',
+    ],
     team: [
       { memberId: 28, name: '강건', roleLabel: 'FE' },
       { memberId: 29, name: '강예령', roleLabel: 'FE' },

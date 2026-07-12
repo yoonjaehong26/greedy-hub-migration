@@ -12,7 +12,7 @@ interface TabProps<T extends string = string> {
 
 export function Tab<T extends string = string>({ items, value, onChange, className = '' }: TabProps<T>) {
   return (
-    <div className={`flex items-center gap-6 border-b border-neutral-200 ${className}`} role="tablist">
+    <div className={`flex items-center gap-7 border-b border-neutral-200 ${className}`} role="tablist">
       {items.map((item) => {
         const active = item.value === value;
         return (
@@ -22,7 +22,7 @@ export function Tab<T extends string = string>({ items, value, onChange, classNa
             role="tab"
             aria-selected={active}
             onClick={() => onChange(item.value)}
-            className={`relative pb-3 text-sm font-medium transition-colors ${
+            className={`relative pb-3 text-[15px] font-medium transition-colors ${
               active ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-700'
             }`}
           >

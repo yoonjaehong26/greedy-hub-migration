@@ -8,11 +8,19 @@ import { Badge } from '@/shared/components/ui/Badge';
 import { Button } from '@/shared/components/ui/Button';
 import { ImagePlaceholder } from '@/shared/components/ui/ImagePlaceholder';
 import { ROLE_BADGE_VARIANT, TRACK_LABEL } from '@/features/members/roleBadge';
+import { COHORTS } from '@/shared/core/constants/cohorts';
 
 const PREVIEW_LIMIT = 2;
+const HISTORY_PREVIEW_LIMIT = 2;
 
 function githubUrl(login: string) {
   return `https://github.com/${login}`;
+}
+
+/** 기수 종료 학기 기준 연도. cohorts 상수에 없는 기수는 표기 생략. */
+function cohortYear(cohort: number): string | null {
+  const c = COHORTS[cohort as keyof typeof COHORTS];
+  return c ? c.endDate.slice(0, 4) : null;
 }
 
 export function MemberProfile({ id }: { id: string }) {
@@ -22,6 +30,7 @@ export function MemberProfile({ id }: { id: string }) {
   const [bioDraft, setBioDraft] = useState('');
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllActivities, setShowAllActivities] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   if (isLoading) {
     return <main className="mx-auto max-w-6xl px-5 py-10 text-sm text-neutral-500 text-center">불러오는 중…</main>;
@@ -39,6 +48,10 @@ export function MemberProfile({ id }: { id: string }) {
   }
 
   const sortedMemberships = [...member.memberships].sort((a, b) => b.cohort - a.cohort);
+  const visibleMemberships = showAllHistory
+    ? sortedMemberships
+    : sortedMemberships.slice(0, HISTORY_PREVIEW_LIMIT);
+  const hiddenHistoryCount = sortedMemberships.length - visibleMemberships.length;
   const visibleProjects = showAllProjects ? member.teamProjects : member.teamProjects.slice(0, PREVIEW_LIMIT);
   const hiddenProjectCount = member.teamProjects.length - visibleProjects.length;
   const visibleActivities = showAllActivities ? member.activities : member.activities.slice(0, PREVIEW_LIMIT);
@@ -164,18 +177,32 @@ export function MemberProfile({ id }: { id: string }) {
             {sortedMemberships.length === 0 ? (
               <p className="text-sm text-neutral-400">아직 이력이 없습니다.</p>
             ) : (
-              sortedMemberships.map((ms) => (
-                <div
-                  key={`${ms.cohort}-${ms.track}`}
-                  className="flex flex-wrap items-center gap-4 rounded-xl border border-neutral-200 px-6 py-[18px]"
-                >
-                  <Badge variant="outline">{ms.cohort}기</Badge>
-                  <span className="text-base text-neutral-900">
-                    {TRACK_LABEL[ms.track]} {ms.roles.join('·')}
-                  </span>
-                  {ms.team && <span className="text-sm text-neutral-500">{ms.team}</span>}
-                </div>
-              ))
+              <>
+                {visibleMemberships.map((ms) => {
+                  const year = cohortYear(ms.cohort);
+                  return (
+                    <div
+                      key={`${ms.cohort}-${ms.track}`}
+                      className="flex flex-wrap items-center gap-4 rounded-xl border border-neutral-200 px-6 py-[18px]"
+                    >
+                      <Badge variant="neutral">{ms.cohort}기</Badge>
+                      <span className="text-base text-neutral-900">
+                        {TRACK_LABEL[ms.track]} {ms.roles.join('·')}
+                      </span>
+                      {ms.team && <span className="text-sm text-neutral-500">{ms.team}</span>}
+                      {year && <span className="ml-auto text-sm text-neutral-400">{year}</span>}
+                    </div>
+                  );
+                })}
+                {hiddenHistoryCount > 0 && (
+                  <button
+                    onClick={() => setShowAllHistory(true)}
+                    className="self-start text-sm font-medium text-neutral-500 hover:text-brand"
+                  >
+                    이전 이력 {hiddenHistoryCount}개 보기
+                  </button>
+                )}
+              </>
             )}
           </section>
 

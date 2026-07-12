@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from 'react';
 
-export type ButtonVariant = 'primary' | 'white' | 'outline-white' | 'ghost' | 'outline';
+export type ButtonVariant =
+  | 'primary'
+  | 'white'
+  | 'outline-white'
+  | 'ghost'
+  | 'outline'
+  | 'outline-brand';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
@@ -10,6 +16,7 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
   'outline-white': 'bg-transparent text-white border-[1.5px] border-white hover:bg-white/10',
   ghost: 'bg-transparent text-neutral-700 hover:bg-neutral-100',
   outline: 'bg-transparent text-neutral-700 border border-neutral-200 hover:bg-neutral-50',
+  'outline-brand': 'bg-transparent text-brand border-[1.5px] border-brand hover:bg-brand-50',
 };
 
 const SIZE_CLASS: Record<ButtonSize, string> = {

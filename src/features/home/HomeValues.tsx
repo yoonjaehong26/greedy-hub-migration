@@ -7,10 +7,10 @@ const VALUES = [
 
 export function HomeValues() {
   return (
-    <section className="bg-brand px-5 py-16 md:py-24">
+    <section className="bg-brand px-5 py-16 md:py-[88px]">
       <div className="mx-auto flex max-w-6xl flex-col gap-10 md:gap-14">
         <h2 className="text-xl text-white">그리디가 지키는 것</h2>
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-16 md:gap-y-11">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-6 md:gap-y-11">
           {VALUES.map((v) => (
             <div key={v.title} className="flex flex-col gap-2">
               <p className="text-2xl text-white">{v.title}</p>

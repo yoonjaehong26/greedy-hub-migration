@@ -1,6 +1,6 @@
 export function Footer() {
   return (
-    <footer className="border-t border-neutral-200 bg-neutral-50 dark:bg-slate-900 dark:border-white/10 mt-16">
+    <footer className="border-t border-neutral-200 bg-neutral-50 dark:bg-slate-900 dark:border-white/10">
       <div className="mx-auto max-w-6xl px-5 py-12 flex flex-col gap-3.5">
         <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-slate-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}

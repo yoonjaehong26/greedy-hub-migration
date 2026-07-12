@@ -29,7 +29,7 @@ export function ProjectArchive() {
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 md:py-16">
       <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">프로젝트</h1>
+        <h1 className="text-3xl font-bold text-neutral-900 md:text-[40px]">프로젝트</h1>
         <p className="text-base text-neutral-500">매 기수, 팀을 꾸려 실제로 만든 것들이에요.</p>
       </div>
 

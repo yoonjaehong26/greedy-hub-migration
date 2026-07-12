@@ -50,12 +50,16 @@ export function ActivityDetail({ id }: { id: string }) {
         ← 활동으로
       </Link>
 
-      <div className="mt-4">
-        <Badge variant="outline">{activity.tag}</Badge>
+      <div className="mt-4 flex items-center gap-2">
+        <Badge variant="neutral">{activity.tag}</Badge>
+        {activity.cohort && <Badge variant="brand">{activity.cohort}기</Badge>}
       </div>
 
       <h1 className="mt-3 text-3xl font-bold text-neutral-900 md:text-4xl">{activity.title}</h1>
-      <p className="mt-2 text-sm text-neutral-500">{activity.date}</p>
+      <p className="mt-2 text-sm text-neutral-500">
+        {activity.date}
+        {activity.location && `, ${activity.location}`}
+      </p>
 
       {activity.participants.length > 0 && (
         <div className="mt-4 flex items-center gap-3">
@@ -68,11 +72,11 @@ export function ActivityDetail({ id }: { id: string }) {
                   title={p.name}
                   className="-mr-2 last:mr-0 hover:z-10"
                 >
-                  <Avatar name={p.name} className="border-2 border-white" />
+                  <Avatar name={p.name} size={32} tone="brand" className="border-2 border-white" />
                 </Link>
               ) : (
                 <div key={p.name} title={p.name} className="-mr-2 last:mr-0">
-                  <Avatar name={p.name} className="border-2 border-white" />
+                  <Avatar name={p.name} size={32} tone="brand" className="border-2 border-white" />
                 </div>
               )
             )}

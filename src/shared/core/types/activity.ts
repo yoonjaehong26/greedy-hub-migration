@@ -4,6 +4,8 @@ export interface ActivitySummary {
   id: number;
   date: string;
   tag: ActivityTag;
+  /** 활동이 속한 기수(1~). 날짜/내용으로 도출 — 기수 탭 필터에 사용. */
+  cohort?: number;
   title: string;
   summary: string;
   imageCount: number;
@@ -26,8 +28,12 @@ export interface ActivityDetail {
   id: number;
   date: string;
   tag: ActivityTag;
+  /** 활동이 속한 기수(1~). 상세의 "N기" 브랜드 배지에 사용. */
+  cohort?: number;
   title: string;
   body: string;
+  /** 개최 장소. 없으면 날짜만 표기. 예: "세종대학교 광개토관". */
+  location?: string;
   images: ActivityImage[];
   participants: ActivityParticipant[];
 }

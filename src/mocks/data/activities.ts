@@ -37,12 +37,36 @@ export interface MockActivity {
   id: number;
   date: string;
   tag: ActivityTag;
+  /** 활동이 속한 기수. 아래 COHORT_BY_ID로 주입. */
+  cohort: number;
   title: string;
   summary: string;
   body: string;
+  /** 개최 장소(있을 때만). 아래 LOCATION_BY_ID로 주입. */
+  location?: string;
   images: MockActivityImage[];
   participants: MockActivityParticipant[];
 }
+
+/**
+ * 활동 id → 기수 매핑. 날짜창(cohorts.ts)을 기본으로 하되, OT·데모데이·MT처럼
+ * 제목/내용이 특정 기수를 명시하는 경우 그 기수로 귀속(예: 2기 최종 데모데이는 2025.09이지만 2기).
+ */
+const COHORT_BY_ID: Record<number, number> = {
+  1: 1, 2: 1, 3: 1, 4: 1,
+  5: 2, 6: 2, 7: 2, 8: 2, 9: 2,
+  10: 3, 11: 2, 12: 2, 13: 2, 14: 3,
+  15: 4, 16: 4, 17: 4,
+};
+
+/** 활동 id → 개최 장소(노션 원본엔 없어 대표 행사만 추정 표기). */
+const LOCATION_BY_ID: Record<number, string> = {
+  5: '세종대학교 광개토관',
+  9: '세종대학교 대양AI센터',
+  10: '세종대학교 광개토관',
+  12: '세종대학교 대양AI센터',
+  17: '세종대학교 학술정보원',
+};
 
 function placeholderImages(activityId: number, count: number): MockActivityImage[] {
   return Array.from({ length: count }, (_, i) => ({
@@ -52,7 +76,7 @@ function placeholderImages(activityId: number, count: number): MockActivityImage
   }));
 }
 
-export const ACTIVITIES: MockActivity[] = [
+const RAW_ACTIVITIES: Omit<MockActivity, 'cohort' | 'location'>[] = [
   {
     id: 1,
     date: '2024.09',
@@ -338,3 +362,9 @@ export const ACTIVITIES: MockActivity[] = [
     ],
   },
 ];
+
+export const ACTIVITIES: MockActivity[] = RAW_ACTIVITIES.map((a) => ({
+  ...a,
+  cohort: COHORT_BY_ID[a.id],
+  ...(LOCATION_BY_ID[a.id] ? { location: LOCATION_BY_ID[a.id] } : {}),
+}));

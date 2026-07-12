@@ -101,7 +101,7 @@ export function StudyCurriculum() {
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 md:py-16">
       <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">스터디</h1>
+        <h1 className="text-3xl font-bold text-neutral-900 md:text-[40px]">스터디</h1>
         <p className="text-base text-neutral-500">매주 미션을 만들고, 리뷰로 다듬으며 성장해요.</p>
       </div>
 
