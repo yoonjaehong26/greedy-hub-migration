@@ -183,11 +183,3 @@ describe('GET /activities', () => {
     );
   });
 });
-
-describe('GET /stats', () => {
-  it('홈 통계를 반환한다', async () => {
-    const res = await fetch(`${BASE}/stats`);
-    const body = await res.json();
-    expect(body).toEqual({ totalMembers: 50, activeCohort: 4, tracks: 'FE · BE', teamProjects: 12 });
-  });
-});

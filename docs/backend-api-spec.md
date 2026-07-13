@@ -240,15 +240,15 @@ activity_participant   activity_id FK, member_id FK NULL, name
 
 ## 7. 홈 통계 (Stats) — 🚫 백엔드 없음(프론트 처리, 결정 2026-07-14)
 
-히어로·기능카드·모집 CTA는 정적 UI(프론트 상수)로 유지 — 백엔드 불필요. **숫자 통계도 별도 집계 API 없이 프론트에서 산출**한다: `totalMembers`/`teamProjects`는 이미 받는 `GET /members`·`GET /projects` 응답 길이에서 파생하고, `activeCohort`/`tracks`는 정적값(또는 멤버 memberships에서 최대 cohort). 아래 형태는 프론트가 만드는 데이터 참고용.
+히어로·기능카드·모집 CTA는 정적 UI(프론트 상수)로 유지 — 백엔드 불필요. **숫자 통계도 API·MSW 없이 프론트 상수로 관리**한다: 현재 구현은 `src/features/home/HomeStats.tsx`의 `STATS` 배열을 그대로 표시하며(fetch·Query·목서버 없음), 값 갱신은 이 배열만 수정한다. `GET /stats` 엔드포인트·`statsApi`·`statsQueries`·MSW 목·`stats` 타입은 모두 제거됨(2026-07-14).
 
-- ~~`GET /stats`~~ (미구현)
+- ~~`GET /stats`~~ (엔드포인트 없음 — 프론트 상수)
 
 ```json
 { "totalMembers": 50, "activeCohort": 4, "tracks": "FE · BE", "teamProjects": 12 }
 ```
 
-- 이 숫자들을 어떻게 산출할지(`member`/`project` 테이블 COUNT로 계산할지, 별도 관리 값으로 둘지)는 **API 계약에 안 드러나는 백엔드 내부 구현 선택** — 프론트는 응답으로 받는 숫자만 그대로 표시한다.
+- 위 형태는 참고용 스냅샷일 뿐, 실제로는 컴포넌트 상수다. 훗날 `GET /members`·`GET /projects` 응답 길이에서 파생하도록 바꾸는 것도 가능하지만(그땐 백엔드 계약 변화 없음), 갱신 주기(프론트 배포 반년)와 ROI를 고려해 상수로 둔다.
 - 홈의 프로젝트 프리뷰 섹션은 `GET /projects` 응답 상위 N개를 그대로 재사용(전용 API 없음).
 - **`teamProjects`는 `GET /projects` 목록 길이·멤버 상세 `summaryCounts.teamProjects`와 항상 같은 정의로 계산되어야 한다**(결정, 2026-07-10) — "팀 프로젝트"로 셀 대상(예: 진행중/취소된 프로젝트 포함 여부)이 세 곳에서 어긋나지 않도록 백엔드가 한 곳에서 계산 로직을 공유할 것.
 
@@ -272,12 +272,13 @@ curriculum_stage ─1:N─ curriculum_stage_tag / curriculum_stage_link / curric
 | 프로젝트 | `src/mocks/data/projects.ts` | `src/mocks/handlers/projects.ts` |
 | 스터디 | `src/mocks/data/study.ts` | `src/mocks/handlers/study.ts` |
 | 활동 타임라인 | `src/mocks/data/activities.ts` | `src/mocks/handlers/activities.ts` |
-| 홈 통계 | `src/mocks/data/stats.ts` | `src/mocks/handlers/stats.ts` |
+
+> 홈 통계는 백엔드·MSW 없이 프론트 상수(`src/features/home/HomeStats.tsx`)로 처리하므로 목서버 대상이 아니다(§7).
 
 프론트 데이터 레이어(아키텍처 규칙에 따라 fetch는 `*Api.ts`에만, 서버 상태는 TanStack Query만):
-- 타입: `src/shared/core/types/{member,project,study,activity,stats}.ts`
-- API 래퍼: `src/shared/core/api/{member,project,study,activity,stats}Api.ts` — `NEXT_PUBLIC_API_BASE`(기본 `/api`)를 base로 사용. **Spring 실서버 연동 시 이 환경변수만 교체하면 된다.**
-- Query 훅: `src/shared/core/queries/{member,project,study,activity,stats}Queries.ts` — 전부 파라미터 없이 전체를 가져오고, 필터링은 각 `features/` 컴포넌트가 클라이언트에서 처리
+- 타입: `src/shared/core/types/{member,project,study,activity}.ts`
+- API 래퍼: `src/shared/core/api/{member,project,study,activity}Api.ts` — `NEXT_PUBLIC_API_BASE`(기본 `/api`)를 base로 사용. **Spring 실서버 연동 시 이 환경변수만 교체하면 된다.**
+- Query 훅: `src/shared/core/queries/{member,project,study,activity}Queries.ts` — 전부 파라미터 없이 전체를 가져오고, 필터링은 각 `features/` 컴포넌트가 클라이언트에서 처리
 - 카테고리·트랙 필터 로직: `src/features/activities/categoryFilter.ts`(활동), `ProjectArchive.tsx`/`StudyCurriculum.tsx` 내부(프로젝트·스터디)
 
 목서버 계약 테스트: `npm run test`(`src/mocks/__tests__/handlers.test.ts`, msw/node 기반). 로컬에서 목서버로 실행하려면 `npm run dev:mock`(`NEXT_PUBLIC_API_MOCK=true`).
