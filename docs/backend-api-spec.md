@@ -29,7 +29,7 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 
 ### 결정 요약 (2026-07-14 확정)
 1. **활동(Activity)** — **다음 주 구현 예정이라 이번 정합화에서 보류.** ERD에 대응 엔티티 없음(신설 필요)이라는 사실만 기록하고, 스키마 확정·`/activities` 개정은 그때. (ERD의 `MemberActivity`는 "멤버의 기수별 역할"이지 사진 있는 활동 게시물이 아님 — 별개.)
-2. **Project** — 백엔드 ERD 기준으로 우리 계약 수정(BE/FE 깃허브·스택 분리, `generationNumber`(파생), `siteUrl`). 소개는 **3블록 폐기 → 단일 `description`(마크다운)으로 통합**. `projectType`은 백엔드 내부 분류라 **응답 제외**, `generation`은 객체 대신 **`generationNumber`(정수)** 로 노출. `screenshots`(ProjectImage)만 별도 신설 요청.
+2. **Project** — 백엔드 ERD 기준으로 우리 계약 수정(BE/FE 깃허브·스택 분리, `generationNumber`(파생), `siteUrl`). 소개는 **3블록 폐기 → 단일 `description`(마크다운)으로 통합**. `projectType`은 백엔드 내부 분류라 **응답 제외**, `generation`은 객체 대신 **`generationNumber`(정수)** 로 노출. `screenshotUrls[]`(엔티티 `ProjectImage`)만 별도 신설 요청.
 3. **Member** — 백엔드 구조(`Member` + `MemberActivity`) 채택하되, **기수별 track은 소실 없이 보존하도록 백엔드에 요청**(`MemberActivity.stackPosition` 추가). 역할 enum은 지금은 백엔드 `ActivityType` 그대로.
 
 ### A. Project 필드 매핑
@@ -53,7 +53,7 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 - Figma "소개 3블록"(어떤 문제를 풀었나요/주요 기능/어떻게 만들었나요)을 **컬럼 3개로 만들지 않고 ERD의 단일 `description`(Text) 하나로 통합**한다. 스키마가 Figma 섹션 구성에 결합되면(추가·개명·순서변경마다 마이그레이션) 유지보수가 어려움 — 콘텐츠 구조는 스키마가 아니라 **콘텐츠(마크다운)에** 둔다. 프론트는 `description`을 마크다운으로 렌더(헤딩=섹션 제목)해 Figma 3블록을 그대로 재현하거나 단일 소개 문단으로 표시. 백엔드 추가 컬럼 0개. (기존 `subtitle`도 여기로 흡수.)
 
 **백엔드 신설 요청 (ERD에 없음):**
-- `screenshots[]` — 상세 화면 갤러리("+N 모두 보기"). `ActivityImage`와 동형인 **`ProjectImage`(projectId FK, url, sortOrder)** 신설 **확정**(유지). 현재 스크린샷은 placeholder라 **실이미지 수급 필요**.
+- `screenshotUrls[]` — 상세 화면 갤러리("+N 모두 보기"). `ActivityImage`와 동형인 **`ProjectImage`(projectId FK, url, sortOrder)** 신설 **확정**(유지). 응답 필드명은 URL 배열이라 `screenshotUrls`(컨벤션: `thumbnailUrls`와 동일). 현재 placeholder라 **실이미지 수급 필요**.
 
 **enum 값 초안 (우리 실데이터 — 확정은 백엔드):**
 - `FrontendStack`: React · TypeScript · Next.js · Vite · Tailwind CSS · Zustand · TanStack Query · Axios · Leaflet · Storybook · Kakao Maps API …
@@ -62,7 +62,7 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 
 ### B. ProjectMember / 외부 기여자
 - `roleLabel`(자유문자 "FE"/"BE") → `stackPosition`(enum BACKEND/FRONTEND/FULL_STACK). "디자인(외부)" 1건(모꼬지 김성림)은 **제외**(결정) — `DESIGN` enum 안 만들고 해당 인원 로스터에서 뺌.
-- 외부 인원: 기존 `memberId: null`+이름 → 백엔드 **`ExternalMember` 엔티티 + `ProjectMember.externalContributorId` FK** 채택(그쪽이 더 정규화). API 응답은 내부(`member`)/외부(`externalContributor`) 어느 쪽이든 `name`·`githubUrl`을 노출.
+- 외부 인원: 기존 `memberId: null`+이름 → 백엔드 **`ExternalMember` 엔티티 + `ProjectMember.externalContributorId` FK** 채택(그쪽이 더 정규화). team 응답은 **`memberId`·`name`·`stackPosition`만** 노출 — `name`은 외부 기여자엔 여기에만 있고 N+1 회피용, `stackPosition`은 프로젝트 전용 역할. **개별 `githubUrl`은 제외**(팀 명단이 이름+역할만 보여줌; 내부는 memberId→프로필, 외부는 필요 시 ExternalMember에서 조회).
 
 ### C. Member 매핑 (단순화)
 
@@ -204,7 +204,7 @@ generation        id PK, number INT, start_date, end_date
 
 ## 4. 프로젝트 (Projects) — ✅ 백엔드 구현 확정 (2026-07-14)
 
-> ⚠️ **2026-07-14 백엔드 ERD 정합화(§1.5·`openapi.yaml`)로 스키마 개정됨.** 옛 표현 → 개정: 단일 `githubUrl`→`backendGithubUrl`+`frontendGithubUrl`, `liveUrl`→`siteUrl`, 단일 `stack[]`→`backendStack`+`frontendStack`(enum), `cohortLabel`→`generationNumber`(정수), 소개 **3블록(`problem`/`features`/`how`)→단일 `description`(마크다운)**, `roleLabel`→`stackPosition`. `projectType`은 백엔드 내부 분류라 응답 제외. `screenshots[]`는 `ProjectImage` 신설로 유지. 필드는 §1.5 A와 openapi 기준으로 읽을 것.
+> ⚠️ **2026-07-14 백엔드 ERD 정합화(§1.5·`openapi.yaml`)로 스키마 개정됨.** 옛 표현 → 개정: 단일 `githubUrl`→`backendGithubUrl`+`frontendGithubUrl`, `liveUrl`→`siteUrl`, 단일 `stack[]`→`backendStack`+`frontendStack`(enum), `cohortLabel`→`generationNumber`(정수), 소개 **3블록(`problem`/`features`/`how`)→단일 `description`(마크다운)**, `roleLabel`→`stackPosition`. `projectType`은 백엔드 내부 분류라 응답 제외. `screenshotUrls[]`(엔티티 `ProjectImage`)로 유지. 필드는 §1.5 A와 openapi 기준으로 읽을 것.
 >
 > **백엔드 두기로 결정(2026-07-14).** 예시 데이터는 노션 "찬빈님 프로젝트 데이터정리" 페이지(1~3기 데모데이 팀 6개, 각 PR 리드미 요약) 기준 실데이터로 검증됨(2026-07-10). 쓰기(등록/수정)는 Phase 2.
 
@@ -226,17 +226,17 @@ generation        id PK, number INT, start_date, end_date
   "backendGithubUrl": "https://github.com/greedy-team/mokkoji-be",
   "frontendStack": ["React", "TypeScript", "Next.js", "Tailwind CSS"],
   "backendStack": ["Java", "Spring Boot", "MySQL", "Redis"],
-  "screenshots": ["https://.../shot-0.png", "https://.../shot-1.png"],
+  "screenshotUrls": ["https://.../shot-0.png", "https://.../shot-1.png"],
   "team": [
-    { "memberId": null, "name": "방재경", "stackPosition": "FRONTEND", "githubUrl": "https://github.com/..." },
-    { "memberId": 16, "name": "정창우", "stackPosition": "FRONTEND", "githubUrl": null },
-    { "memberId": 14, "name": "김의진", "stackPosition": "BACKEND", "githubUrl": null }
+    { "memberId": null, "name": "방재경", "stackPosition": "FRONTEND" },
+    { "memberId": 16, "name": "정창우", "stackPosition": "FRONTEND" },
+    { "memberId": 14, "name": "김의진", "stackPosition": "BACKEND" }
   ] }
 ```
 
 - 기수는 `generationNumber`(정수, Generation.number 조인). 트랙 라벨("FE/BE")은 `team[].stackPosition`에서 파생 — 저장하지 않음. `projectType`(축제/상시/기수 분류)은 백엔드 내부용이라 응답에 안 넣음(§1.5 A) — 축제·상시 프로젝트를 목록에 노출할 때 다시 추가.
 - 소개 "3블록"(문제/기능/제작)은 별도 컬럼 없이 **단일 `description`(마크다운)** 에 헤딩으로 담는다(§1.5 A) — Figma 섹션 구성이 바뀌어도 스키마 불변.
-- `team[].memberId`는 **그리디 동아리원(§3)과 매칭되면 채우고, 외부 참여자면 `null`**(백엔드 `ExternalMember` FK로 해소, 응답엔 `name`·`githubUrl` 노출). 외부 디자이너 1건(김성림)은 제외 결정(§1.5 B).
+- `team[].memberId`는 **그리디 동아리원(§3)과 매칭되면 채우고, 외부 참여자면 `null`**(백엔드 `ExternalMember` FK로 해소). team 응답은 `memberId`·`name`·`stackPosition`만 — 개별 `githubUrl`은 안 넣음(§1.5 B). 외부 디자이너 1건(김성림)은 제외 결정(§1.5 B).
 - **깃허브·배포 URL·스택은 `github.com/orgs/greedy-team/repositories` 실조사(2026-07-10)**. FE·BE 레포가 분리돼 있어 **`frontendGithubUrl`·`backendGithubUrl`로 각각 저장**(옛 단일 `githubUrl` 대표 방식 폐기), 스택도 `frontendStack`·`backendStack`으로 분리. **따라행**은 레포 미발견으로 URL/스택 비어있음.
 - ⚠️ 이전 버전에 있던 리더보드·세종라이프·그리니 목늘이기(축제 부스 3개)는 출처가 확인되지 않은 목데이터라 제거했었는데, 실제로는 `2025-leaderboard`·`2026-leaderboard`·`Greenie-neck-stretch` 등으로 greedy-team 조직에 존재하는 게 확인됨 — 축제 부스 프로젝트까지 다룰 거면 별도로 정리할 것.
 

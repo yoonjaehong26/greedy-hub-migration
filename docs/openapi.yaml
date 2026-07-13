@@ -389,12 +389,14 @@ components:
 
     ProjectMemberRef:
       type: object
-      description: "프로젝트 팀원(백엔드 ProjectMember). memberId=null이면 외부 기여자(ExternalMember)."
+      description: |
+        프로젝트 팀원(백엔드 ProjectMember). memberId=null이면 외부 기여자(ExternalMember) — 이름은 여기에만 존재.
+        stackPosition은 '이 프로젝트에서의 역할'(멤버 mainStackPosition과 다를 수 있음)이라 프로젝트 응답에만 있음.
+        개별 github는 팀 명단 UI에 노출하지 않으므로 제외(필요 시 내부=memberId로 프로필, 외부=ExternalMember에서 조회).
       properties:
         memberId: { type: integer, nullable: true }
         name: { type: string }
         stackPosition: { $ref: "#/components/schemas/StackPosition" }
-        githubUrl: { type: string, nullable: true, description: "외부 기여자 개인 github(내부 멤버는 memberId로 조회)" }
 
     ProjectDetail:
       allOf:
@@ -414,10 +416,10 @@ components:
             frontendStack:
               type: array
               items: { $ref: "#/components/schemas/FrontendStack" }
-            screenshots:
+            screenshotUrls:
               type: array
               items: { type: string }
-              description: "ProjectImage(신설) url들, sortOrder 순('+N 모두 보기' 포함). 현재 placeholder — 실이미지 수급 필요."
+              description: "ProjectImage(신설)의 url들, sortOrder 순('+N 모두 보기' 포함). URL 배열이라 thumbnailUrls 컨벤션 따라 *Urls. 현재 placeholder — 실이미지 수급 필요."
             team:
               type: array
               items: { $ref: "#/components/schemas/ProjectMemberRef" }
