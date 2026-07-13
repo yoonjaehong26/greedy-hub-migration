@@ -23,6 +23,95 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 
 **결정(2026-07-14):** 백엔드 GET 구현 = **멤버·활동·프로젝트** 3개 도메인. **스터디·홈통계는 백엔드 없이 프론트에서 처리**(스터디=상수, 통계=멤버·프로젝트 데이터에서 파생/정적) — ROI 관점(개발자 직접 수정, 프론트 배포 주기(반년)와 갱신 주기 일치)에서 확정. 프로젝트는 같은 논리로 미확정이었으나 백엔드 두기로 결정.
 
+## 1.5. 백엔드 ERD 정합화 (결정 2026-07-14)
+
+팀 백엔드 ERD(`Project`·`ProjectMember`·`Generation`·`Member`·`MemberActivity`·`ExternalMember` + enum들)와 이 fork 계약을 대조한 결과, 이 계약은 **Figma·노션 실데이터에서 역산**한 것이라 이름·구조·커버리지가 어긋난다. 아래 방향으로 정합화하며, 이후 §3·§4·§6과 `openapi.yaml`은 이 절을 기준으로 개정한다. 원칙: **백엔드 ERD 구조·네이밍을 채택하되, 화면이 요구하지만 ERD에 없는 필드는 "백엔드 신설 요청"으로 명시**한다.
+
+### 결정 요약 (2026-07-14 확정)
+1. **활동(Activity)** — **다음 주 구현 예정이라 이번 정합화에서 보류.** ERD에 대응 엔티티 없음(신설 필요)이라는 사실만 기록하고, 스키마 확정·`/activities` 개정은 그때. (ERD의 `MemberActivity`는 "멤버의 기수별 역할"이지 사진 있는 활동 게시물이 아님 — 별개.)
+2. **Project** — 백엔드 ERD 기준으로 우리 계약 수정(BE/FE 깃허브·스택 분리, `generationNumber`(파생), `siteUrl`). 소개는 **3블록 폐기 → 단일 `description`(마크다운)으로 통합**. `projectType`은 백엔드 내부 분류라 **응답 제외**, `generation`은 객체 대신 **`generationNumber`(정수)** 로 노출. `screenshots`(ProjectImage)만 별도 신설 요청.
+3. **Member** — 백엔드 구조(`Member` + `MemberActivity`) 채택하되, **기수별 track은 소실 없이 보존하도록 백엔드에 요청**(`MemberActivity.stackPosition` 추가). 역할 enum은 지금은 백엔드 `ActivityType` 그대로.
+
+### A. Project 필드 매핑
+
+| 백엔드 ERD | 개정 계약 | 비고 |
+|---|---|---|
+| `name` | `name` | |
+| `summary` | `summary` | 카드 한 줄 요약 — **기존 `description`이 하던 역할** |
+| `description`(Text) | `description` | 상세 본문 |
+| `thumbnailUrl` | `thumbnailUrl`(nullable) | |
+| `siteUrl` | `siteUrl` | 기존 `liveUrl` 개명 |
+| `backendGithubUrl`/`frontendGithubUrl` | 동일 | 기존 단일 `githubUrl`(FE 대표) 분리 |
+| `projectType`(enum) | ~~응답 제외~~ | 백엔드 내부 분류(축제/상시/기수)용 — 화면 미사용이라 API 응답엔 안 넣음. 축제·상시 프로젝트 노출 시 추가 |
+| `generationId`(FK) | `generationNumber`(정수) | Generation.number 조인. 객체 대신 평면 정수. `cohortLabel` "N기"는 여기서 파생 |
+| `backendStack`/`frontendStack`(enum[]) | 동일 | 기존 단일 `stack[]`(FE+BE 합침) 분리 + enum화 |
+| (ProjectMember 집계) | `teamSize` | 파생값 — 저장 안 함 |
+| — | ~~`trackLabel`~~ | team의 stackPosition에서 파생("FE"·"BE" 공존 시 "FE/BE") — 저장 안 함 |
+| — | ~~`thumbnailColor`~~ | **프론트 전용** 썸네일 폴백색 — 백엔드 계약에서 제외 |
+
+**소개 텍스트 — 단일 `description`으로 통합 (결정):**
+- Figma "소개 3블록"(어떤 문제를 풀었나요/주요 기능/어떻게 만들었나요)을 **컬럼 3개로 만들지 않고 ERD의 단일 `description`(Text) 하나로 통합**한다. 스키마가 Figma 섹션 구성에 결합되면(추가·개명·순서변경마다 마이그레이션) 유지보수가 어려움 — 콘텐츠 구조는 스키마가 아니라 **콘텐츠(마크다운)에** 둔다. 프론트는 `description`을 마크다운으로 렌더(헤딩=섹션 제목)해 Figma 3블록을 그대로 재현하거나 단일 소개 문단으로 표시. 백엔드 추가 컬럼 0개. (기존 `subtitle`도 여기로 흡수.)
+
+**백엔드 신설 요청 (ERD에 없음):**
+- `screenshots[]` — 상세 화면 갤러리("+N 모두 보기"). `ActivityImage`와 동형인 **`ProjectImage`(projectId FK, url, sortOrder)** 신설 **확정**(유지). 현재 스크린샷은 placeholder라 **실이미지 수급 필요**.
+
+**enum 값 초안 (우리 실데이터 — 확정은 백엔드):**
+- `FrontendStack`: React · TypeScript · Next.js · Vite · Tailwind CSS · Zustand · TanStack Query · Axios · Leaflet · Storybook · Kakao Maps API …
+- `BackendStack`: Java · Spring Boot · MySQL · PostgreSQL · Redis …
+- 값이 계속 늘어나므로 enum이 맞는지(자유문자 컬럼 + 정규화 태그 테이블이 나을 수도)는 백엔드 판단.
+
+### B. ProjectMember / 외부 기여자
+- `roleLabel`(자유문자 "FE"/"BE") → `stackPosition`(enum BACKEND/FRONTEND/FULL_STACK). "디자인(외부)" 1건(모꼬지 김성림)은 **제외**(결정) — `DESIGN` enum 안 만들고 해당 인원 로스터에서 뺌.
+- 외부 인원: 기존 `memberId: null`+이름 → 백엔드 **`ExternalMember` 엔티티 + `ProjectMember.externalContributorId` FK** 채택(그쪽이 더 정규화). API 응답은 내부(`member`)/외부(`externalContributor`) 어느 쪽이든 `name`·`githubUrl`을 노출.
+
+### C. Member 매핑 (단순화)
+
+| 백엔드 ERD | 개정 계약 | 비고 |
+|---|---|---|
+| `name` | `name` | |
+| `githubUrl` | `githubUrl` | 기존 `login`+`avatarUrl` → 백엔드는 URL 단일. avatar는 github에서 파생 |
+| `description`(소개) | `description` | 기존 `bio` 개명 |
+| `mainStackPosition`(단일) | `mainStackPosition` + `MemberActivity.stackPosition`(요청) | 기수별 track 보존(아래) |
+| `departments`(enum[]) | `departments` | 기존 자유문자 `department[]` → enum화 |
+| `MemberActivity`(activityType+generationId) | `memberActivities[]` | 기존 `memberships[].roles[]`(+`joinType`) 대체 |
+
+**기수별 track — 보존 요청 (결정):**
+- `mainStackPosition` 단일로는 "2기 FE→3기 BE"(신지훈·강동현 실존)를 표현 못 함 → **백엔드에 `MemberActivity.stackPosition`(기수별 track) 추가를 요청**한다. 각 기수-역할 행이 track을 가져 멤버 카드의 "1기 BE, 2기 FE" 이력이 보존됨. `mainStackPosition`은 대표 포지션(또는 파생)으로 유지.
+
+**역할 enum — 지금은 백엔드 `ActivityType` 그대로 (결정):**
+- 매핑: 멤버→STUDY_MEMBER, 리뷰어→REVIEWER, 리드→STUDY_LEAD, 메인테이너→MAINTAINER, 창립(joinType)→CO_FOUNDER.
+- **동아리장·영입리드**는 대응 enum 없음 → **지금은 추가 안 하고 백엔드 엔티티대로 간다.** 필요해지면 후속으로 `CLUB_LEAD`·`RECRUITED_LEAD` 추가(동아리장=이승용 등은 그때 정확히 표기). 그전까진 계약상 이 두 역할은 표현 안 됨(문서에만 남김).
+
+### D. Activity 신설 요청 (ERD 스타일) — ⏸ 보류(다음 주 구현)
+
+> **이번 정합화 범위 밖.** 활동 도메인은 다음 주 구현 예정이라 스키마 확정·`/activities` 개정을 그때 진행한다. 아래는 그때 출발점으로 쓸 참고 초안일 뿐, 지금 계약에 반영하지 않는다.
+
+```
+Activity            id PK · generationId FK→Generation(nullable, 편집 귀속—날짜 파생 불가)
+                    · tag Enum(ActivityTag) · title · summary · body Text
+                    · location String(nullable) · createdAt · updatedAt
+ActivityImage       id PK · activityId FK → Activity · url · sortOrder
+ActivityParticipant id PK · activityId FK → Activity · memberId FK→Member(nullable=외부/미매칭) · name
+```
+- `ActivityTag`(enum): 행사·세션·데모데이·축제·창립 (영문 명명은 백엔드 재량, 예: EVENT/SESSION/DEMO_DAY/FESTIVAL/FOUNDING).
+- `cohort`는 `generationId`로 대체 — **날짜로 파생 불가**(같은 달에 다른 기수 행사 공존, 예 2025.09 3기 OT + 2기 데모데이). nullable FK 저장형이라 ERD의 `MemberActivity.generationId`와 같은 원칙.
+
+### E. 관계 (정합화 후)
+- `Project` N:1 `Generation` / `Project` 1:N `ProjectMember` N:1 (`Member` | `ExternalMember`) / `Project` 1:N `ProjectImage`(신설)
+- `Member` 1:N `MemberActivity` N:1 `Generation`(nullable)
+- `Activity`(신설) N:1 `Generation`(nullable) / 1:N `ActivityImage` / 1:N `ActivityParticipant` N:1 `Member`(nullable)
+
+### 항목별 결론 (2026-07-14)
+1. Project 소개 — **3블록 폐기, 단일 `description`(마크다운) 통합** ✔. `ProjectImage`(screenshots) 갤러리 **유지 확정**(백엔드 신설) ✔.
+2. 역할 enum — **지금은 백엔드 `ActivityType` 그대로** ✔. 동아리장·영입리드는 후속 추가 예정.
+3. 외부 디자이너(김성림) — **제외** ✔. `DESIGN` enum 안 만듦.
+4. Member 기수별 track — **보존 요청**(`MemberActivity.stackPosition` 신설 요청) ✔. 소실 안 함.
+5. Activity 도메인 — **보류**(다음 주 구현) ⏸.
+
+**→ 백엔드에 요청할 것 2개:** (a) `ProjectImage` 신설(screenshots 갤러리), (b) `MemberActivity.stackPosition` 추가(기수별 track). 그 외는 백엔드 ERD 그대로 수용.
+
+> 위 결론대로 `openapi.yaml`(머신 계약)과 §3·§4 프로즈를 **Project·Member만** 개정한다(Activity=보류라 §6·`/activities`는 유지). **현재 프론트 코드·MSW 목·타입은 아직 구 계약(memberships[]·단일 githubUrl 등)** 이므로, 계약 개정 후 프론트 이관은 페이지별(design→msw→swagger) 작업에서 별도 진행.
+
 ## 2. 공통 규약
 
 - Base URL: `/api` (버저닝 프리픽스 없음 — 프론트·백엔드를 같은 팀이 붙어서 배포하는 내부 툴이라 `/v1` 같은 버전 공존이 필요 없다고 판단)
@@ -36,38 +125,41 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 
 ## 3. 멤버 (Members)
 
-- `GET /members` — 파라미터 없음, 전체 멤버 반환. 트랙·기수 필터는 프론트가 클라이언트에서 처리(어떤 `memberships[]` 항목이든 트랙이 일치하면 노출).
+> ⚠️ **2026-07-14 백엔드 ERD 정합화(§1.5·`openapi.yaml`)로 스키마 개정됨.** 아래 본문의 `memberships[]`·`login`·`avatarUrl`·`joinType`·`bio`·`roles`(한글) 등 옛 필드 표현은 **`mainStackPosition`+`memberActivities[]`(`activityType` enum + `stackPosition`)·`githubUrl`·`description`** 로 대체됐다(한글 역할 라벨→영문 `ActivityType`; 단 동아리장·영입리드는 후속 추가). `missionDashboardUrl`은 여전히 계약 제외(파생). 필드 구조는 §1.5 C와 openapi를 기준으로 읽을 것 — 아래 프로즈의 옛 필드 서술은 배경/이력용. (엔드포인트·필터 규약은 아래 그대로 유효.)
+
+- `GET /members` — 파라미터 없음, 전체 멤버 반환. 트랙·기수 필터는 프론트가 클라이언트에서 처리(어떤 `memberActivities[]` 항목이든 `stackPosition`/`generationNumber`가 일치하면 노출).
 - `GET /members/{id}` — `id`는 숫자 PK 또는 GitHub 로그인 슬러그 둘 다 허용(레퍼런스 구현: `String(m.id) === id || m.login === id`)
 - **탈퇴자 처리는 이 백엔드가 다루지 않는다** — 탈퇴 시 그냥 DB에서 행을 지우거나 운영진 재량으로 처리. API 계약·유지보수 부담을 줄이기 위해 의도적으로 범위에서 제외(결정).
 
 ```json
-// 목록 item
-{ "id": 26, "login": "yoonjaehong26", "name": "윤재홍", "avatarUrl": null,
-  "memberships": [
-    { "cohort": 3, "track": "FE", "roles": ["멤버"], "team": "두구두구" },
-    { "cohort": 4, "track": "FE", "roles": ["메인테이너", "리드"] }
+// 목록 item (MemberSummary) — login·avatarUrl은 githubUrl에서 파생
+{ "id": 26, "name": "윤재홍", "githubUrl": "https://github.com/yoonjaehong26",
+  "mainStackPosition": "FRONTEND", "departments": ["COMPUTER_SCIENCE"],
+  "memberActivities": [
+    { "activityType": "STUDY_MEMBER", "stackPosition": "FRONTEND", "generationNumber": 3 },
+    { "activityType": "MAINTAINER",   "stackPosition": "FRONTEND", "generationNumber": 4 },
+    { "activityType": "STUDY_LEAD",   "stackPosition": "FRONTEND", "generationNumber": 4 }
   ] }
-// joinType이 있는 멤버는 목록에도 포함(창립·영입리드 예시는 아래 상세 예시 참고)
 
-// 상세 — 여러 기수에 걸친 멤버 예시(2기 FE → 3기 BE 트랙 전환)
-{ "id": 18, "login": "mintcoke123", "name": "강동현", "school": "세종대학교", "avatarUrl": null,
-  "memberships": [
-    { "cohort": 2, "track": "FE", "roles": ["멤버"], "team": "줍줍" },
-    { "cohort": 3, "track": "BE", "roles": ["멤버"], "team": "두구두구" }
+// 상세 (MemberDetail) — 기수별 track 전환(2기 FE → 3기 BE)이 stackPosition으로 보존됨
+{ "id": 18, "name": "강동현", "githubUrl": "https://github.com/mintcoke123",
+  "mainStackPosition": "BACKEND", "departments": [],
+  "memberActivities": [
+    { "activityType": "STUDY_MEMBER", "stackPosition": "FRONTEND", "generationNumber": 2 },
+    { "activityType": "STUDY_MEMBER", "stackPosition": "BACKEND",  "generationNumber": 3 }
   ],
-  "bio": null,
-  "isPublic": true,
+  "description": null, "isPublic": true,
   "summaryCounts": { "completedMissions": 0, "teamProjects": 0, "blogPosts": 0 },
-  "completedMissions": [], "blogPosts": [],
-  "teamProjects": [], "activities": [] }
+  "completedMissions": [], "blogPosts": [], "teamProjects": [], "activities": [] }
 
-// 상세 — 창립멤버 예시(기수/트랙은 정상 보유, department·admissionYear·joinType만 추가)
-{ "id": 1, "login": "kokodak", "name": "이승용", "school": "세종대학교",
-  "department": ["컴퓨터공학과"], "admissionYear": 20, "joinType": "창립", "avatarUrl": null,
-  "memberships": [
-    { "cohort": 1, "track": "BE", "roles": ["동아리장", "메인테이너", "리드", "리뷰어"] },
-    { "cohort": 2, "track": "BE", "roles": ["동아리장", "메인테이너", "리드", "리뷰어"] },
-    { "cohort": 3, "track": "BE", "roles": ["동아리장", "메인테이너"] }
+// 상세 — 창립멤버(이승용). ⚠️ '동아리장'은 현재 ActivityType에 없어 빠짐(§1.5 C, 후속 CLUB_LEAD 추가 예정)
+{ "id": 1, "name": "이승용", "githubUrl": "https://github.com/kokodak",
+  "mainStackPosition": "BACKEND", "departments": ["COMPUTER_SCIENCE"],
+  "memberActivities": [
+    { "activityType": "CO_FOUNDER", "stackPosition": "BACKEND", "generationNumber": null },
+    { "activityType": "MAINTAINER", "stackPosition": "BACKEND", "generationNumber": 1 },
+    { "activityType": "STUDY_LEAD", "stackPosition": "BACKEND", "generationNumber": 1 },
+    { "activityType": "REVIEWER",   "stackPosition": "BACKEND", "generationNumber": 1 }
   ] }
 ```
 
@@ -98,61 +190,72 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 - 위 `PATCH /members/{id}`에 **로그인한 본인만** 호출 가능하도록 멤버 토큰 미들웨어 추가. **저장은 원본 마크다운 그대로, 렌더링 시 반드시 이스케이프/새니타이징** — 사용자 입력을 그대로 HTML로 그리면 저장형 XSS 위험.
 - `isPublic`이 `false`인 멤버는 비로그인 사용자에게 `GET /members/{id}`에서 제외/마스킹하는 규칙 — 지금은 `isPublic` 필드만 있고 실제 가시성 필터링은 없음(누구나 값과 무관하게 전체 조회 가능).
 
-### MySQL
+### MySQL (백엔드 ERD 정합, §1.5)
 ```sql
-member       id PK, login UNIQUE, name, school, department JSON NULL, admission_year TINYINT NULL,
-             join_type ENUM('창립','영입리드') NULL, avatar_url NULL, bio TEXT NULL,
-             is_public BOOLEAN DEFAULT TRUE, created_at
-membership   id PK, member_id FK, cohort TINYINT, track ENUM('FE','BE'), team NULL
-member_role  membership_id FK, role ENUM('멤버','리뷰어','리드','메인테이너','동아리장','OB')
+member            id PK, name, github_url NULL, main_stack_position ENUM, description TEXT NULL,
+                  is_public BOOLEAN DEFAULT TRUE, created_at, updated_at
+member_department member_id FK, department ENUM   -- List<Department>
+member_activity   id PK, member_id FK, activity_type ENUM, stack_position ENUM,  -- ★ stack_position 신설(기수별 track)
+                  generation_id FK NULL, created_at, updated_at
+generation        id PK, number INT, start_date, end_date
 ```
+- `login`·`avatar_url`은 `github_url`에서 파생(미저장). `bio`→`description`. `join_type`(창립/영입리드)은 `member_activity.activity_type`(CO_FOUNDER 등)로 흡수 — 단 영입리드·동아리장은 현재 `ActivityType` enum에 없어 후속 추가 전까진 미표현(§1.5 C).
+- ★ `member_activity.stack_position`(기수별 track)이 백엔드 신설 요청.
 
 ## 4. 프로젝트 (Projects) — ✅ 백엔드 구현 확정 (2026-07-14)
 
-> **백엔드 두기로 결정(2026-07-14).** 예시 데이터는 노션 "찬빈님 프로젝트 데이터정리" 페이지(1~3기 데모데이 팀 6개, 각 PR 리드미 요약) 기준 실데이터로 검증됨(2026-07-10). 상세 페이지 재구축으로 필드 추가됨: 소개 3블록(`problem`/`features`/`how`)·화면 갤러리(`screenshots[]`) — 전부 optional. 쓰기(등록/수정)는 Phase 2.
+> ⚠️ **2026-07-14 백엔드 ERD 정합화(§1.5·`openapi.yaml`)로 스키마 개정됨.** 옛 표현 → 개정: 단일 `githubUrl`→`backendGithubUrl`+`frontendGithubUrl`, `liveUrl`→`siteUrl`, 단일 `stack[]`→`backendStack`+`frontendStack`(enum), `cohortLabel`→`generationNumber`(정수), 소개 **3블록(`problem`/`features`/`how`)→단일 `description`(마크다운)**, `roleLabel`→`stackPosition`. `projectType`은 백엔드 내부 분류라 응답 제외. `screenshots[]`는 `ProjectImage` 신설로 유지. 필드는 §1.5 A와 openapi 기준으로 읽을 것.
+>
+> **백엔드 두기로 결정(2026-07-14).** 예시 데이터는 노션 "찬빈님 프로젝트 데이터정리" 페이지(1~3기 데모데이 팀 6개, 각 PR 리드미 요약) 기준 실데이터로 검증됨(2026-07-10). 쓰기(등록/수정)는 Phase 2.
 
-- `GET /projects` — 파라미터 없음, 전체 반환. 기수·트랙 필터(전체/1~3기/FE/BE)는 프론트가 `cohortLabel`/`trackLabel` 값으로 클라이언트에서 필터링
+- `GET /projects` — 파라미터 없음, 전체 반환. 기수 필터(전체/1~3기)는 프론트가 `generationNumber`로, 트랙은 `team[].stackPosition`에서 파생해 클라이언트에서 필터링
 - `GET /projects/{id}`
 
 ```json
-// 목록 item
-{ "id": 1, "name": "따라행", "cohortLabel": "1기", "trackLabel": "FE/BE",
-  "description": "인기 여행 유튜브 영상을 분석해 실제 여행 동선과 장소 정보를 정리하고, 지도와 함께 일정별 여행 코스를 추천해주는 서비스.",
-  "teamSize": 5, "thumbnailUrl": null, "thumbnailColor": "#fb7185" }
+// 목록 item (ProjectSummary)
+{ "id": 1, "name": "따라행",
+  "summary": "인기 여행 유튜브 영상을 분석해 여행 동선·장소를 정리하고 지도로 코스를 추천.",
+  "thumbnailUrl": null, "generationNumber": 1 }
 
-// 상세 — 그리디 동아리원이 아닌 외부 참여자 포함 예시(모꼬지 팀)
-{ "id": 2, "name": "모꼬지", "subtitle": "세종대 모든 동아리를 한 곳에서",
-  "cohortLabel": "1기", "trackLabel": "FE/BE",
-  "description": "동아리 홍보와 정보 탐색의 불편함을 해결하는 세종대 동아리 통합 서비스.",
-  "githubUrl": "https://github.com/greedy-team/mokkoji-fe-next", "liveUrl": "https://www.mokkoji.site/",
-  "thumbnailUrl": null, "thumbnailColor": "#15803d",
-  "problem": "세종대엔 동아리가 많지만 모집 정보가 여기저기 흩어져 있었어요.",
-  "features": "동아리 검색·실시간 모집 공고·즐겨찾기·알림 메일을 한곳에서.",
-  "how": "Next.js + Spring Boot·MySQL·Redis로 FE·BE·디자인이 협업해 배포까지.",
+// 상세 (ProjectDetail) — 그리디 동아리원이 아닌 외부 참여자 포함 예시(모꼬지 팀)
+{ "id": 2, "name": "모꼬지", "summary": "세종대 모든 동아리를 한 곳에서",
+  "thumbnailUrl": null, "generationNumber": 1,
+  "description": "## 어떤 문제를 풀었나요\n세종대엔 동아리가 많지만 모집 정보가 흩어져 있었어요.\n\n## 주요 기능\n동아리 검색·실시간 모집 공고·즐겨찾기·알림 메일을 한곳에서.\n\n## 어떻게 만들었나요\nNext.js + Spring Boot·MySQL·Redis로 FE·BE가 협업해 배포까지.",
+  "siteUrl": "https://www.mokkoji.site/",
+  "frontendGithubUrl": "https://github.com/greedy-team/mokkoji-fe-next",
+  "backendGithubUrl": "https://github.com/greedy-team/mokkoji-be",
+  "frontendStack": ["React", "TypeScript", "Next.js", "Tailwind CSS"],
+  "backendStack": ["Java", "Spring Boot", "MySQL", "Redis"],
   "screenshots": ["https://.../shot-0.png", "https://.../shot-1.png"],
   "team": [
-    { "memberId": null, "name": "방재경", "roleLabel": "FE (외부)" },
-    { "memberId": 16, "name": "정창우", "roleLabel": "FE" },
-    { "memberId": 14, "name": "김의진", "roleLabel": "BE" }
-  ],
-  "stack": ["React", "TypeScript", "Next.js", "Tailwind CSS", "Java", "Spring Boot", "MySQL", "Redis"] }
+    { "memberId": null, "name": "방재경", "stackPosition": "FRONTEND", "githubUrl": "https://github.com/..." },
+    { "memberId": 16, "name": "정창우", "stackPosition": "FRONTEND", "githubUrl": null },
+    { "memberId": 14, "name": "김의진", "stackPosition": "BACKEND", "githubUrl": null }
+  ] }
 ```
 
-- 기수/트랙은 자유 라벨(`1~4기`·`축제`·`FE/BE`·`부스` 등)이라 enum이 아닌 문자열(`cohortLabel`/`trackLabel`).
-- `team[].memberId`는 **그리디 동아리원(§3의 46명)과 실제로 매칭되면 채우고, 없으면 `null`**(이름만 표시) — 위 모꼬지 예시의 방재경·신혁수·김성림처럼 그리디 동아리원이 아닌 외부 참여자(팀 프로젝트엔 있었지만 스터디원은 아니었던 인원)가 실제로 존재한다.
-- **`githubUrl`·`liveUrl`·`stack`(기술스택)은 `github.com/orgs/greedy-team/repositories`에서 실제 레포·README·배포 URL을 조사해 채웠다(2026-07-10)**. FE·BE 레포가 분리돼 있어 **`githubUrl`은 FE 레포를 대표로 사용(결정)** — `stack`은 FE+BE 기술을 합쳐서 표기. **따라행은 조직 저장소(33개, 2페이지) 전체를 뒤져도 못 찾아 보류** — `githubUrl`/`liveUrl`은 `null`, `stack`은 `[]`로 남아있음.
+- 기수는 `generationNumber`(정수, Generation.number 조인). 트랙 라벨("FE/BE")은 `team[].stackPosition`에서 파생 — 저장하지 않음. `projectType`(축제/상시/기수 분류)은 백엔드 내부용이라 응답에 안 넣음(§1.5 A) — 축제·상시 프로젝트를 목록에 노출할 때 다시 추가.
+- 소개 "3블록"(문제/기능/제작)은 별도 컬럼 없이 **단일 `description`(마크다운)** 에 헤딩으로 담는다(§1.5 A) — Figma 섹션 구성이 바뀌어도 스키마 불변.
+- `team[].memberId`는 **그리디 동아리원(§3)과 매칭되면 채우고, 외부 참여자면 `null`**(백엔드 `ExternalMember` FK로 해소, 응답엔 `name`·`githubUrl` 노출). 외부 디자이너 1건(김성림)은 제외 결정(§1.5 B).
+- **깃허브·배포 URL·스택은 `github.com/orgs/greedy-team/repositories` 실조사(2026-07-10)**. FE·BE 레포가 분리돼 있어 **`frontendGithubUrl`·`backendGithubUrl`로 각각 저장**(옛 단일 `githubUrl` 대표 방식 폐기), 스택도 `frontendStack`·`backendStack`으로 분리. **따라행**은 레포 미발견으로 URL/스택 비어있음.
 - ⚠️ 이전 버전에 있던 리더보드·세종라이프·그리니 목늘이기(축제 부스 3개)는 출처가 확인되지 않은 목데이터라 제거했었는데, 실제로는 `2025-leaderboard`·`2026-leaderboard`·`Greenie-neck-stretch` 등으로 greedy-team 조직에 존재하는 게 확인됨 — 축제 부스 프로젝트까지 다룰 거면 별도로 정리할 것.
 
-### MySQL
+### MySQL (백엔드 ERD 정합, §1.5)
 ```sql
-project         id PK, name, subtitle NULL, cohort_label, track_label, description TEXT,
-                team_size INT, github_url NULL, live_url NULL,
-                thumbnail_url NULL, thumbnail_color,
-                problem TEXT NULL, features TEXT NULL, how TEXT NULL, created_at
-project_member  project_id FK, member_id FK NULL, name, role_label
-project_stack   project_id FK, tech VARCHAR
-project_screenshot  project_id FK, url, sort_order INT   -- 화면 갤러리(순서 보존)
+project          id PK, name, summary, description TEXT, project_type ENUM,  -- project_type=내부 분류, API 응답 제외
+                 generation_id FK, thumbnail_url NULL,                       -- 응답엔 generation_id→generationNumber(정수)만 투영
+                 site_url NULL, backend_github_url NULL, frontend_github_url NULL,
+                 created_at, updated_at
+project_member   id PK, project_id FK, member_id FK NULL, external_contributor_id FK NULL,
+                 stack_position ENUM, start_date, end_date
+project_backend_stack   project_id FK, stack ENUM
+project_frontend_stack  project_id FK, stack ENUM
+project_image    project_id FK, url, sort_order INT   -- 화면 갤러리(순서 보존) ★신설
+generation       id PK, number INT, start_date, end_date
+external_member  id PK, name, github_url, activity_type ENUM
 ```
+- `thumbnail_color`(폴백색)는 프론트 전용이라 DB에 두지 않음. `team_size`·트랙 라벨은 파생(미저장).
+- ★ `project_image`·`member_activity.stack_position`(기수별 track)이 백엔드 신설 요청 2건.
 
 ## 5. 스터디 (Study) — 🚫 백엔드 없음(프론트 상수) · 필드는 재설계 완료(2026-07-13)
 
@@ -255,11 +358,12 @@ activity_participant   activity_id FK, member_id FK NULL, name
 ## 8. 스키마 전체 관계
 
 ```
-member ─1:N─ membership ─1:N─ member_role
-member ─1:N─ project_member ─N:1─ project ─1:N─ project_stack
-member ─1:N─ activity_participant ─N:1─ activity ─1:N─ activity_image
-curriculum_track_intro ─1:N─ curriculum_track_tag
-curriculum_stage ─1:N─ curriculum_stage_tag / curriculum_stage_link / curriculum_week
+# 백엔드 ERD 정합 후(§1.5). generation을 축으로 project·member_activity가 붙는다.
+generation  ─1:N─ member_activity ─N:1─ member ─1:N─ member_department
+generation  ─1:N─ project ─1:N─ project_member ─N:1─ (member | external_member)
+project     ─1:N─ project_backend_stack / project_frontend_stack / project_image
+# 활동 타임라인(보류, 다음 주): activity ─1:N─ activity_image / activity_participant ─N:1─ member(nullable)
+# 스터디(프론트 상수, 백엔드 없음): curriculum_stage / curriculum_week …
 ```
 
 ## 9. 레퍼런스 구현 (MSW 목서버)
