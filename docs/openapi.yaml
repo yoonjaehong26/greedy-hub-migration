@@ -23,7 +23,7 @@ tags:
   - name: projects
     description: "⚠️ draft — 백엔드 필요 여부 미확정"
   - name: study
-    description: "⚠️ draft — 백엔드 필요 여부 미확정 + 필드 재설계 필요"
+    description: "⚠️ draft — 백엔드 필요 여부 미확정. 재설계 완료: week 레벨 계약 유지, 단계 그룹핑은 프론트 표현 레이어"
 
 paths:
   /members:
@@ -178,7 +178,17 @@ paths:
   /curriculum:
     get:
       tags: [study]
-      summary: "⚠️ draft — 옛 버전(주차 전제). 재설계 대기 (backend-api-spec.md §5·§11-2)"
+      summary: "⚠️ draft — 백엔드 필요 여부 미확정. week 레벨 계약만 유지(단계 그룹핑은 프론트 표현 레이어)"
+      description: |
+        **재설계 결론(2026-07): 백엔드 계약은 week 레벨 그대로 유지한다.**
+        Figma 재설계(주차 → 단계 그룹 + 트랙 소개)에서 프론트가 실제로 소비하는 응답은
+        `{ items: CurriculumStage[], trackIntros: CurriculumTrackIntro[] }` 형태지만,
+        - stage(단계) = week들을 묶은 그룹 + 그룹에 대한 편집 카피(title/weekRangeLabel/description/missionName/techTags),
+        - trackIntro = 트랙별 소개 카피
+        는 모두 **표현·편집 레이어**이고, 핵심 기능 데이터(무엇을 배우나 + 상태 + 링크)는 CurriculumWeek 그대로다.
+        스터디 도메인 자체가 "백엔드 없이 프론트 상수로 관리" 유력(info 참고)이므로, stage/trackIntro를
+        1급 백엔드 스키마로 승격하지 않는다. 실제 백엔드를 만들게 되면 이 엔드포인트는 week 배열만 제공하고
+        그룹핑·소개 카피는 프론트 상수(또는 별도 CMS)가 담당한다. 이때 응답 래핑 형태는 그 시점에 재논의.
       responses:
         "200":
           description: OK
@@ -320,6 +330,13 @@ components:
         id: { type: integer }
         date: { type: string, example: "2026.05" }
         tag: { type: string, enum: ["행사", "세션", "데모데이", "축제", "창립"] }
+        cohort:
+          type: integer
+          nullable: true
+          description: |
+            활동이 속한 기수. **date로 파생 불가** — 같은 달에 서로 다른 기수 행사가 공존하고(예: 2025.09에 3기 OT와
+            2기 최종 데모데이가 동시 존재), OT·데모데이·MT는 제목/내용이 명시한 기수로 편집 귀속한다. 백엔드가 저장·응답해야 함.
+            목록의 기수 탭 필터에 사용.
         title: { type: string }
         summary: { type: string }
         imageCount: { type: integer }
@@ -348,7 +365,15 @@ components:
         id: { type: integer }
         date: { type: string }
         tag: { type: string }
+        cohort:
+          type: integer
+          nullable: true
+          description: "ActivitySummary.cohort와 동일. 상세의 'N기' 브랜드 배지에 사용."
         title: { type: string }
+        location:
+          type: string
+          nullable: true
+          description: "개최 장소. 파생 불가한 순수 콘텐츠(노션 원본에도 없어 별도 입력). 없으면 날짜만 표기. 예: '세종대학교 광개토관'."
         body:
           type: string
           description: "문단 구분은 \\n\\n (마크다운 아님)"
@@ -394,6 +419,22 @@ components:
             subtitle: { type: string, nullable: true }
             githubUrl: { type: string, nullable: true }
             liveUrl: { type: string, nullable: true }
+            problem:
+              type: string
+              nullable: true
+              description: "소개 3블록 - '어떤 문제를 풀었나요'. 프로젝트별 편집 텍스트(파생 불가)."
+            features:
+              type: string
+              nullable: true
+              description: "소개 3블록 - '주요 기능'. 프로젝트별 편집 텍스트."
+            how:
+              type: string
+              nullable: true
+              description: "소개 3블록 - '어떻게 만들었나요'. 프로젝트별 편집 텍스트."
+            screenshots:
+              type: array
+              items: { type: string }
+              description: "화면 갤러리 이미지 URL들('+N 모두 보기' 오버플로 포함). 현재 프론트 목업은 placeholder URL — 실제 스크린샷 수급 필요."
             team:
               type: array
               items: { $ref: "#/components/schemas/ProjectMemberRef" }
@@ -403,14 +444,19 @@ components:
 
     CurriculumWeek:
       type: object
-      description: "⚠️ 옛 버전 — 재설계 대기"
+      description: |
+        스터디의 핵심 기능 데이터(무엇을 배우나 + 상태 + note·notion·미션 링크). 이 week 레벨 계약은 재설계 전후로 불변이다.
+        프론트가 이 week들을 '단계(stage)'로 묶고 트랙 소개 카피를 붙이는 건 표현 레이어라 백엔드 계약에 승격하지 않는다(아래 /curriculum 주석 참고).
       properties:
         id: { type: integer }
         track: { type: string, enum: [FE, BE] }
         weekNo: { type: integer }
         weekLabel: { type: string, example: "1주차" }
         title: { type: string }
-        status: { type: string, enum: [DONE, ACTIVE, BREAK] }
+        status:
+          type: string
+          enum: [DONE, ACTIVE, UPCOMING, BREAK]
+          description: "DONE 종료 · ACTIVE 진행 중 · UPCOMING 예정(아직 시작 전) · BREAK 쉬는 주. UPCOMING은 재설계로 추가된 실제 주차 상태."
         noteUrl: { type: string, nullable: true }
         notionUrl: { type: string, nullable: true }
         linkedMissionId: { type: integer, nullable: true }
