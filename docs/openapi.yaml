@@ -292,6 +292,28 @@ components:
               type: array
               items: { $ref: "#/components/schemas/MemberBlogPostRef" }
               description: "블로그 도메인 미확정 — 기존 유지."
+      example:
+        id: 40
+        name: "김민준"
+        githubUrl: "https://github.com/kimminjun"
+        departments: ["COMPUTER_SCIENCE"]
+        memberActivities:
+          - { activityType: "STUDY_MEMBER", stackPosition: "BACKEND",  generationNumber: 3 }
+          - { activityType: "STUDY_MEMBER", stackPosition: "FRONTEND", generationNumber: 2 }
+        description: "화면 만들다가 서버가 궁금해져 트랙을 옮긴 김민준이에요."
+        isPublic: true
+        summaryCounts: { completedMissions: 13, teamProjects: 1, blogPosts: 2 }
+        teamProjects:
+          - { projectId: 5, name: "동아리방 예약", stackPosition: "BACKEND" }
+        completedMissions:
+          - { missionId: "att-be", title: "출석 체크 API 만들기", cohortLabel: "BE 3기", weekLabel: "6주차" }
+          - { missionId: "signup-fe", title: "회원가입 폼 구현", cohortLabel: "FE 2기", weekLabel: "3주차" }
+        blogPosts:
+          - { postId: 1, title: "트랙을 옮기며 배운 것들", category: "회고", relativeDate: "2026.03" }
+          - { postId: 2, title: "첫 코드 리뷰에서 깨진 이야기", category: "회고", relativeDate: "2025.09" }
+        activities:
+          - { activityId: 10, date: "2026.06", tag: "행사", title: "초록 밋업" }
+          - { activityId: 11, date: "2026.05", tag: "축제", title: "대동제 부스" }
 
     ActivitySummary:
       type: object
