@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useMemberQuery, useUpdateMemberMutation } from '@/shared/core/queries/memberQueries';
+import { useMemberQuery } from '@/shared/core/queries/memberQueries';
 import { Avatar } from '@/shared/components/ui/Avatar';
 import { Badge } from '@/shared/components/ui/Badge';
 import { Button } from '@/shared/components/ui/Button';
@@ -25,9 +25,6 @@ function cohortYear(cohort: number): string | null {
 
 export function MemberProfile({ id }: { id: string }) {
   const { data: member, isLoading, isError } = useMemberQuery(id);
-  const updateMember = useUpdateMemberMutation(id);
-  const [isEditingBio, setIsEditingBio] = useState(false);
-  const [bioDraft, setBioDraft] = useState('');
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllActivities, setShowAllActivities] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
@@ -68,46 +65,9 @@ export function MemberProfile({ id }: { id: string }) {
         <div className="flex w-full flex-col items-center gap-4 text-center md:w-[300px] md:shrink-0 md:items-start md:text-left">
           <Avatar src={member.avatarUrl} name={member.name} size={96} />
 
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-neutral-900">{member.name}</h1>
-            <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-600">
-              {member.isPublic ? '공개' : '비공개'}
-            </span>
-          </div>
-          <p className="text-sm text-neutral-500">
-            @{member.login} · {member.school}
-          </p>
+          <h1 className="text-2xl font-bold text-neutral-900">{member.name}</h1>
 
-          {isEditingBio ? (
-            <div className="w-full">
-              <textarea
-                value={bioDraft}
-                onChange={(e) => setBioDraft(e.target.value)}
-                rows={4}
-                className="w-full rounded-lg border border-neutral-200 p-3 text-sm"
-                placeholder="자기소개를 적어보세요"
-              />
-              <div className="mt-2 flex items-center gap-2 text-sm">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    updateMember.mutate(
-                      { bio: bioDraft },
-                      { onSuccess: () => setIsEditingBio(false) },
-                    );
-                  }}
-                  disabled={updateMember.isPending}
-                >
-                  저장
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setIsEditingBio(false)}>
-                  취소
-                </Button>
-              </div>
-            </div>
-          ) : (
-            member.bio && <p className="text-sm text-neutral-600">{member.bio}</p>
-          )}
+          {member.bio && <p className="text-sm text-neutral-600">{member.bio}</p>}
 
           {sortedMemberships.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 md:justify-start">
@@ -137,36 +97,6 @@ export function MemberProfile({ id }: { id: string }) {
           >
             GitHub 보기
           </Button>
-
-          <button
-            onClick={() => updateMember.mutate({ isPublic: !member.isPublic })}
-            disabled={updateMember.isPending}
-            className="flex items-center gap-2 text-sm"
-          >
-            <span
-              className={`relative h-6 w-11 rounded-full transition-colors ${member.isPublic ? 'bg-brand' : 'bg-neutral-300'}`}
-            >
-              <span
-                className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"
-                style={{ transform: member.isPublic ? 'translateX(20px)' : 'translateX(0)' }}
-              />
-            </span>
-            <span className="font-medium text-neutral-700">
-              {member.isPublic ? '외부 공개' : '비공개'}
-            </span>
-          </button>
-
-          {!isEditingBio && (
-            <button
-              onClick={() => {
-                setBioDraft(member.bio ?? '');
-                setIsEditingBio(true);
-              }}
-              className="text-sm font-semibold text-neutral-700 underline underline-offset-2"
-            >
-              자기소개 편집
-            </button>
-          )}
         </div>
 
         {/* 기록 */}
