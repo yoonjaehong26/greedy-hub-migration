@@ -71,12 +71,12 @@ DB에 있는 데이터는 갱신 빈도와 무관하게 GET API가 있어야 프
 | `name` | `name` | |
 | `githubUrl` | `githubUrl` | 기존 `login`+`avatarUrl` → 백엔드는 URL 단일. avatar는 github에서 파생 |
 | `description`(소개) | `description` | 기존 `bio` 개명 |
-| `mainStackPosition`(단일) | `mainStackPosition` + `MemberActivity.stackPosition`(요청) | 기수별 track 보존(아래) |
+| `mainStackPosition`(단일) | ~~응답 제외~~ | memberActivities와 중복이라 API 응답 제외. 트랙은 `MemberActivity.stackPosition`(기수별, 신설 요청)에만 — 'FE·BE 둘 다'도 여기서 자연 표현 |
 | `departments`(enum[]) | `departments` | 기존 자유문자 `department[]` → enum화 |
 | `MemberActivity`(activityType+generationId) | `memberActivities[]` | 기존 `memberships[].roles[]`(+`joinType`) 대체 |
 
 **기수별 track — 보존 요청 (결정):**
-- `mainStackPosition` 단일로는 "2기 FE→3기 BE"(신지훈·강동현 실존)를 표현 못 함 → **백엔드에 `MemberActivity.stackPosition`(기수별 track) 추가를 요청**한다. 각 기수-역할 행이 track을 가져 멤버 카드의 "1기 BE, 2기 FE" 이력이 보존됨. `mainStackPosition`은 대표 포지션(또는 파생)으로 유지.
+- `mainStackPosition` 단일로는 "2기 FE→3기 BE"(신지훈·강동현 실존)나 "FE·BE 둘 다"를 표현 못 함 → **백엔드에 `MemberActivity.stackPosition`(기수별 track) 추가를 요청**한다. 각 기수-역할 행이 track을 가져 카드의 "1기 BE, 2기 FE" 이력·FE/BE 필터가 전부 여기서 파생됨. **`mainStackPosition`은 memberActivities와 중복이라 API 응답에서 제외**(백엔드가 컬럼을 내부에 두는 건 자유).
 
 **역할 enum — 지금은 백엔드 `ActivityType` 그대로 (결정):**
 - 매핑: 멤버→STUDY_MEMBER, 리뷰어→REVIEWER, 리드→STUDY_LEAD, 메인테이너→MAINTAINER, 창립(joinType)→CO_FOUNDER.
@@ -125,7 +125,7 @@ ActivityParticipant id PK · activityId FK → Activity · memberId FK→Member(
 
 ## 3. 멤버 (Members)
 
-> ⚠️ **2026-07-14 백엔드 ERD 정합화(§1.5·`openapi.yaml`)로 스키마 개정됨.** 아래 본문의 `memberships[]`·`login`·`avatarUrl`·`joinType`·`bio`·`roles`(한글) 등 옛 필드 표현은 **`mainStackPosition`+`memberActivities[]`(`activityType` enum + `stackPosition`)·`githubUrl`·`description`** 로 대체됐다(한글 역할 라벨→영문 `ActivityType`; 단 동아리장·영입리드는 후속 추가). `missionDashboardUrl`은 여전히 계약 제외(파생). 필드 구조는 §1.5 C와 openapi를 기준으로 읽을 것 — 아래 프로즈의 옛 필드 서술은 배경/이력용. (엔드포인트·필터 규약은 아래 그대로 유효.)
+> ⚠️ **2026-07-14 백엔드 ERD 정합화(§1.5·`openapi.yaml`)로 스키마 개정됨.** 아래 본문의 `memberships[]`·`login`·`avatarUrl`·`joinType`·`bio`·`roles`(한글) 등 옛 필드 표현은 **`memberActivities[]`(`activityType` enum + `stackPosition` + `generationNumber`)·`githubUrl`·`description`** 로 대체됐다(`mainStackPosition`은 중복이라 응답 제외)(한글 역할 라벨→영문 `ActivityType`; 단 동아리장·영입리드는 후속 추가). `missionDashboardUrl`은 여전히 계약 제외(파생). 필드 구조는 §1.5 C와 openapi를 기준으로 읽을 것 — 아래 프로즈의 옛 필드 서술은 배경/이력용. (엔드포인트·필터 규약은 아래 그대로 유효.)
 
 - `GET /members` — 파라미터 없음, 전체 멤버 반환. 트랙·기수 필터는 프론트가 클라이언트에서 처리(어떤 `memberActivities[]` 항목이든 `stackPosition`/`generationNumber`가 일치하면 노출).
 - `GET /members/{id}` — `id`는 숫자 PK 또는 GitHub 로그인 슬러그 둘 다 허용(레퍼런스 구현: `String(m.id) === id || m.login === id`)
@@ -134,7 +134,7 @@ ActivityParticipant id PK · activityId FK → Activity · memberId FK→Member(
 ```json
 // 목록 item (MemberSummary) — login·avatarUrl은 githubUrl에서 파생
 { "id": 26, "name": "윤재홍", "githubUrl": "https://github.com/yoonjaehong26",
-  "mainStackPosition": "FRONTEND", "departments": ["COMPUTER_SCIENCE"],
+  "departments": ["COMPUTER_SCIENCE"],
   "memberActivities": [
     { "activityType": "STUDY_MEMBER", "stackPosition": "FRONTEND", "generationNumber": 3 },
     { "activityType": "MAINTAINER",   "stackPosition": "FRONTEND", "generationNumber": 4 },
@@ -143,7 +143,7 @@ ActivityParticipant id PK · activityId FK → Activity · memberId FK→Member(
 
 // 상세 (MemberDetail) — 기수별 track 전환(2기 FE → 3기 BE)이 stackPosition으로 보존됨
 { "id": 18, "name": "강동현", "githubUrl": "https://github.com/mintcoke123",
-  "mainStackPosition": "BACKEND", "departments": [],
+  "departments": [],
   "memberActivities": [
     { "activityType": "STUDY_MEMBER", "stackPosition": "FRONTEND", "generationNumber": 2 },
     { "activityType": "STUDY_MEMBER", "stackPosition": "BACKEND",  "generationNumber": 3 }
@@ -154,7 +154,7 @@ ActivityParticipant id PK · activityId FK → Activity · memberId FK→Member(
 
 // 상세 — 창립멤버(이승용). ⚠️ '동아리장'은 현재 ActivityType에 없어 빠짐(§1.5 C, 후속 CLUB_LEAD 추가 예정)
 { "id": 1, "name": "이승용", "githubUrl": "https://github.com/kokodak",
-  "mainStackPosition": "BACKEND", "departments": ["COMPUTER_SCIENCE"],
+  "departments": ["COMPUTER_SCIENCE"],
   "memberActivities": [
     { "activityType": "CO_FOUNDER", "stackPosition": "BACKEND", "generationNumber": null },
     { "activityType": "MAINTAINER", "stackPosition": "BACKEND", "generationNumber": 1 },
@@ -187,8 +187,9 @@ ActivityParticipant id PK · activityId FK → Activity · memberId FK→Member(
 
 ### MySQL (백엔드 ERD 정합, §1.5)
 ```sql
-member            id PK, name, github_url NULL, main_stack_position ENUM, description TEXT NULL,
+member            id PK, name, github_url NULL, description TEXT NULL,
                   is_public BOOLEAN DEFAULT TRUE, created_at, updated_at
+                  -- ERD의 main_stack_position은 member_activity.stack_position과 중복 + API 미노출이라 생략
 member_department member_id FK, department ENUM   -- List<Department>
 member_activity   id PK, member_id FK, activity_type ENUM, stack_position ENUM,  -- ★ stack_position 신설(기수별 track)
                   generation_id FK NULL, created_at, updated_at

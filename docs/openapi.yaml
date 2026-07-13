@@ -208,7 +208,6 @@ components:
         id: { type: integer }
         name: { type: string }
         githubUrl: { type: string, nullable: true }
-        mainStackPosition: { $ref: "#/components/schemas/StackPosition" }
         departments:
           type: array
           items: { $ref: "#/components/schemas/Department" }
@@ -219,7 +218,6 @@ components:
         id: 18
         name: "강동현"
         githubUrl: "https://github.com/mintcoke123"
-        mainStackPosition: "BACKEND"
         departments: ["COMPUTER_SCIENCE"]
         memberActivities:
           - { activityType: "STUDY_MEMBER", stackPosition: "FRONTEND", generationNumber: 2 }
@@ -372,7 +370,7 @@ components:
       type: object
       description: |
         프로젝트 팀원(백엔드 ProjectMember). memberId=null이면 외부 기여자(ExternalMember) — 이름은 여기에만 존재.
-        stackPosition은 '이 프로젝트에서의 역할'(멤버 mainStackPosition과 다를 수 있음)이라 프로젝트 응답에만 있음.
+        stackPosition은 '이 프로젝트에서의 역할'(멤버의 기수별 track과 다를 수 있음)이라 프로젝트 응답에만 있음.
         개별 github는 팀 명단 UI에 노출하지 않으므로 제외(필요 시 내부=memberId로 프로필, 외부=ExternalMember에서 조회).
       properties:
         memberId: { type: integer, nullable: true }
