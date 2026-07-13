@@ -178,13 +178,8 @@ ActivityParticipant id PK · activityId FK → Activity · memberId FK→Member(
 - **미결**: 같은 논리로 `summaryCounts.completedMissions`/`blogPosts`도 `completedMissions.length`/`blogPosts.length`와 중복될 수 있음 — 이 둘은 아직 논의 안 됨, 별도로 정리 필요.
 - **완료 미션 중 "진행 중인 미션은 본인에게만, 완료된 것만 공개" 같은 미션 단위 가시성은 이 백엔드 소관이 아님** — 미션 데이터는 별도 Mongo 시스템(`/api/missions`) 소관이라, 그쪽에서 처리할 문제.
 
-**✅ Phase 1.5 — 프론트 프로토타입 목업 (인증 없음, 실제 Spring 계약 아님)**
-목업 화면 검증을 위해 `PATCH /members/{id}`와 `isPublic` 토글을 **인증 없이** MSW로 먼저 붙였다(레퍼런스: `src/mocks/handlers/members.ts`). 로그인이 없어 "본인 확인" 없이 누구나 아무 멤버의 bio·공개여부를 바꿀 수 있는 상태 — **Spring 실서버로 갈 때는 반드시 아래 Phase 2 인증이 붙어야 한다.** 지금 계약을 그대로 옮기면:
-```json
-// PATCH /members/{id} 요청
-{ "bio": "마크다운 텍스트", "isPublic": true }
-```
-둘 다 optional — 보낸 필드만 갱신. 응답은 갱신된 멤버 상세 전체.
+**🚫 `PATCH /members/{id}` — MVP에서 제외 (2026-07-14)**
+프로필 자기편집(bio 편집·isPublic 공개 토글)은 편집 UI와 함께 제거됐고, 쓰기는 인증이 전제라 **openapi에서도 뺐다**(GET만 유지). 원래 Phase 1.5 프론트 프로토타입으로 인증 없이 MSW에 붙였던 목업이었을 뿐(`src/mocks/handlers/members.ts`엔 아직 남아있을 수 있음 — 멤버 페이지 이관 때 정리). 다시 필요해지면 아래 Phase 2에서 로그인 미들웨어와 함께 설계한다.
 
 **⏳ Phase 2 (인증 필요, 이번 구현 범위 아님)** — 활동타임라인과 같은 시점(로그인 기능, ~2주 후)에 같이 설계:
 - 위 `PATCH /members/{id}`에 **로그인한 본인만** 호출 가능하도록 멤버 토큰 미들웨어 추가. **저장은 원본 마크다운 그대로, 렌더링 시 반드시 이스케이프/새니타이징** — 사용자 입력을 그대로 HTML로 그리면 저장형 XSS 위험.

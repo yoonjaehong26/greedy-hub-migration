@@ -64,33 +64,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
-
-    patch:
-      tags: [members]
-      summary: "⚠️ Phase 1.5 프론트 프로토타입 목업 — 인증 없이 bio·isPublic 갱신 (실제 Spring 계약 아님, backend-api-spec.md §3 Phase 1.5/Phase 2 참고)"
-      description: |
-        Spring 실서버 전환 시 반드시 로그인한 본인만 호출 가능하도록 인증 미들웨어를 추가해야 한다(Phase 2, 이번 구현 범위 아님).
-        bio는 원본 마크다운 그대로 저장하고, 렌더링 시 이스케이프/새니타이징 필수(저장형 XSS 방지).
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string }
-      requestBody:
-        content:
-          application/json:
-            schema: { $ref: "#/components/schemas/UpdateMemberPayload" }
-      responses:
-        "200":
-          description: 갱신된 멤버 상세 전체
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/MemberDetail" }
-        "404":
-          description: 존재하지 않는 멤버
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+    # PATCH /members/{id}(프로필 자기편집)는 MVP에서 제외 — 편집 UI 제거·인증(Phase 2) 전제.
+    # 다시 필요해지면 backend-api-spec.md §3 Phase 2 참고해 로그인 미들웨어와 함께 설계.
 
   /activities:
     get:
@@ -224,8 +199,11 @@ components:
       type: object
       description: |
         백엔드 Member 엔티티 정합(§1.5 C). login·avatarUrl은 별도 저장하지 않고 githubUrl에서 파생
-        (슬러그=URL 마지막 세그먼트, avatar=github). 기존 memberships[]+joinType은 memberActivities[]로 대체하고,
-        기수별 track은 memberActivities[].stackPosition으로 보존(백엔드 신설 요청).
+        (슬러그=URL 마지막 세그먼트, avatar=github). 프로필 링크는 별도 필드 없이 id로 구성(/members/{id}).
+        기존 memberships[]+joinType은 memberActivities[]로 대체.
+        **다중 기수·다중 역할은 memberActivities 배열의 여러 건으로 표현**한다 — 기수별 track 변화(예: 2기 FE→3기 BE)는
+        entry마다 다른 stackPosition·generationNumber로, 한 기수의 복수 역할(예: 리드+리뷰어)은 같은 generationNumber의 여러 entry로.
+        카드의 "1기 BE, 2기 FE"·"1기부터"·역할 뱃지는 전부 이 배열에서 프론트가 파생.
       properties:
         id: { type: integer }
         name: { type: string }
@@ -237,6 +215,16 @@ components:
         memberActivities:
           type: array
           items: { $ref: "#/components/schemas/MemberActivityEntry" }
+      example:
+        id: 18
+        name: "강동현"
+        githubUrl: "https://github.com/mintcoke123"
+        mainStackPosition: "BACKEND"
+        departments: ["COMPUTER_SCIENCE"]
+        memberActivities:
+          - { activityType: "STUDY_MEMBER", stackPosition: "FRONTEND", generationNumber: 2 }
+          - { activityType: "STUDY_LEAD",   stackPosition: "BACKEND",  generationNumber: 3 }
+          - { activityType: "REVIEWER",     stackPosition: "BACKEND",  generationNumber: 3 }
 
     MemberSummaryCounts:
       type: object
@@ -280,20 +268,13 @@ components:
         category: { type: string }
         relativeDate: { type: string, example: "3일 전" }
 
-    UpdateMemberPayload:
-      type: object
-      description: "Phase 1.5 프론트 프로토타입 목업 계약 — 둘 다 optional, 보낸 필드만 갱신"
-      properties:
-        bio: { type: string }
-        isPublic: { type: boolean }
-
     MemberDetail:
       allOf:
         - $ref: "#/components/schemas/MemberSummary"
         - type: object
           properties:
             description: { type: string, nullable: true, description: "소개(기존 bio)" }
-            isPublic: { type: boolean, description: "프로필 공개 여부 — 프론트 프로토타입 편집(Phase 1.5), 백엔드는 Phase 2" }
+            isPublic: { type: boolean, description: "프로필 공개 여부 — Phase 2 가시성 필터용. MVP엔 쓰기(PATCH)·편집 UI 없음." }
             teamProjects:
               type: array
               items: { $ref: "#/components/schemas/MemberProjectRef" }
