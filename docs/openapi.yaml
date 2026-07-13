@@ -6,13 +6,11 @@ info:
     Spring Boot + MySQL로 신규 구현할 백엔드의 계약. 원본 논의·근거는 `docs/backend-api-spec.md` 참고.
     이 파일은 그 문서의 형식적 표현(OpenAPI)이며, 두 문서가 어긋나면 `backend-api-spec.md`가 우선한다.
 
-    **백엔드 없이 프론트에서 처리하기로 확정된 도메인 (엔드포인트 미구현):**
-    - **stats** — 홈 통계는 백엔드 집계 없이 프론트에서 산출(멤버·프로젝트 데이터에서 파생하거나 정적값). `GET /stats` 미구현.
-    - **study(curriculum)** — 커리큘럼은 프론트 상수로 관리. `GET /curriculum` 미구현.
-    이 두 도메인의 아래 스키마·경로는 "프론트가 채우는 데이터 형태"의 참고용 기록일 뿐, Spring 구현 대상이 아니다.
-
-    **백엔드 구현이 확정된 도메인: members · activities · projects** (읽기 GET, 쓰기는 Phase 2).
+    **이 스펙에 포함되는 도메인: members · activities · projects** (읽기 GET, 쓰기는 Phase 2).
     프로젝트는 백엔드 두기로 결정(2026-07-14) — 스키마는 노션 실데이터로 검증 완료.
+
+    **stats(홈 통계)·study(커리큘럼)는 백엔드 없이 프론트에서 처리하기로 확정(2026-07-14)되어 이 스펙에서 제외한다.**
+    홈 통계는 멤버·프로젝트 응답에서 파생/정적값으로 산출하고, 커리큘럼은 프론트 상수로 관리한다(근거·데이터 형태는 backend-api-spec.md §5·§7 참고).
 
     목록 조회는 모두 필터 파라미터 없이 전체 배열을 반환하고, 기수·트랙·카테고리 등 필터링은 전부 프론트(클라이언트 사이드)가 처리한다.
 
@@ -24,12 +22,8 @@ tags:
     description: "확정 (Phase 1)"
   - name: activities
     description: "확정 (Phase 1) — 쓰기는 Phase 2"
-  - name: stats
-    description: "🚫 백엔드 미구현 — 프론트에서 산출(파생/정적)"
   - name: projects
     description: "확정 — 백엔드 구현 (읽기 전용, 쓰기는 Phase 2)"
-  - name: study
-    description: "🚫 백엔드 미구현 — 프론트 상수로 관리. (참고: week 레벨 데이터 형태, 단계 그룹핑은 프론트 표현 레이어)"
 
 paths:
   /members:
@@ -133,17 +127,6 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
-  /stats:
-    get:
-      tags: [stats]
-      summary: "🚫 백엔드 미구현 — 홈 통계는 프론트에서 산출(멤버·프로젝트 데이터 파생 또는 정적값). 아래 스키마는 프론트가 만드는 형태 참고용."
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Stats" }
-
   /projects:
     get:
       tags: [projects]
@@ -180,33 +163,6 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
-
-  /curriculum:
-    get:
-      tags: [study]
-      summary: "🚫 백엔드 미구현 — 커리큘럼은 프론트 상수로 관리. 아래는 프론트가 채우는 데이터 형태 참고용."
-      description: |
-        **결론(2026-07): 스터디 커리큘럼은 백엔드 없이 프론트 상수로 구현한다.** 아래 week 레벨 형태는 프론트 데이터 모델 참고용이다.
-        (만약 훗날 백엔드를 만들더라도) 계약은 week 레벨 그대로 유지한다.
-        Figma 재설계(주차 → 단계 그룹 + 트랙 소개)에서 프론트가 실제로 소비하는 응답은
-        `{ items: CurriculumStage[], trackIntros: CurriculumTrackIntro[] }` 형태지만,
-        - stage(단계) = week들을 묶은 그룹 + 그룹에 대한 편집 카피(title/weekRangeLabel/description/missionName/techTags),
-        - trackIntro = 트랙별 소개 카피
-        는 모두 **표현·편집 레이어**이고, 핵심 기능 데이터(무엇을 배우나 + 상태 + 링크)는 CurriculumWeek 그대로다.
-        스터디 도메인 자체가 "백엔드 없이 프론트 상수로 관리" 유력(info 참고)이므로, stage/trackIntro를
-        1급 백엔드 스키마로 승격하지 않는다. 실제 백엔드를 만들게 되면 이 엔드포인트는 week 배열만 제공하고
-        그룹핑·소개 카피는 프론트 상수(또는 별도 CMS)가 담당한다. 이때 응답 래핑 형태는 그 시점에 재논의.
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items: { $ref: "#/components/schemas/CurriculumWeek" }
 
 components:
   schemas:
@@ -391,14 +347,6 @@ components:
           type: array
           items: { $ref: "#/components/schemas/ActivityParticipant" }
 
-    Stats:
-      type: object
-      properties:
-        totalMembers: { type: integer }
-        activeCohort: { type: integer }
-        tracks: { type: string, example: "FE · BE" }
-        teamProjects: { type: integer }
-
     ProjectSummary:
       type: object
       properties:
@@ -448,22 +396,3 @@ components:
             stack:
               type: array
               items: { type: string }
-
-    CurriculumWeek:
-      type: object
-      description: |
-        스터디의 핵심 기능 데이터(무엇을 배우나 + 상태 + note·notion·미션 링크). 이 week 레벨 계약은 재설계 전후로 불변이다.
-        프론트가 이 week들을 '단계(stage)'로 묶고 트랙 소개 카피를 붙이는 건 표현 레이어라 백엔드 계약에 승격하지 않는다(아래 /curriculum 주석 참고).
-      properties:
-        id: { type: integer }
-        track: { type: string, enum: [FE, BE] }
-        weekNo: { type: integer }
-        weekLabel: { type: string, example: "1주차" }
-        title: { type: string }
-        status:
-          type: string
-          enum: [DONE, ACTIVE, UPCOMING, BREAK]
-          description: "DONE 종료 · ACTIVE 진행 중 · UPCOMING 예정(아직 시작 전) · BREAK 쉬는 주. UPCOMING은 재설계로 추가된 실제 주차 상태."
-        noteUrl: { type: string, nullable: true }
-        notionUrl: { type: string, nullable: true }
-        linkedMissionId: { type: integer, nullable: true }

@@ -160,7 +160,7 @@ project_screenshot  project_id FK, url, sort_order INT   -- 화면 갤러리(순
 >
 > 필드 형태는 위 디자인을 반영해 재설계했다: `weekNo` 단위 플랫 리스트 → **`CurriculumStage`(단계, 여러 주차를 묶음) + `CurriculumTrackIntro`(트랙 소개)**. "한 주의 리듬"(미션받기→구현→티키타카 리뷰→머지) 4단계는 두 트랙에 동일하게 고정된 정적 설명이라 API 계약에 넣지 않고 프론트 상수로 둔다(`RHYTHM_STEPS`, `StudyCurriculum.tsx`).
 
-- `GET /curriculum` — 파라미터 없음, **FE·BE 두 트랙 전체 단계 + 트랙 소개를 함께 반환**. 트랙 탭 전환은 프론트가 `track` 필드로 클라이언트에서 필터링(`/study` 아래 다른 하위 리소스가 없어서 `study/` 네임스페이스도 함께 뺐다 — 프론트 페이지 경로(`/study`)와 백엔드 엔드포인트 경로를 굳이 맞출 필요는 없다고 판단)
+- **백엔드 엔드포인트 없음(결정 2026-07-14).** 아래는 프론트 상수(또는 MSW 목)가 만드는 **데이터 형태** 기록일 뿐 — HTTP 계약 아님. FE·BE 두 트랙 전체 단계 + 트랙 소개를 프론트가 보유하고, 트랙 탭 전환은 `track` 필드로 클라이언트 필터링. (openapi.yaml에서도 제외됨)
 
 ```json
 {
