@@ -11,8 +11,8 @@ info:
     - **study(curriculum)** — 커리큘럼은 프론트 상수로 관리. `GET /curriculum` 미구현.
     이 두 도메인의 아래 스키마·경로는 "프론트가 채우는 데이터 형태"의 참고용 기록일 뿐, Spring 구현 대상이 아니다.
 
-    **⚠️ 프로젝트(Projects) 도메인은 백엔드 자체 필요 여부가 아직 팀 논의 중** (backend-api-spec.md §1·§4·§11-1).
-    스키마는 팀 결정 전까지의 **잠정안(draft)**이다. Spring 구현에 바로 착수하지 말 것.
+    **백엔드 구현이 확정된 도메인: members · activities · projects** (읽기 GET, 쓰기는 Phase 2).
+    프로젝트는 백엔드 두기로 결정(2026-07-14) — 스키마는 노션 실데이터로 검증 완료.
 
     목록 조회는 모두 필터 파라미터 없이 전체 배열을 반환하고, 기수·트랙·카테고리 등 필터링은 전부 프론트(클라이언트 사이드)가 처리한다.
 
@@ -27,7 +27,7 @@ tags:
   - name: stats
     description: "🚫 백엔드 미구현 — 프론트에서 산출(파생/정적)"
   - name: projects
-    description: "⚠️ draft — 백엔드 필요 여부 미확정"
+    description: "확정 — 백엔드 구현 (읽기 전용, 쓰기는 Phase 2)"
   - name: study
     description: "🚫 백엔드 미구현 — 프론트 상수로 관리. (참고: week 레벨 데이터 형태, 단계 그룹핑은 프론트 표현 레이어)"
 
@@ -147,7 +147,7 @@ paths:
   /projects:
     get:
       tags: [projects]
-      summary: "⚠️ draft — 전체 프로젝트 목록"
+      summary: "전체 프로젝트 목록 (필터 파라미터 없음 — 기수 필터는 프론트에서)"
       responses:
         "200":
           description: OK
@@ -163,7 +163,7 @@ paths:
   /projects/{id}:
     get:
       tags: [projects]
-      summary: "⚠️ draft — 프로젝트 상세"
+      summary: "프로젝트 상세"
       parameters:
         - name: id
           in: path
@@ -409,7 +409,7 @@ components:
         description: { type: string }
         teamSize: { type: integer }
         thumbnailUrl: { type: string, nullable: true }
-        thumbnailColor: { type: string, nullable: true }
+        thumbnailColor: { type: string, description: "썸네일 없을 때 카드 배경 그라디언트용 대표색(항상 존재)" }
 
     ProjectMemberRef:
       type: object
