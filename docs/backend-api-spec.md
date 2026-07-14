@@ -7,6 +7,73 @@
 >
 > **이 문서의 성격**: 팀 공식 논의는 원본 레포 커밋 `5cbb3f416eeac321c119be4bc11417a46793373f` 기준으로 별도 진행 중. 그 이후의 기능 추가·MSW 목서버·이 API 명세 자체는 개인 fork에서 혼자 실험·정리 중인 내용이라, 팀 합의를 거친 확정안이 아니라 초안/제안으로 취급할 것.
 
+## 0. 백엔드 구현 가이드 (한눈에) — 백엔드가 볼 부분만
+
+> 이 절만 읽어도 구현을 시작할 수 있게 압축한 요약이다. **전체 필드·타입은 `docs/openapi.yaml`**(앱 내 Swagger 뷰어), 결정 근거·엣지케이스는 아래 §1.5·§3·§4·§6.
+
+### 0-1. 구현 대상 — 6개 GET (읽기 전용, 쓰기는 Phase 2)
+
+| 엔드포인트 | 응답 | 핵심 규칙 |
+|---|---|---|
+| `GET /members` | `{ items: MemberSummary[] }` | 전체 반환(필터 없음) |
+| `GET /members/{id}` | `MemberDetail` | `id` = 숫자 PK 또는 github 슬러그 |
+| `GET /projects` | `{ items: ProjectSummary[] }` | 전체 반환 |
+| `GET /projects/{id}` | `ProjectDetail` | — |
+| `GET /activities` | `{ items: ActivitySummary[] }` | `date` 내림차순 · **다음 주 구현** |
+| `GET /activities/{id}` | `ActivityDetail` | `images`는 `sortOrder` 오름차순 |
+
+### 0-2. 공통 규칙
+- 응답 JSON **camelCase**. 목록 `{ items: [...] }`, 상세 단일 객체. 에러 `{ error: { code, message } }` + 4xx(404는 `/{id}`에서만).
+- **서버 필터·페이지네이션 없음** — 목록은 항상 전체 반환. 트랙·기수·카테고리 필터는 프론트가 클라이언트에서(데이터 <100건).
+- 기수는 **`generationNumber`(정수)** 로만 응답 — "N기" 라벨은 프론트가 파생. (Generation 엔티티는 두되 응답엔 number만 투영.)
+- **아바타 필드 없음** — `github_url`에서 프론트가 파생(`github.com/{login}.png`). 저장·응답 불필요.
+- 멤버 이름·썸네일 등은 프론트가 목록 SoT(`GET /members`·`/projects`)에서 id로 조인 — ref는 id 위주로 최소화.
+
+### 0-3. 엔티티 (MySQL, 팀 ERD 정합)
+```sql
+-- 멤버 --
+member            id PK, name, github_url NULL, description TEXT NULL, is_public BOOL, created_at, updated_at
+member_department member_id FK, department ENUM
+member_activity   id PK, member_id FK, activity_type ENUM, stack_position ENUM★, generation_id FK NULL, created_at, updated_at
+generation        id PK, number INT, start_date, end_date
+-- 프로젝트 --
+project           id PK, name, summary, description TEXT, project_type ENUM, generation_id FK,
+                  thumbnail_url NULL, site_url NULL, backend_github_url NULL, frontend_github_url NULL, created_at, updated_at
+project_member    id PK, project_id FK, member_id FK NULL, external_contributor_id FK NULL, stack_position ENUM, start_date, end_date
+project_backend_stack   project_id FK, stack ENUM
+project_frontend_stack  project_id FK, stack ENUM
+project_image★    project_id FK, url, sort_order INT
+external_member   id PK, name, github_url, activity_type ENUM
+-- 활동 (다음 주 구현) --
+activity          id PK, activity_date DATE, tag ENUM, generation_id FK NULL, title, summary, body TEXT, location NULL, created_at, updated_at
+activity_image    id PK, activity_id FK, url, sort_order INT
+activity_participant  id PK, activity_id FK, member_id FK NULL, name
+```
+★ = 기존 팀 ERD에 없어 **신설 요청**하는 2건:
+1. **`member_activity.stack_position`** — 기수별 track 보존(한 사람 "2기 FE → 3기 BE"). 없으면 이 이력을 표현 못 함.
+2. **`project_image`** — 프로젝트 상세 스크린샷 갤러리(응답 `screenshotUrls[]`).
+
+### 0-4. Enum
+| Enum | 값 | 쓰는 곳 |
+|---|---|---|
+| `StackPosition` | `BACKEND` · `FRONTEND` · `FULL_STACK` | member_activity · project_member |
+| `ActivityType` | `CO_FOUNDER` · `MAINTAINER` · `STUDY_LEAD` · `STUDY_MEMBER` · `REVIEWER` | member_activity (역할) |
+| `ExternalActivityType` | `REVIEWER` · `PROJECT_MEMBER` | external_member |
+| `ProjectType` | `FESTIVAL` · `TASK_FORCE` · `GENERATION` | project (**내부 분류, API 응답 제외**) |
+| `ActivityTag` | `행사` · `세션` · `데모데이` · `축제` · `창립` | activity |
+| `Department` | (실제 학과 목록으로 확정 필요) | member_department |
+| `BackendStack` / `FrontendStack` | 실데이터 초안(§1.5 A) — enum vs 자유문자는 백엔드 판단 | project_*_stack |
+
+> 후속 추가 예정: `ActivityType`에 **`CLUB_LEAD`(동아리장)·`RECRUITED_LEAD`(영입리드)** — 현재 미포함이라 이 두 역할만 가진 멤버는 아직 '운영진'으로 미표현.
+
+### 0-5. 범위 밖 / 나중
+- **stats(홈 통계)·study(커리큘럼)**: 백엔드 없음 — 프론트 상수(§5·§7).
+- **completedMissions**: 별도 미션 백엔드(Mongo, `/api/missions`)에서 멤버별 조회. **blogPosts**: 블로그 도메인 미확정(MVP 제외). 둘 다 멤버 응답엔 참조 형태로만.
+- **쓰기(POST/PATCH)·인증·`is_public` 마스킹**: Phase 2(로그인 도입, ~2주 뒤).
+- **데이터 소싱**(GitHub 실시간 동기화 vs 수동 입력)은 백엔드 자유 — 계약과 무관.
+
+---
+
 ## 1. 어디에 백엔드가 필요한가
 
 미션 대시보드(`/missions`)·쇼케이스(`/showcase`)는 이미 별도 Next+MongoDB 백엔드가 붙어 있어 이 범위 밖. 나머지 5개 화면만 대상:
