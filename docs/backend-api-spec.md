@@ -173,7 +173,7 @@ ActivityParticipant id PK · activityId FK → Activity · memberId FK→Member(
   - **`joinType`**(선택, `창립 | 영입리드`)은 정규 기수 스터디원이 아닌 예외 합류 경로만 표기한다. 창립멤버·영입리드도 실제 활동 기수·트랙·역할은 다른 멤버와 동일하게 `memberships[]`에 정상적으로 들어있음(예: 이승용은 1~3기 내내 BE 동아리장/메인테이너) — `joinType`은 "합류 경위"만 부가하는 뱃지고, 별도 기수 없는 가상 멤버십을 만들지 않는다.
   - **외부 리뷰어 10명**(비회원, 기수별 트랙 PR 리뷰만 담당 — 그리디 동아리원이 아님)은 이 API의 스코프 밖으로 **명시적으로 제외**한다(승인됨). 원본 데이터는 참고용으로 `src/mocks/data/externalReviewers.ts`에 정리해뒀지만 어떤 핸들러·엔드포인트에도 연결돼 있지 않음 — 필요해지면 별도 엔드포인트로 다룰 문제.
 - `summaryCounts.completedMissions`/`blogPosts`는 미션·블로그 도메인이 아직 없어 값이 없으면 `0` — 프론트는 0이면 해당 통계를 숨긴다.
-- `completedMissions[]`는 `{ missionId, title, cohortLabel, weekLabel }` 형태의 완료 미션 리스트(성취만 노출, 진행중/미완료 제외), `blogPosts[]`는 `{ postId, title, category, relativeDate }` 형태의 글 리스트 — 둘 다 **지금은 MSW 목데이터로만 채워짐**(§9), 실제 조회 계약(미션 백엔드 필터·블로그 도메인)은 여전히 미결(§11-5·§11-6). 목록이 비면 빈 배열.
+- `completedMissions[]`는 `{ missionId, title, cohortLabel, weekLabel }` 형태의 완료 미션 리스트(성취만 노출, 진행중/미완료 제외), `blogPosts[]`는 `{ postId, title, category, date }` 형태의 글 리스트(`date`=게시 월 YYYY.MM, Figma가 절대 월 표시) — 둘 다 **지금은 MSW 목데이터로만 채워짐**(§9), 실제 조회 계약(미션 백엔드 필터·블로그 도메인)은 여전히 미결(§11-5·§11-6). 목록이 비면 빈 배열.
 - `summaryCounts.teamProjects`(숫자)가 `teamProjects[]`(배열) 길이랑 겹치는 건 **필드 유지 + 계산 방식 통일로 결정**(2026-07-10) — 백엔드가 이 숫자를 `teamProjects[].length`와 항상 같게 계산하면 됨, 별도 조치 불필요.
 - **미결**: 같은 논리로 `summaryCounts.completedMissions`/`blogPosts`도 `completedMissions.length`/`blogPosts.length`와 중복될 수 있음 — 이 둘은 아직 논의 안 됨, 별도로 정리 필요.
 - **완료 미션 중 "진행 중인 미션은 본인에게만, 완료된 것만 공개" 같은 미션 단위 가시성은 이 백엔드 소관이 아님** — 미션 데이터는 별도 Mongo 시스템(`/api/missions`) 소관이라, 그쪽에서 처리할 문제.
@@ -307,19 +307,20 @@ curriculum_week         id PK, stage_id FK, track ENUM('FE','BE'), week_no INT, 
 - `GET /activities/{id}` — 상세의 `images`는 **`sortOrder` 오름차순** 보장
 
 ```json
-// 목록 item
-{ "id": 1, "date": "2026.05", "tag": "행사", "title": "4기 MT — 1박 2일",
+// 목록 item (ActivitySummary)
+{ "id": 1, "date": "2026.05", "tag": "행사", "generationNumber": 4, "title": "4기 MT — 1박 2일",
   "summary": "4기가 처음으로 함께한 엠티...", "imageCount": 5,
   "thumbnailUrls": ["https://../0.jpg", "https://../1.jpg", "https://../2.jpg"] }
 
-// 상세
-{ "id": 1, "date": "2026.05", "tag": "행사", "title": "4기 MT — 1박 2일",
-  "body": "4기가 처음으로 다 같이...\n\n처음 만난 멤버들도...",
+// 상세 (ActivityDetail)
+{ "id": 1, "date": "2026.05", "tag": "행사", "generationNumber": 4, "title": "4기 MT — 1박 2일",
+  "location": "강촌 펜션", "body": "4기가 처음으로 다 같이...\n\n처음 만난 멤버들도...",
   "images": [{ "id": 10, "url": "https://..", "sortOrder": 0 }],
   "participants": [{ "memberId": 12, "name": "박지호" }] }
 ```
 
-- `tag`: `행사 | 세션 | 데모데이 | 축제 | 창립`. 카테고리 필터 버킷(전체/행사/세션/데모데이 — `행사` 버킷은 `축제`·`창립`도 포함)은 **백엔드 계약이 아니라 프론트 전용 로직**이다(레퍼런스: `src/features/activities/categoryFilter.ts`의 `CATEGORY_TO_TAGS`). 백엔드는 `tag` 필드만 그대로 반환하면 됨.
+- `tag`: `행사 | 세션 | 데모데이 | 축제 | 창립`(openapi `ActivityTag` enum, Summary·Detail 공용). 카테고리 필터 버킷(전체/행사/세션/데모데이 — `행사` 버킷은 `축제`·`창립`도 포함)은 **백엔드 계약이 아니라 프론트 전용 로직**이다(레퍼런스: `src/features/activities/categoryFilter.ts`의 `CATEGORY_TO_TAGS`). 백엔드는 `tag` 필드만 그대로 반환하면 됨. Figma 와이어프레임의 밋업/엠티/스터디는 placeholder라 실데이터 태그로 대체(결정).
+- `generationNumber`(nullable): 활동이 속한 기수 번호 — **date로 파생 불가**(같은 달 다른 기수 공존), 제목/내용으로 편집 귀속. members·projects와 같은 `generationNumber` 규약(기존 `cohort`에서 개명, 2026-07-14).
 - `date`는 MySQL `DATE`로 저장, 응답은 화면 표기(`2026.05`)로 포맷.
 - `thumbnailUrls`는 **목록 화면에서 사진을 최대 3장까지 그리드로 보여주기 위한 필드** — `images`를 `sortOrder` 오름차순으로 정렬한 뒤 앞 3장의 URL만 뽑음(별도 "대표사진 지정" 개념 없음, 콘텐츠가 큐레이션으로 수작업 입력되니 입력자가 사진 순서로 통제). 사진이 없으면 빈 배열. `imageCount`(전체 장수)가 3보다 많아도 `thumbnailUrls`는 항상 3장까지만 — 나머지 장수는 프론트가 `imageCount - thumbnailUrls.length`로 "+N" 뱃지 표시.
 - `body`의 문단 구분은 **빈 줄 두 번(`\n\n`)** 컨벤션 — 마크다운 아님, 프론트가 `split('\n\n')`로 문단을 나눠 렌더링. 데이터 입력 시(디스코드 글 옮겨 적을 때) 이 규칙을 지켜야 함.
@@ -332,9 +333,10 @@ curriculum_week         id PK, stage_id FK, track ENUM('FE','BE'), week_no INT, 
 ### MySQL
 ```sql
 activity              id PK, activity_date DATE, tag ENUM('행사','세션','데모데이','축제','창립'),
-                       title, summary, body TEXT, created_at
+                       generation_id FK NULL,  -- ★ 기수 귀속(응답 generationNumber). 날짜 파생 불가, 편집 저장
+                       title, summary, body TEXT, location NULL, created_at, updated_at
 activity_image         id PK, activity_id FK, url, sort_order INT
-activity_participant   activity_id FK, member_id FK NULL, name
+activity_participant   id PK, activity_id FK, member_id FK NULL, name
 ```
 
 ## 7. 홈 통계 (Stats) — 🚫 백엔드 없음(프론트 처리, 결정 2026-07-14)

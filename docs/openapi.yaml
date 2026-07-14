@@ -8,7 +8,7 @@ info:
 
     **이 스펙에 포함되는 도메인: members · activities · projects** (읽기 GET, 쓰기는 Phase 2).
     **Project·Member 스키마는 팀 백엔드 ERD에 맞춰 정합화됨(2026-07-14, backend-api-spec.md §1.5)** — BE/FE 깃허브·스택 분리, generationNumber(파생), mainStackPosition+memberActivities 등. (projectType은 백엔드 내부 분류라 응답 제외)
-    activities는 다음 주 구현이라 이번 정합화에서 제외(현행 유지). 백엔드 신설 요청 2건: MemberActivity.stackPosition(기수별 track)·ProjectImage(screenshots).
+    activities는 백엔드 구현이 다음 주지만, 스키마 네이밍은 규약에 맞춰 정합화함(cohort→generationNumber, ActivityTag enum 공용). 백엔드 신설 요청 2건: MemberActivity.stackPosition(기수별 track)·ProjectImage(screenshots).
     프로젝트는 백엔드 두기로 결정(2026-07-14) — 스키마는 노션 실데이터로 검증 완료.
 
     **stats(홈 통계)·study(커리큘럼)는 백엔드 없이 프론트에서 처리하기로 확정(2026-07-14)되어 이 스펙에서 제외한다.**
@@ -264,7 +264,7 @@ components:
         postId: { type: integer }
         title: { type: string }
         category: { type: string }
-        relativeDate: { type: string, example: "3일 전" }
+        date: { type: string, example: "2026.03", description: "게시 월(YYYY.MM). Figma가 절대 월 표시라 상대시간 아님." }
 
     MemberDetail:
       allOf:
@@ -309,25 +309,32 @@ components:
           - { missionId: "att-be", title: "출석 체크 API 만들기", cohortLabel: "BE 3기", weekLabel: "6주차" }
           - { missionId: "signup-fe", title: "회원가입 폼 구현", cohortLabel: "FE 2기", weekLabel: "3주차" }
         blogPosts:
-          - { postId: 1, title: "트랙을 옮기며 배운 것들", category: "회고", relativeDate: "2026.03" }
-          - { postId: 2, title: "첫 코드 리뷰에서 깨진 이야기", category: "회고", relativeDate: "2025.09" }
+          - { postId: 1, title: "트랙을 옮기며 배운 것들", category: "회고", date: "2026.03" }
+          - { postId: 2, title: "첫 코드 리뷰에서 깨진 이야기", category: "회고", date: "2025.09" }
         activities:
           - { activityId: 10, date: "2026.06", tag: "행사", title: "초록 밋업" }
           - { activityId: 11, date: "2026.05", tag: "축제", title: "대동제 부스" }
+
+    ActivityTag:
+      type: string
+      enum: ["행사", "세션", "데모데이", "축제", "창립"]
+      description: |
+        활동 종류. Figma 와이어프레임의 밋업/엠티/스터디는 placeholder라 실데이터 태그로 대체(결정, categoryFilter.ts) —
+        프론트 필터 버킷이 이 값들을 그룹핑(행사=행사+축제+창립). Summary·Detail 공용 enum.
 
     ActivitySummary:
       type: object
       properties:
         id: { type: integer }
         date: { type: string, example: "2026.05" }
-        tag: { type: string, enum: ["행사", "세션", "데모데이", "축제", "창립"] }
-        cohort:
+        tag: { $ref: "#/components/schemas/ActivityTag" }
+        generationNumber:
           type: integer
           nullable: true
           description: |
-            활동이 속한 기수. **date로 파생 불가** — 같은 달에 서로 다른 기수 행사가 공존하고(예: 2025.09에 3기 OT와
-            2기 최종 데모데이가 동시 존재), OT·데모데이·MT는 제목/내용이 명시한 기수로 편집 귀속한다. 백엔드가 저장·응답해야 함.
-            목록의 기수 탭 필터에 사용.
+            활동이 속한 기수 번호(members·projects의 generationNumber와 같은 규약). **date로 파생 불가** —
+            같은 달에 서로 다른 기수 행사가 공존하고(예 2025.09에 3기 OT와 2기 최종 데모데이 동시), OT·데모데이·MT는
+            제목/내용이 명시한 기수로 편집 귀속한다. 백엔드가 저장·응답해야 함. 목록의 기수 탭 필터에 사용.
         title: { type: string }
         summary: { type: string }
         imageCount: { type: integer }
@@ -355,11 +362,11 @@ components:
       properties:
         id: { type: integer }
         date: { type: string }
-        tag: { type: string }
-        cohort:
+        tag: { $ref: "#/components/schemas/ActivityTag" }
+        generationNumber:
           type: integer
           nullable: true
-          description: "ActivitySummary.cohort와 동일. 상세의 'N기' 브랜드 배지에 사용."
+          description: "ActivitySummary.generationNumber와 동일. 상세의 'N기' 브랜드 배지에 사용."
         title: { type: string }
         location:
           type: string
